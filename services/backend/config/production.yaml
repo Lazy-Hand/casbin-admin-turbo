@@ -1,0 +1,24 @@
+# Production overrides.
+# This file only needs keys that differ from default.yaml.
+
+nodeEnv: production
+
+redis:
+  host: redis
+  enablePubSub: true
+
+jwt:
+  # Replace in production with a strong, managed secret.
+  secret: "replace-with-strong-production-secret"
+  expiresIn: 604800
+  sessionTtl: 14400
+  sessionRefreshThreshold: 3600
+
+casl:
+  logging:
+    logPermissions: false
+
+logging:
+  level: warn
+  enableConsole: false
+  enableFile: true

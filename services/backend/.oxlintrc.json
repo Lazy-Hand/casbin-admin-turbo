@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "node"],
+  "env": {
+    "node": true
+  },
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "eslint/no-unused-vars": "warn"
+  },
+  "ignorePatterns": ["node_modules/**", ".pnpm/**", "dist/**", "coverage/**", "logs/**", "uploads/**"]
+}

@@ -1,0 +1,16 @@
+node_modules
+.turbo
+
+.DS_Store
+
+dist
+coverage
+.eslintcache
+*.tsbuildinfo
+
+apps/frontend/dist
+apps/frontend/dist-ssr
+services/backend/dist
+services/backend/coverage
+services/backend/logs
+services/backend/uploads

@@ -1,0 +1,52 @@
+port: 8080
+nodeEnv: development
+globalPrefix: /api
+
+upload:
+  dir: uploads
+  chunkDir: uploads/chunks
+  prefix: /uploads
+  maxFileSize: 10485760
+  maxFiles: 10
+  chunkSize: 5242880
+
+redis:
+  host: localhost
+  port: 6379
+  password: ''
+  db: 0
+  keyPrefix: 'app:'
+  enablePubSub: false
+
+jwt:
+  secret: your-secret-key-here-change-in-production
+  expiresIn: 604800
+  sessionTtl: 7200
+  sessionRefreshThreshold: 1800
+
+casl:
+  cache:
+    ttl: 1800000
+    max: 1000
+  logging:
+    level: info
+    logPermissions: false
+  performance:
+    enablePreload: true
+    enableBatchLoad: true
+    slowQueryThreshold: 100
+
+logging:
+  level: info
+  enableConsole: true
+  enableFile: true
+  logDir: logs
+  maxFileSize: 20m
+  maxFiles: 14d
+  datePattern: YYYY-MM-DD
+  enablePrismaLogging: true
+  prismaLogLevels:
+    - query
+    - info
+    - warn
+    - error

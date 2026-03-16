@@ -1,0 +1,21 @@
+{
+  "name": "@casbin-admin/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.js",
+    "./node": "./node.js",
+    "./vue": "./vue.js"
+  },
+  "dependencies": {
+    "@eslint/js": "catalog:",
+    "@vue/eslint-config-typescript": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "eslint-plugin-oxlint": "catalog:",
+    "eslint-plugin-vue": "catalog:",
+    "globals": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

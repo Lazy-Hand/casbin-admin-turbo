@@ -1,0 +1,15 @@
+/* NProgress Custom Color */
+#nprogress .bar {
+  background: var(--p-primary-color) !important;
+}
+
+#nprogress .peg {
+  box-shadow:
+    0 0 10px var(--p-primary-color),
+    0 0 5px var(--p-primary-color) !important;
+}
+
+#nprogress .spinner-icon {
+  border-top-color: var(--p-primary-color) !important;
+  border-left-color: var(--p-primary-color) !important;
+}

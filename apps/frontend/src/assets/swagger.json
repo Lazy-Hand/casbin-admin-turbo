@@ -1,0 +1,3727 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "企业级 Go+Gin+Gorm Web 后端项目模板",
+    "title": "Gin Admin Starter API",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "name": "API Support",
+      "url": "http://www.swagger.io/support",
+      "email": "support@swagger.io"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0"
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "用户名密码登录，返回 JWT Token、登录时间和过期时间",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["认证管理"],
+        "summary": "用户登录",
+        "parameters": [
+          {
+            "description": "登录信息",
+            "name": "loginReq",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "expire_at": {
+                          "type": "string"
+                        },
+                        "login_time": {
+                          "type": "string"
+                        },
+                        "token": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "登出当前用户，将 Token 加入黑名单",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["认证管理"],
+        "summary": "用户登出",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/permissions": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取当前用户的权限列表，返回 Permission 对象数组，仅包含 ResourceType=menu 的数据",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["认证管理"],
+        "summary": "获取当前用户权限",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "description": "注册新用户账号",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["认证管理"],
+        "summary": "用户注册",
+        "parameters": [
+          {
+            "description": "用户信息",
+            "name": "user",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.User"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/userInfo": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "根据登录态获取当前用户信息",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["认证管理"],
+        "summary": "获取当前用户信息",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.User"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cron/tasks": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "分页获取定时任务列表",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "获取任务列表",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/go-admin-starter_internal_model.CronTask"
+                          }
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "创建新的定时任务",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "创建定时任务",
+        "parameters": [
+          {
+            "description": "任务信息",
+            "name": "task",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.CronTask"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.CronTask"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cron/tasks/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "根据ID获取任务详情",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "获取任务详情",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "任务ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.CronTask"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "更新定时任务",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "更新任务",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "任务ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "任务信息",
+            "name": "task",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.CronTask"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.CronTask"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "删除定时任务",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "删除任务",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "任务ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cron/tasks/{id}/execute": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "立即执行定时任务",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "手动执行任务",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "任务ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cron/tasks/{id}/logs": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取任务的执行历史日志",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "获取任务执行日志",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "任务ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/go-admin-starter_internal_model.CronTaskLog"
+                          }
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cron/tasks/{id}/pause": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "暂停定时任务",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "暂停任务",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "任务ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cron/tasks/{id}/resume": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "恢复暂停的定时任务",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["定时任务"],
+        "summary": "恢复任务",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "任务ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dictionaries": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "分页获取字典分类列表",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "获取字典分类列表",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/go-admin-starter_internal_model.Dictionary"
+                          }
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "创建新的字典分类",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "创建字典分类",
+        "parameters": [
+          {
+            "description": "字典信息",
+            "name": "dictionary",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Dictionary"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Dictionary"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dictionaries/code/{dictCode}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "通过字典编码获取完整的字典信息及其所有字典项（按排序）",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "根据字典编码获取字典项列表",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "字典编码",
+            "name": "dictCode",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Dictionary"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dictionaries/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "根据ID获取字典分类详情",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "获取字典分类详情",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Dictionary"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "更新字典分类",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "更新字典分类",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "字典信息",
+            "name": "dictionary",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Dictionary"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Dictionary"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "删除指定字典分类",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "删除字典分类",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dictionaries/{id}/items": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "分页获取字典下的所有项",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "获取字典项列表",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/go-admin-starter_internal_model.DictionaryItem"
+                          }
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "创建新的字典项",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "创建字典项",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "字典项信息",
+            "name": "item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.DictionaryItem"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.DictionaryItem"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dictionaries/{id}/items/{itemId}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "根据ID获取字典项详情",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "获取字典项详情",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典项ID",
+            "name": "itemId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.DictionaryItem"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "更新字典项",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "更新字典项",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "字典项ID",
+            "name": "itemId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "字典项信息",
+            "name": "item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.DictionaryItem"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.DictionaryItem"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "删除指定字典项",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["数据字典管理"],
+        "summary": "删除字典项",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "字典ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "字典项ID",
+            "name": "itemId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "分页获取文件列表，支持按business_id或user_id筛选",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "获取文件列表",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "业务ID",
+            "name": "business_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "业务类型",
+            "name": "business_type",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "user_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/go-admin-starter_internal_model.File"
+                          }
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/chunk/cancel": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "取消上传并清理临时文件",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "取消分片上传",
+        "parameters": [
+          {
+            "description": "上传ID",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "upload_id": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/chunk/complete": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "合并所有分片，完成上传",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "完成分片上传",
+        "parameters": [
+          {
+            "description": "上传ID",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "upload_id": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.File"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/chunk/init": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "开始大文件分片上传，获取upload_id",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "初始化分片上传",
+        "parameters": [
+          {
+            "description": "上传信息",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "business_id": {
+                  "type": "integer"
+                },
+                "business_type": {
+                  "type": "string"
+                },
+                "chunk_size": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "file_name": {
+                  "type": "string"
+                },
+                "file_size": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "mime_type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.FileChunkUpload"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/chunk/upload": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "上传单个文件分片",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "上传分片",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "上传ID",
+            "name": "upload_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "分片索引(从0开始)",
+            "name": "chunk_index",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "file",
+            "description": "分片数据",
+            "name": "chunk",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/chunk/{uploadId}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取分片上传进度",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "查询上传进度",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "上传ID",
+            "name": "uploadId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.FileChunkUpload"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/upload": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "上传单个文件",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "上传文件",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "文件",
+            "name": "file",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "业务ID",
+            "name": "business_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "业务类型",
+            "name": "business_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.File"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/upload/multiple": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "上传多个文件",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "批量上传文件",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "文件列表",
+            "name": "files",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "业务ID",
+            "name": "business_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "业务类型",
+            "name": "business_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/go-admin-starter_internal_model.File"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "根据ID获取文件详情",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "获取文件详情",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "文件ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.File"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "删除指定文件",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["文件管理"],
+        "summary": "删除文件",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "文件ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/{id}/download": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "下载指定文件",
+        "consumes": ["application/json"],
+        "produces": ["application/octet-stream"],
+        "tags": ["文件管理"],
+        "summary": "下载文件",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "文件ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/{id}/preview": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "在浏览器中预览文件",
+        "consumes": ["application/json"],
+        "produces": ["application/octet-stream"],
+        "tags": ["文件管理"],
+        "summary": "文件预览",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "文件ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rbac/policies": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取所有策略，包括角色和权限",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "获取所有策略",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rbac/roles/all": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取所有角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "获取所有角色",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rbac/users/{id}/permissions": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取指定用户的所有权限，包括直接分配的权限和通过角色继承的权限",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "获取用户权限",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rbac/users/{id}/permissions/check": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "检查用户是否有指定路径和方法的权限",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "检查用户权限",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "权限信息",
+            "name": "req",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rbac/users/{id}/roles": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取指定用户的所有角色，包括直接分配的角色和通过角色继承的角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "获取用户角色",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "为指定用户分配指定角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "为用户分配角色",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "角色代码",
+            "name": "req",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rbac/users/{id}/roles/{roleCode}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "从指定用户移除指定角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "从用户移除角色",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "角色代码",
+            "name": "roleCode",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "分页获取用户列表",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["用户管理"],
+        "summary": "获取用户列表",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/go-admin-starter_internal_model.User"
+                          }
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "更新用户信息",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["用户管理"],
+        "summary": "更新用户信息",
+        "parameters": [
+          {
+            "description": "用户信息",
+            "name": "user",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.User"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "删除指定用户",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["用户管理"],
+        "summary": "删除用户",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/permissions": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取所有权限，支持分页查询",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "获取权限列表",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.PageResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "创建新的权限，支持菜单、按钮、API 等类型",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "创建权限",
+        "parameters": [
+          {
+            "description": "权限信息",
+            "name": "permission",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/permissions/tree": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取所有权限的层级结构，用于前端菜单渲染",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "获取权限树",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/permissions/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取指定权限的详细信息",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "获取权限详情",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "权限ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "更新权限信息，包括菜单类型等",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "更新权限",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "权限ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "权限信息",
+            "name": "permission",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "删除指定权限，包括其关联的角色权限",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["权限管理"],
+        "summary": "删除权限",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "权限ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/roles": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取角色列表",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "获取角色列表",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "description": "页码",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "description": "每页数量",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.PageResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/go-admin-starter_internal_model.Role"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "创建角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "创建角色",
+        "parameters": [
+          {
+            "description": "角色信息",
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Role"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "获取角色",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "角色ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/go-admin-starter_internal_model.Role"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "更新角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "更新角色",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "角色ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "角色信息",
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_internal_model.Role"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "删除角色",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "删除角色",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "角色ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/roles/{id}/permissions": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "获取角色权限",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "获取角色权限",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "角色ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "为角色分配权限",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "为角色分配权限",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "角色ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "权限信息",
+            "name": "req",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    },
+    "/roles/{id}/permissions/{permId}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "撤销角色权限",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["角色管理"],
+        "summary": "撤销角色权限",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "角色ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "权限ID",
+            "name": "permId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/go-admin-starter_pkg_response.Response"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "go-admin-starter_internal_model.CronTask": {
+      "type": "object",
+      "required": ["cronExpr", "name", "status", "taskType"],
+      "properties": {
+        "config": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "cronExpr": {
+          "type": "string"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "description": {
+          "type": "string"
+        },
+        "failRuns": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "lastRunTime": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nextRunTime": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "successRuns": {
+          "type": "integer"
+        },
+        "taskType": {
+          "type": "integer"
+        },
+        "totalRuns": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.CronTaskLog": {
+      "type": "object",
+      "required": ["taskId"],
+      "properties": {
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "duration": {
+          "description": "毫秒",
+          "type": "integer"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "errorMsg": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "result": {
+          "type": "string"
+        },
+        "retryCount": {
+          "type": "integer"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "taskId": {
+          "type": "integer"
+        },
+        "taskName": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.Dictionary": {
+      "type": "object",
+      "required": ["dict_code", "dict_name", "dict_type"],
+      "properties": {
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "description": {
+          "type": "string"
+        },
+        "dict_code": {
+          "type": "string"
+        },
+        "dict_name": {
+          "type": "string"
+        },
+        "dict_type": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/go-admin-starter_internal_model.DictionaryItem"
+          }
+        },
+        "sort_order": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.DictionaryItem": {
+      "type": "object",
+      "required": ["dictId", "itemCode", "itemName", "itemValue"],
+      "properties": {
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "dictId": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "itemCode": {
+          "type": "string"
+        },
+        "itemName": {
+          "type": "string"
+        },
+        "itemValue": {
+          "type": "string"
+        },
+        "remark": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.File": {
+      "type": "object",
+      "properties": {
+        "businessId": {
+          "type": "integer"
+        },
+        "businessType": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "extension": {
+          "type": "string"
+        },
+        "fileName": {
+          "type": "string"
+        },
+        "filePath": {
+          "type": "string"
+        },
+        "fileSize": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "originalName": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.FileChunkUpload": {
+      "type": "object",
+      "properties": {
+        "businessId": {
+          "type": "integer"
+        },
+        "businessType": {
+          "type": "string"
+        },
+        "chunkSize": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "fileName": {
+          "type": "string"
+        },
+        "filePath": {
+          "type": "string"
+        },
+        "fileSize": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "tempDir": {
+          "type": "string"
+        },
+        "total_chunks": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        },
+        "uploadId": {
+          "type": "string"
+        },
+        "uploaded_chunks": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.Permission": {
+      "type": "object",
+      "required": ["permCode", "permName", "status"],
+      "properties": {
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/go-admin-starter_internal_model.Permission"
+          }
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "menuType": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        },
+        "permCode": {
+          "type": "string"
+        },
+        "permName": {
+          "type": "string"
+        },
+        "resourceType": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.Role": {
+      "type": "object",
+      "required": ["role_code", "role_name", "status"],
+      "properties": {
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "role_code": {
+          "type": "string"
+        },
+        "role_name": {
+          "type": "string"
+        },
+        "sort_order": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_internal_model.User": {
+      "type": "object",
+      "required": ["username"],
+      "properties": {
+        "createdAt": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "$ref": "#/definitions/gorm.DeletedAt"
+        },
+        "email": {
+          "description": "邮箱，唯一索引",
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "nickname": {
+          "description": "昵称",
+          "type": "string"
+        },
+        "phone": {
+          "description": "手机号",
+          "type": "string"
+        },
+        "status": {
+          "description": "状态，1: 正常, 2: 禁用",
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "integer"
+        },
+        "username": {
+          "description": "用户名，唯一索引",
+          "type": "string"
+        }
+      }
+    },
+    "go-admin-starter_pkg_response.PageResponse": {
+      "type": "object",
+      "properties": {
+        "items": {},
+        "page": {
+          "type": "integer"
+        },
+        "pageSize": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "go-admin-starter_pkg_response.Response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "data": {},
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "gorm.DeletedAt": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "string"
+        },
+        "valid": {
+          "description": "Valid is true if Time is not NULL",
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "description": "请输入 JWT Token，格式: Bearer {token}",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}
