@@ -1,5 +1,5 @@
 import http, { type PageResponse } from '@/utils/request'
-import type { AxiosProgressEvent } from 'axios'
+import type { AxiosProgressEvent } from '@casbin-admin/http-client'
 
 export interface UploadFileDto {
   businessId?: number

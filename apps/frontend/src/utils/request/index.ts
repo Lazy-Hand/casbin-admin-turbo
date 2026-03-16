@@ -1,9 +1,8 @@
-import { createRequest } from './request'
-import type { RequestConfig } from './config'
+import { createRequest, type PageResponse, type RequestConfig, type ResponseData } from '@casbin-admin/http-client'
 import { localCache } from '@/utils/storage'
 import router from '@/router'
-export { checkStatus } from './checkStatus'
-export type { RequestConfig, ResponseData, PageResponse } from './config'
+export { checkStatus } from '@casbin-admin/http-client'
+export type { RequestConfig, ResponseData, PageResponse } from '@casbin-admin/http-client'
 
 let unauthorizedCallback: () => void = () => {
   if (typeof window !== 'undefined') {
@@ -26,7 +25,7 @@ let unauthorizedCallback: () => void = () => {
   }
 }
 
-export const requestConfig: RequestConfig = {
+export const requestConfig = {
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   getToken: () => {
     if (typeof window !== 'undefined') {
@@ -47,7 +46,7 @@ export const requestConfig: RequestConfig = {
       window.$message?.error(msg)
     }
   },
-}
+} satisfies RequestConfig
 
 export function setUnauthorizedCallback(callback: () => void) {
   unauthorizedCallback = callback

@@ -36,8 +36,6 @@ export const login = (params: object) => {
     // 覆盖默认配置，开启重试机制
     enableRetry: true,
     retryCount: 2,
-    // 不携带 token
-    skipInterceptors: false, // 这里可以设为 true 如果不需要 token，但通常 login 接口不需要 token，request 拦截器会判断 token 是否存在
   })
 }
 

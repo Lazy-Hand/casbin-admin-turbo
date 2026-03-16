@@ -65,6 +65,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@casbin-admin/http-client':
+        specifier: workspace:*
+        version: link:../../packages/http-client
       '@pinia/colada':
         specifier: ^0.21.7
         version: 0.21.7(pinia@3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3))
@@ -101,9 +104,6 @@ importers:
       '@vueuse/core':
         specifier: ^14.2.1
         version: 14.2.1(vue@3.5.30(typescript@5.9.3))
-      axios:
-        specifier: ^1.13.6
-        version: 1.13.6
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -288,6 +288,19 @@ importers:
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.57.0(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
+
+  packages/http-client:
+    dependencies:
+      axios:
+        specifier: ^1.13.6
+        version: 1.13.6
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
   services/backend:
     dependencies:
