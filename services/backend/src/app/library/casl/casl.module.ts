@@ -4,7 +4,6 @@ import { UserHook } from './user.hook';
 import { AbilityGuard } from './guards';
 import { PermissionModule } from '../../system/permission/permission.module';
 import { PermissionService } from '../../system/permission/permission.service';
-import { PrismaModule } from '../prisma/prisma.module';
 
 /**
  * CASL Module
@@ -22,7 +21,7 @@ import { PrismaModule } from '../prisma/prisma.module';
  */
 @Global()
 @Module({
-  imports: [PrismaModule, PermissionModule],
+  imports: [PermissionModule],
   providers: [AbilityFactory, UserHook, AbilityGuard],
   exports: [AbilityFactory, UserHook, AbilityGuard],
 })

@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { LogOperation, Prisma } from '@prisma/client';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import type { LogOperationValue } from '@/app/library/drizzle';
+
+type JsonPrimitive = string | number | boolean | null;
+type JsonObject = { [key: string]: JsonPrimitive | JsonInputValue[] | JsonObject };
+type JsonInputValue = string | number | boolean | JsonInputValue[] | JsonObject;
 
 export class QueryLoginLogDto extends PaginationDto {
   @IsOptional()
@@ -37,9 +41,9 @@ export class QueryOperationLogDto extends PaginationDto {
   module?: string;
 
   @IsOptional()
-  @IsEnum(LogOperation)
-  @ApiProperty({ description: '操作类型', enum: LogOperation, required: false })
-  operation?: LogOperation;
+  @IsEnum(['CREATE', 'UPDATE', 'DELETE'])
+  @ApiProperty({ description: '操作类型', enum: ['CREATE', 'UPDATE', 'DELETE'], required: false })
+  operation?: LogOperationValue;
 
   @IsOptional()
   @IsString()
@@ -61,11 +65,11 @@ export class CreateOperationLogDto {
   userId?: number;
   username: string;
   module: string;
-  operation: LogOperation;
+  operation: LogOperationValue;
   description?: string;
   method: string;
   path: string;
-  params?: Prisma.InputJsonValue;
+  params?: JsonInputValue;
   ip?: string;
   userAgent?: string;
   status: number;

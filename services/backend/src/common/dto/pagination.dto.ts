@@ -34,7 +34,7 @@ export class PaginationDto {
   @Max(100, { message: '每页数量最大为 100' })
   pageSize: number = 10;
 
-  // Prisma 分页参数（由管道自动填充，不需要在 Swagger 中显示）
+  // 偏移分页参数（由管道自动填充，不需要在 Swagger 中显示）
   @IsOptional()
   @Type(() => Number)
   skip: number;
@@ -45,9 +45,9 @@ export class PaginationDto {
 }
 
 /**
- * Prisma 分页参数
+ * 偏移分页参数
  */
-export interface PrismaPaginationParams {
+export interface OffsetPaginationParams {
   skip: number;
   take: number;
 }
@@ -83,19 +83,22 @@ export class PaginationResponseDto<T> {
  */
 export function createPaginationResponse<T>(
   list: T[],
-  total: number,
+  total: number | string,
   pageNo: number,
   pageSize: number,
 ): PaginationResponseDto<T> {
-  const totalPages = Math.ceil(total / pageSize);
+  const normalizedTotal = Number(total) || 0;
+  const normalizedPageNo = Number(pageNo) || 1;
+  const normalizedPageSize = Number(pageSize) || 10;
+  const totalPages = Math.ceil(normalizedTotal / normalizedPageSize);
 
   return {
     list,
-    total,
-    pageNo,
-    pageSize,
+    total: normalizedTotal,
+    pageNo: normalizedPageNo,
+    pageSize: normalizedPageSize,
     totalPages,
-    hasNext: pageNo < totalPages,
-    hasPrev: pageNo > 1,
+    hasNext: normalizedPageNo < totalPages,
+    hasPrev: normalizedPageNo > 1,
   };
 }

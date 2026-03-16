@@ -8,7 +8,7 @@
 - [开发指南](./development-guide.md)
 - [前端说明](./frontend.md)
 - [后端说明](./backend.md)
-- [数据库与 Prisma](./database.md)
+- [数据库与 Schema Tooling](./database.md)
 - [认证与权限](./auth-and-permission.md)
 - [部署说明](./deployment.md)
 - [常见问题](./faq.md)

@@ -1,25 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, User } from '@prisma/client';
-import { PrismaService } from 'nestjs-prisma';
+import { and, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 import { DataScopeService } from '@/app/library/data-scope/data-scope.service';
-import { BaseRepository } from '@/common/repositories/base.repository';
+import {
+  Dept,
+  DrizzleService,
+  Permission,
+  Role,
+  RolePermission,
+  User,
+  UserRole,
+  withSoftDelete,
+} from '@/app/library/drizzle';
 
-/**
- * 用户 Repository
- * 提供用户相关的数据访问方法，支持数据范围过滤
- */
 @Injectable()
-export class UserRepository extends BaseRepository {
+export class UserRepository {
   constructor(
-    protected readonly prisma: PrismaService,
-    protected readonly dataScopeService: DataScopeService,
-  ) {
-    super(prisma, dataScopeService);
-  }
+    private readonly drizzle: DrizzleService,
+    private readonly dataScopeService: DataScopeService,
+  ) {}
 
-  /**
-   * 分页查询用户（带数据范围过滤）
-   */
   async findPage(
     userId: number | undefined,
     params: {
@@ -28,159 +27,256 @@ export class UserRepository extends BaseRepository {
       deptId?: number;
       username?: string;
       status?: number;
+      postId?: number;
     },
   ) {
-    const { pageNo = 1, pageSize = 10, deptId, username, status } = params;
+    const { pageNo = 1, pageSize = 10, deptId, username, status, postId } = params;
     const skip = (pageNo - 1) * pageSize;
-    const take = pageSize;
 
-    // 构建基础查询条件
-    const where: Prisma.UserWhereInput = {
-      deletedAt: null,
-    };
+    const scopeCondition = await this.buildScopeCondition(userId);
+    const where = and(
+      withSoftDelete(User),
+      deptId !== undefined ? eq(User.deptId, deptId) : undefined,
+      postId !== undefined ? eq(User.postId, postId) : undefined,
+      username ? ilike(User.username, `%${username}%`) : undefined,
+      status !== undefined ? eq(User.status, status) : undefined,
+      scopeCondition,
+    );
 
-    if (deptId !== undefined) {
-      where.deptId = deptId;
-    }
-
-    if (username) {
-      where.username = { contains: username, mode: 'insensitive' };
-    }
-
-    if (status !== undefined) {
-      where.status = status;
-    }
-
-    // 如果没有用户ID（如管理员查看），不过滤
-    if (!userId) {
-      return this._findPageWithoutScope(where, skip, take);
-    }
-
-    // 应用数据范围过滤
-    const scopedWhere = await this.applyDataScope(where, userId, 'user');
-
-    return this._findPageWithoutScope(scopedWhere, skip, take);
-  }
-
-  /**
-   * 不带数据范围的分页查询（内部方法）
-   */
-  private async _findPageWithoutScope(
-    where: Prisma.UserWhereInput,
-    skip: number,
-    take: number,
-  ) {
-    const [list, total] = await Promise.all([
-      this.prisma.user.findMany({
-        skip,
-        take,
-        where,
-        select: {
-          id: true,
-          username: true,
-          nickname: true,
-          gender: true,
-          avatar: true,
-          email: true,
-          mobile: true,
-          status: true,
-          deptId: true,
-          createdAt: true,
-          updatedAt: true,
+    const [rows, totalRows] = await Promise.all([
+      this.drizzle.db
+        .select({
+          id: User.id,
+          username: User.username,
+          nickname: User.nickname,
+          gender: User.gender,
+          avatar: User.avatar,
+          email: User.email,
+          mobile: User.mobile,
+          status: User.status,
+          deptId: User.deptId,
+          createdAt: User.createdAt,
+          updatedAt: User.updatedAt,
           dept: {
-            select: {
-              id: true,
-              name: true,
-            },
+            id: Dept.id,
+            name: Dept.name,
           },
-          roles: {
-            include: {
-              role: {
-                select: {
-                  id: true,
-                  roleName: true,
-                  roleCode: true,
-                },
-              },
-            },
+          role: {
+            id: Role.id,
+            roleName: Role.roleName,
+            roleCode: Role.roleCode,
           },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      }),
-      this.prisma.user.count({ where }),
+        })
+        .from(User)
+        .leftJoin(Dept, eq(User.deptId, Dept.id))
+        .leftJoin(UserRole, eq(User.id, UserRole.userId))
+        .leftJoin(Role, eq(UserRole.roleId, Role.id))
+        .where(where)
+        .orderBy(desc(User.createdAt))
+        .limit(pageSize)
+        .offset(skip),
+      this.drizzle.db
+        .select({
+          total: sql<number>`count(distinct ${User.id})`,
+        })
+        .from(User)
+        .where(where),
     ]);
 
     return {
-      list: list.map((item) => ({
-        ...item,
-        roles: item.roles.map((item) => item.role),
-      })),
-      total,
+      list: this.groupUsersWithRoles(rows),
+      total: totalRows[0]?.total ?? 0,
     };
   }
 
-  /**
-   * 获取用户详情（带数据范围过滤）
-   */
   async findOne(userId: number, currentUserId: number | undefined) {
-    const where: Prisma.UserWhereInput = {
-      id: userId,
-    };
-
-    // 应用数据范围过滤
-    const scopedWhere = currentUserId
-      ? await this.applyDataScope(where, currentUserId, 'user')
-      : where;
-
-    const user = await this.prisma.user.findFirst({
-      where: scopedWhere,
-      select: {
-        id: true,
-        username: true,
-        nickname: true,
-        email: true,
-        mobile: true,
-        gender: true,
-        avatar: true,
-        status: true,
-        deptId: true,
-        createdAt: true,
-        updatedAt: true,
-        deletedAt: true,
-        createdBy: true,
-        updatedBy: true,
-        deletedBy: true,
+    const scopeCondition = await this.buildScopeCondition(currentUserId);
+    const rows = await this.drizzle.db
+      .select({
+        id: User.id,
+        username: User.username,
+        nickname: User.nickname,
+        email: User.email,
+        mobile: User.mobile,
+        gender: User.gender,
+        avatar: User.avatar,
+        status: User.status,
+        deptId: User.deptId,
+        createdAt: User.createdAt,
+        updatedAt: User.updatedAt,
+        deletedAt: User.deletedAt,
+        createdBy: User.createdBy,
+        updatedBy: User.updatedBy,
+        deletedBy: User.deletedBy,
         dept: {
-          select: {
-            id: true,
-            name: true,
-          },
+          id: Dept.id,
+          name: Dept.name,
         },
-        roles: {
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  include: {
-                    permission: true,
-                  },
-                },
-              },
-            },
-          },
+        role: {
+          id: Role.id,
+          roleName: Role.roleName,
+          roleCode: Role.roleCode,
+          description: Role.description,
+          status: Role.status,
+          dataScope: Role.dataScope,
+          customDepts: Role.customDepts,
+          createdAt: Role.createdAt,
+          updatedAt: Role.updatedAt,
+          deletedAt: Role.deletedAt,
+          createdBy: Role.createdBy,
+          updatedBy: Role.updatedBy,
+          deletedBy: Role.deletedBy,
         },
-      },
-    });
+        permission: {
+          id: Permission.id,
+          permName: Permission.permName,
+          permCode: Permission.permCode,
+          method: Permission.method,
+          component: Permission.component,
+          resourceType: Permission.resourceType,
+          menuType: Permission.menuType,
+          path: Permission.path,
+          icon: Permission.icon,
+          sort: Permission.sort,
+          cache: Permission.cache,
+          hidden: Permission.hidden,
+          frameUrl: Permission.frameUrl,
+          status: Permission.status,
+          parentId: Permission.parentId,
+          createdAt: Permission.createdAt,
+          updatedAt: Permission.updatedAt,
+          deletedAt: Permission.deletedAt,
+          createdBy: Permission.createdBy,
+          updatedBy: Permission.updatedBy,
+          deletedBy: Permission.deletedBy,
+        },
+      })
+      .from(User)
+      .leftJoin(Dept, eq(User.deptId, Dept.id))
+      .leftJoin(UserRole, eq(User.id, UserRole.userId))
+      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
+      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .where(
+        and(
+          withSoftDelete(User, eq(User.id, userId)),
+          scopeCondition,
+        ),
+      );
 
-    if (!user) {
+    if (rows.length === 0) {
       return null;
     }
 
+    return this.groupUserDetail(rows);
+  }
+
+  private async buildScopeCondition(userId?: number) {
+    if (!userId) {
+      return undefined;
+    }
+
+    const config = await this.dataScopeService.getUserDataScope(userId, 'user');
+
+    switch (config.scope) {
+      case 'ALL':
+        return undefined;
+      case 'DEPT':
+        return config.deptId ? eq(User.deptId, config.deptId) : eq(User.id, -1);
+      case 'DEPT_AND_CHILD': {
+        if (!config.deptId) {
+          return eq(User.id, -1);
+        }
+        const deptIds = await this.dataScopeService.getDescendantDeptIds(config.deptId);
+        return inArray(User.deptId, deptIds);
+      }
+      case 'CUSTOM':
+        return config.customDepts?.length
+          ? inArray(User.deptId, config.customDepts)
+          : eq(User.id, -1);
+      default:
+        return undefined;
+    }
+  }
+
+  private groupUsersWithRoles(rows: any[]) {
+    const users = new Map<number, any>();
+
+    for (const row of rows) {
+      const current =
+        users.get(row.id) ??
+        {
+          id: row.id,
+          username: row.username,
+          nickname: row.nickname,
+          gender: row.gender,
+          avatar: row.avatar,
+          email: row.email,
+          mobile: row.mobile,
+          status: row.status,
+          deptId: row.deptId,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          dept: row.dept?.id ? row.dept : null,
+          roles: [],
+        };
+
+      if (row.role?.id && !current.roles.some((role: any) => role.id === row.role.id)) {
+        current.roles.push(row.role);
+      }
+
+      users.set(row.id, current);
+    }
+
+    return [...users.values()];
+  }
+
+  private groupUserDetail(rows: any[]) {
+    const first = rows[0];
+    const roles = new Map<number, any>();
+
+    for (const row of rows) {
+      if (!row.role?.id) {
+        continue;
+      }
+
+      const currentRole =
+        roles.get(row.role.id) ??
+        {
+          ...row.role,
+          permissions: [],
+        };
+
+      if (
+        row.permission?.id &&
+        !currentRole.permissions.some((permission: any) => permission.id === row.permission.id)
+      ) {
+        currentRole.permissions.push({
+          permission: row.permission,
+        });
+      }
+
+      roles.set(row.role.id, currentRole);
+    }
+
     return {
-      ...user,
-      roles: user.roles.map((item) => item.role),
+      id: first.id,
+      username: first.username,
+      nickname: first.nickname,
+      email: first.email,
+      mobile: first.mobile,
+      gender: first.gender,
+      avatar: first.avatar,
+      status: first.status,
+      deptId: first.deptId,
+      createdAt: first.createdAt,
+      updatedAt: first.updatedAt,
+      deletedAt: first.deletedAt,
+      createdBy: first.createdBy,
+      updatedBy: first.updatedBy,
+      deletedBy: first.deletedBy,
+      dept: first.dept?.id ? first.dept : null,
+      roles: [...roles.values()],
     };
   }
 }

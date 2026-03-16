@@ -8,13 +8,13 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Request } from 'express';
-import { LogOperation } from '@prisma/client';
 import { OperationLogService } from '@/app/system/operation-log/operation-log.service';
 import { extractIp, extractUserAgent } from '@/common/utils/ip-extractor.util';
 import { identifyModule } from '@/common/utils/module-mapper.util';
 import { generateDescription } from '@/common/utils/description-generator.util';
 import { simplifyParams } from '@/common/utils/sanitize.util';
 import { UserEntity } from '@/app/system/user/entities/user.entity';
+import type { LogOperationValue } from '@/app/library/drizzle';
 
 /**
  * 需要排除的路径前缀
@@ -127,17 +127,17 @@ export class OperationLogInterceptor implements NestInterceptor {
   /**
    * 根据 HTTP 方法获取操作类型
    */
-  private getOperationType(method: string): LogOperation {
+  private getOperationType(method: string): LogOperationValue {
     switch (method) {
       case 'POST':
-        return LogOperation.CREATE;
+        return 'CREATE';
       case 'PUT':
       case 'PATCH':
-        return LogOperation.UPDATE;
+        return 'UPDATE';
       case 'DELETE':
-        return LogOperation.DELETE;
+        return 'DELETE';
       default:
-        return LogOperation.CREATE;
+        return 'CREATE';
     }
   }
 
@@ -148,7 +148,7 @@ export class OperationLogInterceptor implements NestInterceptor {
     userId?: number;
     username: string;
     module: string;
-    operation: LogOperation;
+    operation: LogOperationValue;
     method: string;
     path: string;
     request: Request;
@@ -193,7 +193,7 @@ export class OperationLogInterceptor implements NestInterceptor {
     userId?: number;
     username: string;
     module: string;
-    operation: LogOperation;
+    operation: LogOperationValue;
     method: string;
     path: string;
     request: Request;

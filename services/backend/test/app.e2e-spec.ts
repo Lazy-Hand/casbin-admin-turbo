@@ -4,7 +4,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { Duplex } from 'node:stream';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { AppModule } from './../src/app.module';
-import { PrismaService } from 'nestjs-prisma';
+import { DrizzleService } from './../src/app/library/drizzle';
 import { RedisService } from './../src/app/library/redis/redis.service';
 import { PermissionService } from './../src/app/system/permission/permission.service';
 import { TimerService } from './../src/app/system/timer/timer.service';
@@ -88,119 +88,19 @@ async function dispatchHttpGet(
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  const prismaMock = {
-    user: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      findFirst: jest.fn(),
-      create: jest.fn(),
-      count: jest.fn(),
-    },
-    permission: {
-      findMany: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0),
-      findUnique: jest.fn(),
-      findFirst: jest.fn(),
-      create: jest.fn(),
+  const drizzleMock = {
+    db: {
+      select: jest.fn(),
+      insert: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      transaction: jest.fn(),
     },
-    role: {
-      findMany: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    timer: {
-      findMany: jest.fn().mockResolvedValue([]),
-      findFirst: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-    },
-    operationLog: {
-      findMany: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0),
-      findUnique: jest.fn(),
-      createMany: jest.fn(),
-      deleteMany: jest.fn(),
-    },
-    loginLog: {
-      findMany: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0),
-      create: jest.fn(),
-    },
-    dept: {
-      findMany: jest.fn().mockResolvedValue([]),
-      findUnique: jest.fn(),
-      count: jest.fn().mockResolvedValue(0),
-      update: jest.fn(),
-      create: jest.fn(),
-    },
-    post: {
-      findMany: jest.fn().mockResolvedValue([]),
-      findUnique: jest.fn(),
-      count: jest.fn().mockResolvedValue(0),
-    },
-    sysConfig: {
-      findMany: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0),
-      findUnique: jest.fn(),
-      findFirst: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    sysFile: {
-      findMany: jest.fn().mockResolvedValue([]),
-      findUnique: jest.fn(),
-      count: jest.fn().mockResolvedValue(0),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    dictType: {
-      findMany: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0),
-      findUnique: jest.fn(),
-      findFirst: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    dictItem: {
-      findMany: jest.fn().mockResolvedValue([]),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      deleteMany: jest.fn(),
-    },
-    userRole: {
-      findMany: jest.fn().mockResolvedValue([]),
-      createMany: jest.fn(),
-      deleteMany: jest.fn(),
-      create: jest.fn(),
-      delete: jest.fn(),
-    },
-    rolePermission: {
-      findMany: jest.fn().mockResolvedValue([]),
-      createMany: jest.fn(),
-      deleteMany: jest.fn(),
-      create: jest.fn(),
-      delete: jest.fn(),
-    },
-    timerExecutionLog: {
-      findMany: jest.fn().mockResolvedValue([]),
-      create: jest.fn(),
-    },
-    $transaction: jest.fn(async (callback?: (tx: typeof prismaMock) => unknown) =>
-      callback ? callback(prismaMock as typeof prismaMock) : undefined,
-    ),
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    insertWithAudit: jest.fn(),
+    updateWithAudit: jest.fn(),
+    softDeleteWhere: jest.fn(),
   };
 
   const redisMock = {
@@ -236,8 +136,8 @@ describe('AppController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(PrismaService)
-      .useValue(prismaMock)
+      .overrideProvider(DrizzleService)
+      .useValue(drizzleMock)
       .overrideProvider(RedisService)
       .useValue(redisMock)
       .overrideProvider(PermissionService)

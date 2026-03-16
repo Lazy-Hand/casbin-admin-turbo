@@ -20,8 +20,6 @@ const TABLES_TO_CHECK = [
 ];
 
 async function resetSequences() {
-  const { PrismaClient } = await import('@prisma/client');
-
   // Load configuration from environment
   const poolUrl = process.env.DATABASE_URL;
 

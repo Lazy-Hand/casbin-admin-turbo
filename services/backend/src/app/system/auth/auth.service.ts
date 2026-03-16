@@ -3,11 +3,22 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { ResourceType } from '@prisma/client';
-import { PrismaService } from 'nestjs-prisma';
+import { and, eq, inArray } from 'drizzle-orm';
 import { RedisService } from '@/app/library/redis/redis.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import {
+  DrizzleService,
+  LoginLog,
+  Permission,
+  Role,
+  RolePermission,
+  User,
+  UserRole,
+  insertWithAudit,
+  withSoftDelete,
+} from '@/app/library/drizzle';
+import type { MenuTypeValue, ResourceTypeValue } from '@/app/library/drizzle';
 
 type AuthenticatedUser = {
   id: number;
@@ -21,14 +32,21 @@ type AuthenticatedUser = {
     id: number;
     roleName: string;
     roleCode: string;
-    permissions: Array<{
-      id: number;
-      permName: string;
-      permCode: string;
-      method: string | null;
-      resourceType: ResourceType;
-      path: string | null;
-    }>;
+      permissions: Array<{
+        id: number;
+        permName: string;
+        permCode: string;
+        method: string | null;
+        resourceType: ResourceTypeValue | null;
+        path: string | null;
+        menuType?: MenuTypeValue;
+        icon?: string;
+        sort?: number;
+        cache?: number;
+        hidden?: number;
+        parentId?: number | null;
+        component?: string;
+      }>;
   }>;
   sid?: string;
 };
@@ -52,7 +70,7 @@ export class AuthService {
   private readonly REDIS_SESSION_PREFIX = 'auth:session:';
 
   constructor(
-    private prisma: PrismaService,
+    private readonly drizzle: DrizzleService,
     private jwtService: JwtService,
     private redisService: RedisService,
     private configService: ConfigService,
@@ -68,10 +86,7 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const { username, password } = registerDto;
 
-    // 检查用户是否已存在
-    const existingUser = await this.prisma.user.findFirst({
-      where: { username },
-    });
+    const existingUser = await this.drizzle.findFirst(User, eq(User.username, username));
 
     if (existingUser) {
       throw new UnauthorizedException('用户名已存在');
@@ -80,17 +95,23 @@ export class AuthService {
     // 加密密码
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 创建用户
-    const user = await this.prisma.user.create({
-      data: {
-        username,
-        password: hashedPassword,
-      },
+    const createdUsers = await insertWithAudit(this.drizzle.db, User, {
+      username,
+      password: hashedPassword,
+      nickname: username,
+      email: '',
+      mobile: '',
+      gender: 0,
+      avatar: '',
+      status: 1,
+      isAdmin: false,
+      updatedAt: new Date(),
     });
+    const user = Array.isArray(createdUsers) ? createdUsers[0] : createdUsers;
 
     return {
-      id: user.id,
-      username: user.username,
+      id: user?.id,
+      username: user?.username,
     };
   }
 
@@ -103,24 +124,7 @@ export class AuthService {
     const userAgent = context?.userAgent ?? '';
 
     // 查找用户
-    const user = await this.prisma.user.findFirst({
-      where: { username },
-      include: {
-        roles: {
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  include: {
-                    permission: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    const user = await this.loadAuthUserByUsername(username);
 
     if (!user) {
       await this.recordLoginLog({
@@ -269,15 +273,13 @@ export class AuthService {
     ip?: string;
     userAgent?: string;
   }): Promise<void> {
-    await this.prisma.loginLog.create({
-      data: {
+    await this.drizzle.db.insert(LoginLog).values({
         userId: data.userId,
         username: data.username,
         ip: data.ip || null,
         userAgent: data.userAgent || null,
         status: data.status,
         message: data.message || null,
-      },
     });
   }
 
@@ -298,24 +300,7 @@ export class AuthService {
       return cachedUser;
     }
 
-    const user = await this.prisma.user.findFirst({
-      where: { id: userId },
-      include: {
-        roles: {
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  include: {
-                    permission: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    const user = await this.loadAuthUserById(userId);
 
     if (!user) {
       throw new UnauthorizedException('用户不存在');
@@ -326,7 +311,34 @@ export class AuthService {
     return userInfo;
   }
 
-  private buildUserInfo(user: any): AuthenticatedUser {
+  private buildUserInfo(user: {
+    id: number;
+    username: string;
+    email: string | null;
+    mobile: string | null;
+    gender: number | null;
+    avatar: string | null;
+    status: number;
+    roles: Array<{
+      id: number;
+      roleName: string;
+      roleCode: string;
+      permissions: Array<{
+        id: number;
+        permName: string;
+        permCode: string;
+        method: string | null;
+        resourceType: ResourceTypeValue | null;
+        path: string | null;
+        menuType?: MenuTypeValue | null;
+        icon?: string | null;
+        sort?: number;
+        hidden?: number;
+        parentId?: number | null;
+        component?: string | null;
+      }>;
+    }>;
+  }): AuthenticatedUser {
     return {
       id: user.id,
       username: user.username,
@@ -336,16 +348,16 @@ export class AuthService {
       avatar: user.avatar,
       status: user.status,
       roles: user.roles.map((ur) => ({
-        id: ur.role.id,
-        roleName: ur.role.roleName,
-        roleCode: ur.role.roleCode,
-        permissions: ur.role.permissions.map((rp) => ({
-          id: rp.permission.id,
-          permName: rp.permission.permName,
-          permCode: rp.permission.permCode,
-          method: rp.permission.method,
-          resourceType: rp.permission.resourceType,
-          path: rp.permission.path,
+        id: ur.id,
+        roleName: ur.roleName,
+        roleCode: ur.roleCode,
+        permissions: ur.permissions.map((permission) => ({
+          id: permission.id,
+          permName: permission.permName,
+          permCode: permission.permCode,
+          method: permission.method,
+          resourceType: permission.resourceType,
+          path: permission.path,
         })),
       })),
     };
@@ -425,31 +437,7 @@ export class AuthService {
    * 获取当前用户的路由权限（resourceType=menu/button）
    */
   async getRoutePermissions(userId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: { id: userId },
-      include: {
-        roles: {
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  where: {
-                    permission: {
-                      resourceType: {
-                        in: [ResourceType.menu, ResourceType.button],
-                      },
-                      deletedAt: null,
-                      status: 1,
-                    },
-                  },
-                  include: { permission: true },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    const user = await this.loadAuthUserById(userId, ['menu', 'button']);
 
     if (!user) {
       throw new UnauthorizedException('用户不存在');
@@ -474,10 +462,9 @@ export class AuthService {
     >();
     const menuButtonMap = new Map<number, Set<string>>();
 
-    for (const ur of user.roles) {
-      for (const rp of ur.role.permissions) {
-        const p = rp.permission;
-        if (p.resourceType === ResourceType.button) {
+    for (const role of user.roles) {
+      for (const p of role.permissions) {
+        if (p.resourceType === 'button') {
           if (p.parentId) {
             if (!menuButtonMap.has(p.parentId)) {
               menuButtonMap.set(p.parentId, new Set<string>());
@@ -488,17 +475,17 @@ export class AuthService {
           continue;
         }
 
-        if (p.resourceType === ResourceType.menu && !menuMap.has(p.id)) {
+        if (p.resourceType === 'menu' && !menuMap.has(p.id)) {
           menuMap.set(p.id, {
             id: p.id,
             permName: p.permName,
             permCode: p.permCode,
             path: p.path ?? '',
             icon: p.icon ?? '',
-            menuType: p.menuType,
-            sort: p.sort,
-            cache: p.cache,
-            hidden: p.hidden,
+            menuType: p.menuType ?? null,
+            sort: p.sort ?? 0,
+            cache: p.cache ?? 0,
+            hidden: p.hidden ?? 0,
             parentId: p.parentId ?? null,
             component: p.component ?? '',
             buttons: [],
@@ -519,5 +506,197 @@ export class AuthService {
     // 返回扁平数组，由前端组装树形结构
     const list = Array.from(menuMap.values()).sort((a, b) => a.sort - b.sort);
     return list;
+  }
+
+  private async loadAuthUserByUsername(
+    username: string,
+    permissionTypes?: ResourceTypeValue[],
+  ) {
+    const rows = await this.drizzle.db
+      .select({
+        id: User.id,
+        username: User.username,
+        password: User.password,
+        email: User.email,
+        mobile: User.mobile,
+        gender: User.gender,
+        avatar: User.avatar,
+        status: User.status,
+        role: {
+          id: Role.id,
+          roleName: Role.roleName,
+          roleCode: Role.roleCode,
+        },
+        permission: {
+          id: Permission.id,
+          permName: Permission.permName,
+          permCode: Permission.permCode,
+          method: Permission.method,
+          resourceType: Permission.resourceType,
+          path: Permission.path,
+          menuType: Permission.menuType,
+          icon: Permission.icon,
+          sort: Permission.sort,
+          hidden: Permission.hidden,
+          parentId: Permission.parentId,
+          component: Permission.component,
+          status: Permission.status,
+        },
+      })
+      .from(User)
+      .leftJoin(UserRole, eq(User.id, UserRole.userId))
+      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
+      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .where(
+        and(
+          withSoftDelete(User),
+          eq(User.username, username),
+        ),
+      );
+
+    return this.groupAuthUser(rows, permissionTypes);
+  }
+
+  private async loadAuthUserById(
+    userId: number,
+    permissionTypes?: ResourceTypeValue[],
+  ) {
+    const rows = await this.drizzle.db
+      .select({
+        id: User.id,
+        username: User.username,
+        password: User.password,
+        email: User.email,
+        mobile: User.mobile,
+        gender: User.gender,
+        avatar: User.avatar,
+        status: User.status,
+        role: {
+          id: Role.id,
+          roleName: Role.roleName,
+          roleCode: Role.roleCode,
+        },
+        permission: {
+          id: Permission.id,
+          permName: Permission.permName,
+          permCode: Permission.permCode,
+          method: Permission.method,
+          resourceType: Permission.resourceType,
+          path: Permission.path,
+          menuType: Permission.menuType,
+          icon: Permission.icon,
+          sort: Permission.sort,
+          hidden: Permission.hidden,
+          parentId: Permission.parentId,
+          component: Permission.component,
+          status: Permission.status,
+        },
+      })
+      .from(User)
+      .leftJoin(UserRole, eq(User.id, UserRole.userId))
+      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
+      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .where(
+        and(
+          withSoftDelete(User),
+          eq(User.id, userId),
+        ),
+      );
+
+    return this.groupAuthUser(rows, permissionTypes);
+  }
+
+  private groupAuthUser(
+    rows: Array<{
+      id: number;
+      username: string;
+      password: string;
+      email: string;
+      mobile: string;
+      gender: number;
+      avatar: string;
+      status: number;
+      role: {
+        id: number | null;
+        roleName: string | null;
+        roleCode: string | null;
+      } | null;
+      permission: {
+        id: number | null;
+        permName: string | null;
+        permCode: string | null;
+        method: string | null;
+        resourceType: ResourceTypeValue | null;
+        path: string | null;
+        menuType: MenuTypeValue | null;
+        icon: string | null;
+        sort: number | null;
+        hidden: number | null;
+        parentId: number | null;
+        component: string | null;
+        status: number | null;
+      } | null;
+    }>,
+    permissionTypes?: ResourceTypeValue[],
+  ) {
+    const first = rows[0];
+    if (!first) {
+      return null;
+    }
+
+    const roles = new Map<number, AuthenticatedUser['roles'][number]>();
+
+    for (const row of rows) {
+      if (!row.role?.id) {
+        continue;
+      }
+
+      const currentRole =
+        roles.get(row.role.id) ??
+        {
+          id: row.role.id,
+          roleName: row.role.roleName ?? '',
+          roleCode: row.role.roleCode ?? '',
+          permissions: [],
+        };
+
+      if (
+        row.permission?.id &&
+        row.permission.status === 1 &&
+        (!permissionTypes || (row.permission.resourceType && permissionTypes.includes(row.permission.resourceType))) &&
+        !currentRole.permissions.some((permission) => permission.id === row.permission!.id)
+      ) {
+        currentRole.permissions.push({
+          id: row.permission.id,
+          permName: row.permission.permName ?? '',
+          permCode: row.permission.permCode ?? '',
+          method: row.permission.method,
+          resourceType: row.permission.resourceType,
+          path: row.permission.path,
+          menuType: row.permission.menuType ?? undefined,
+          icon: row.permission.icon ?? undefined,
+          sort: row.permission.sort ?? undefined,
+          hidden: row.permission.hidden ?? undefined,
+          parentId: row.permission.parentId ?? undefined,
+          component: row.permission.component ?? undefined,
+        } as any);
+      }
+
+      roles.set(row.role.id, currentRole);
+    }
+
+    return {
+      id: first.id,
+      username: first.username,
+      password: first.password,
+      email: first.email,
+      mobile: first.mobile,
+      gender: first.gender,
+      avatar: first.avatar,
+      status: first.status,
+      roles: [...roles.values()],
+    };
   }
 }

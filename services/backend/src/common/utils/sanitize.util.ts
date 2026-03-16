@@ -1,4 +1,6 @@
-import { Prisma } from '@prisma/client';
+type JsonPrimitive = string | number | boolean | null;
+type JsonObject = { [key: string]: JsonPrimitive | JsonInputValue[] | JsonObject };
+type JsonInputValue = string | number | boolean | JsonInputValue[] | JsonObject;
 
 /**
  * 敏感字段列表
@@ -67,9 +69,9 @@ export function sanitizeData(data: unknown): unknown {
 export function simplifyParams(
   params: unknown,
   operation: 'CREATE' | 'UPDATE' | 'DELETE',
-): Prisma.InputJsonValue {
+): JsonInputValue | undefined {
   if (!params || typeof params !== 'object') {
-    return params as Prisma.InputJsonValue;
+    return params as JsonInputValue | undefined;
   }
 
   const sanitized = sanitizeData(params) as Record<string, unknown>;
@@ -92,7 +94,7 @@ export function simplifyParams(
         sanitized.name ||
         sanitized.dictName;
     }
-    return (Object.keys(simplified).length > 0 ? simplified : undefined) as Prisma.InputJsonValue;
+    return (Object.keys(simplified).length > 0 ? simplified : undefined) as JsonInputValue | undefined;
   }
 
   // 对于 UPDATE 操作，只保留变更的字段
@@ -105,9 +107,9 @@ export function simplifyParams(
         simplified[key] = value;
       }
     }
-    return simplified as Prisma.InputJsonValue;
+    return simplified as JsonInputValue;
   }
 
   // CREATE 操作返回已过滤的数据
-  return sanitized as Prisma.InputJsonValue;
+  return sanitized as JsonInputValue;
 }

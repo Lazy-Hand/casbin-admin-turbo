@@ -48,14 +48,14 @@ export class UserController {
       where.role = role;
     }
 
-    // 使用 Prisma 查询
+    // 使用分页参数查询
     const [users, total] = await Promise.all([
-      this.prisma.user.findMany({
+      this.userService.findMany({
         where,
         skip: pagination.skip,
         take: pagination.take,
       }),
-      this.prisma.user.count({ where }),
+      this.userService.count({ where }),
     ]);
 
     const pageNo = Math.floor(pagination.skip / pagination.take) + 1;
@@ -153,7 +153,7 @@ import { UserQueryDto } from './dto/user-query.dto';
 
 @Controller('users')
 export class UserController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
   @ApiPaginatedResponse(UserDto, { description: '获取用户列表' })
@@ -169,7 +169,7 @@ export class UserController {
       sortOrder = 'desc',
     } = query;
 
-    // 计算 Prisma 分页参数
+    // 计算分页参数
     const skip = (pageNo - 1) * pageSize;
     const take = pageSize;
 
@@ -196,13 +196,13 @@ export class UserController {
 
     // 执行查询
     const [users, total] = await Promise.all([
-      this.prisma.user.findMany({
+      this.userService.findMany({
         where,
         skip,
         take,
         orderBy,
       }),
-      this.prisma.user.count({ where }),
+      this.userService.count({ where }),
     ]);
 
     return createPaginationResponse(users, total, pageNo, pageSize);
@@ -381,12 +381,12 @@ import { ApiPaginatedResponse } from '../common/decorators/api-response.decorato
 import { createPaginationResponse } from '../common/dto/pagination.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { UserDto } from './dto/user.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserService } from '../user/user.service';
 
 @ApiTags('用户管理')
 @Controller('users')
 export class UserController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
   @ApiOperation({ summary: '获取用户列表' })
@@ -557,7 +557,7 @@ const {
 } = query;
 ```
 
-### 3. 使用 Prisma 的 mode: 'insensitive' 进行不区分大小写搜索
+### 3. 使用数据库查询的大小写不敏感能力进行搜索
 
 ```typescript
 where.username = { contains: keyword, mode: 'insensitive' };

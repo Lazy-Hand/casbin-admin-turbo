@@ -8,7 +8,7 @@ export interface LoggerConfig {
   maxFileSize: string; // 单个文件最大大小
   maxFiles: string; // 保留的最大文件数
   datePattern: string; // 日期模式（用于轮转）
-  enablePrismaLogging: boolean; // 是否启用 Prisma 日志
+  enablePrismaLogging: boolean; // 是否启用数据库日志（Prisma / Drizzle）
   prismaLogLevels: string[]; // Prisma 日志级别数组
 }
 

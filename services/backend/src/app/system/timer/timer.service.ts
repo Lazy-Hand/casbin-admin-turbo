@@ -9,10 +9,19 @@ import { CronJob } from 'cron';
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { PrismaService } from 'nestjs-prisma';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { CreateTimerDto, UpdateTimerDto } from './dto/timer.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { Prisma, TaskType } from '@prisma/client';
+import {
+  DrizzleService,
+  TaskTypeValue,
+  Timer,
+  TimerExecutionLog,
+  insertWithAudit,
+  softDeleteWhere,
+  updateWithAudit,
+  withSoftDelete,
+} from '../../library/drizzle';
 
 const JOB_NAME_PREFIX = 'timer_';
 
@@ -21,8 +30,8 @@ export class TimerService implements OnModuleInit {
   private readonly logger = new Logger(TimerService.name);
 
   constructor(
-    private prisma: PrismaService,
-    private schedulerRegistry: SchedulerRegistry,
+    private readonly drizzle: DrizzleService,
+    private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
   async onModuleInit() {
@@ -31,9 +40,10 @@ export class TimerService implements OnModuleInit {
 
   /** 从数据库加载启用的定时任务并注册到调度器 */
   private async loadScheduledTimers() {
-    const timers = await this.prisma.timer.findMany({
-      where: { status: 1, deletedAt: null },
-    });
+    const timers = await this.drizzle.db
+      .select()
+      .from(Timer)
+      .where(and(withSoftDelete(Timer), eq(Timer.status, 1)));
 
     for (const timer of timers) {
       if (!(await this.isTaskTargetAllowed(timer.taskType, timer.target))) {
@@ -105,9 +115,7 @@ export class TimerService implements OnModuleInit {
 
   /** 执行定时器任务 */
   async executeTimer(timerId: number) {
-    const timer = await this.prisma.timer.findUnique({
-      where: { id: timerId },
-    });
+    const timer = await this.drizzle.findFirst(Timer, eq(Timer.id, timerId));
 
     if (!timer) {
       this.logger.warn(`Timer ${timerId} not found, skip execution`);
@@ -139,20 +147,17 @@ export class TimerService implements OnModuleInit {
       const endAt = new Date();
       const duration = endAt.getTime() - startAt.getTime();
 
-      await this.prisma.timer.update({
-        where: { id: timerId },
-        data: { lastRunAt: startAt },
+      await updateWithAudit(this.drizzle.db, Timer, eq(Timer.id, timerId), {
+        lastRunAt: startAt,
       });
 
-      await this.prisma.timerExecutionLog.create({
-        data: {
+      await this.drizzle.db.insert(TimerExecutionLog).values({
           timerId,
           status,
           startAt,
           endAt,
           duration,
           result: result?.substring(0, 10000), // 限制长度
-        },
       });
     }
   }
@@ -191,64 +196,70 @@ export class TimerService implements OnModuleInit {
   // ==================== CRUD ====================
 
   async findAll() {
-    return this.prisma.timer.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.drizzle.db
+      .select()
+      .from(Timer)
+      .where(withSoftDelete(Timer))
+      .orderBy(desc(Timer.createdAt));
   }
 
   async findPage(dto: PaginationDto) {
     const { pageNo = 1, pageSize = 10 } = dto;
     const skip = (pageNo - 1) * pageSize;
-    const take = pageSize;
 
     const [list, total] = await Promise.all([
-      this.prisma.timer.findMany({
-        where: { deletedAt: null },
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.timer.count({ where: { deletedAt: null } }),
+      this.drizzle.db
+        .select()
+        .from(Timer)
+        .where(withSoftDelete(Timer))
+        .orderBy(desc(Timer.createdAt))
+        .limit(pageSize)
+        .offset(skip),
+      this.drizzle.db
+        .select({ total: sql<number>`count(*)` })
+        .from(Timer)
+        .where(withSoftDelete(Timer)),
     ]);
 
-    return { list, total, pageNo, pageSize };
+    return { list, total: total[0]?.total ?? 0, pageNo, pageSize };
   }
 
   async findOne(id: number) {
-    const timer = await this.prisma.timer.findFirst({
-      where: { id, deletedAt: null },
-      include: {
-        executionLogs: {
-          take: 20,
-          orderBy: { startAt: 'desc' },
-        },
-      },
-    });
+    const timer = await this.drizzle.findFirst(Timer, eq(Timer.id, id));
 
     if (!timer) {
       throw new NotFoundException(`定时器 ${id} 不存在`);
     }
 
-    return timer;
+    const executionLogs = await this.drizzle.db
+      .select()
+      .from(TimerExecutionLog)
+      .where(eq(TimerExecutionLog.timerId, id))
+      .orderBy(desc(TimerExecutionLog.startAt))
+      .limit(20);
+
+    return {
+      ...timer,
+      executionLogs,
+    };
   }
 
   async create(dto: CreateTimerDto) {
     await this.assertTaskTargetAllowed(dto.taskType, dto.target);
 
-    const timer = await this.prisma.timer.create({
-      data: {
+    const createdTimers = await insertWithAudit(this.drizzle.db, Timer, {
         name: dto.name,
-        description: dto.description,
+        description: dto.description ?? null,
         cron: dto.cron,
-        taskType: dto.taskType as TaskType,
+        taskType: dto.taskType as TaskTypeValue,
         target: dto.target,
-        params: (dto.params ?? undefined) as Prisma.InputJsonValue | undefined,
+        params: dto.params ?? null,
         status: dto.status ?? 1,
-      },
+        updatedAt: new Date(),
     });
+    const timer = Array.isArray(createdTimers) ? createdTimers[0] ?? null : createdTimers;
 
-    if (timer.status === 1) {
+    if (timer?.status === 1) {
       this.scheduleTimer(timer);
     }
 
@@ -256,9 +267,7 @@ export class TimerService implements OnModuleInit {
   }
 
   async update(id: number, dto: UpdateTimerDto) {
-    const existing = await this.prisma.timer.findFirst({
-      where: { id, deletedAt: null },
-    });
+    const existing = await this.drizzle.findFirst(Timer, eq(Timer.id, id));
 
     if (!existing) {
       throw new NotFoundException(`定时器 ${id} 不存在`);
@@ -271,20 +280,18 @@ export class TimerService implements OnModuleInit {
 
     this.unscheduleTimer(id);
 
-    const timer = await this.prisma.timer.update({
-      where: { id },
-      data: {
+    const updatedTimers = await updateWithAudit(this.drizzle.db, Timer, eq(Timer.id, id), {
         name: dto.name,
         description: dto.description,
         cron: dto.cron,
-        taskType: dto.taskType as TaskType,
+        taskType: dto.taskType as TaskTypeValue | undefined,
         target: dto.target,
-        params: dto.params as Prisma.InputJsonValue | undefined,
+        params: dto.params,
         status: dto.status,
-      },
     });
+    const timer = Array.isArray(updatedTimers) ? updatedTimers[0] ?? null : updatedTimers;
 
-    if (timer.status === 1) {
+    if (timer?.status === 1) {
       this.scheduleTimer(timer);
     }
 
@@ -292,23 +299,20 @@ export class TimerService implements OnModuleInit {
   }
 
   async remove(id: number) {
-    const existing = await this.prisma.timer.findFirst({
-      where: { id, deletedAt: null },
-    });
+    const existing = await this.drizzle.findFirst(Timer, eq(Timer.id, id));
 
     if (!existing) {
       throw new NotFoundException(`定时器 ${id} 不存在`);
     }
 
     this.unscheduleTimer(id);
-    return this.prisma.timer.delete({ where: { id } });
+    const deletedTimers = await softDeleteWhere(this.drizzle.db, Timer, eq(Timer.id, id));
+    return Array.isArray(deletedTimers) ? deletedTimers[0] ?? null : deletedTimers;
   }
 
   /** 手动执行定时器 */
   async run(id: number) {
-    const timer = await this.prisma.timer.findFirst({
-      where: { id, deletedAt: null },
-    });
+    const timer = await this.drizzle.findFirst(Timer, eq(Timer.id, id));
 
     if (!timer) {
       throw new NotFoundException(`定时器 ${id} 不存在`);
@@ -321,11 +325,12 @@ export class TimerService implements OnModuleInit {
 
   /** 获取定时器执行日志 */
   async getExecutionLogs(timerId: number, limit = 50) {
-    return this.prisma.timerExecutionLog.findMany({
-      where: { timerId },
-      take: limit,
-      orderBy: { startAt: 'desc' },
-    });
+    return this.drizzle.db
+      .select()
+      .from(TimerExecutionLog)
+      .where(eq(TimerExecutionLog.timerId, timerId))
+      .limit(limit)
+      .orderBy(desc(TimerExecutionLog.startAt));
   }
 
   private async assertTaskTargetAllowed(
@@ -341,11 +346,11 @@ export class TimerService implements OnModuleInit {
     taskType: string,
     target: string,
   ): Promise<boolean> {
-    if (taskType === TaskType.SCRIPT) {
+    if (taskType === 'SCRIPT') {
       return false;
     }
 
-    if (taskType !== TaskType.HTTP) {
+    if (taskType !== 'HTTP') {
       return false;
     }
 

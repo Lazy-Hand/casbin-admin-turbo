@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OperationLog as PrismaOperationLog, LogOperation, Prisma } from '@prisma/client';
+import type { LogOperationValue } from '@/app/library/drizzle';
 
-export class OperationLogEntity implements PrismaOperationLog {
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+
+export class OperationLogEntity {
   @ApiProperty({ description: '日志ID' })
   id: number;
 
@@ -14,8 +17,8 @@ export class OperationLogEntity implements PrismaOperationLog {
   @ApiProperty({ description: '模块名' })
   module: string;
 
-  @ApiProperty({ description: '操作类型', enum: LogOperation })
-  operation: LogOperation;
+  @ApiProperty({ description: '操作类型', enum: ['CREATE', 'UPDATE', 'DELETE'] })
+  operation: LogOperationValue;
 
   @ApiProperty({ description: '操作描述', required: false })
   description: string | null;
@@ -27,7 +30,7 @@ export class OperationLogEntity implements PrismaOperationLog {
   path: string;
 
   @ApiProperty({ description: '请求参数', required: false })
-  params: Prisma.JsonValue;
+  params: JsonValue;
 
   @ApiProperty({ description: '客户端IP', required: false })
   ip: string | null;

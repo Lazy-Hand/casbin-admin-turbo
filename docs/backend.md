@@ -3,7 +3,7 @@
 ## 技术栈
 
 - NestJS
-- Prisma
+- Drizzle Kit
 - PostgreSQL
 - Redis
 - CASL
@@ -17,7 +17,7 @@ services/backend/src/
   app/library/
   common/
 
-services/backend/prisma/
+services/backend/db/
 services/backend/config/
 services/backend/test/
 services/backend/scripts/
@@ -45,4 +45,4 @@ pnpm --filter @casbin-admin/backend test:e2e
 - 文件名使用 `kebab-case`
 - DTO、Entity、类名使用 `PascalCase`
 - 保持现有有分号格式风格
-- Prisma 相关内容暂时保留在 backend 内，不单独抽包
+- 数据库 schema、SQL 迁移与 seed 暂时保留在 backend 内，不单独抽包

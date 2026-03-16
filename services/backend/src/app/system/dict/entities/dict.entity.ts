@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DictType, DictItem } from '@prisma/client';
 import { BaseEntity } from '@/common/entities/base.entity';
 
-export class DictTypeEntity extends BaseEntity implements DictType {
+export class DictTypeEntity extends BaseEntity {
   @ApiProperty({ description: '字典名称' })
   dictName: string;
 
@@ -16,7 +15,7 @@ export class DictTypeEntity extends BaseEntity implements DictType {
   status: number;
 }
 
-export class DictItemEntity extends BaseEntity implements DictItem {
+export class DictItemEntity extends BaseEntity {
   @ApiProperty({ description: '所属字典类型ID' })
   dictTypeId: number;
 

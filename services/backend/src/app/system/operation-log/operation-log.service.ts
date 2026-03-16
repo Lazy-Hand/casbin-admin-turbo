@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from 'nestjs-prisma';
+import { and, desc, eq, gte, ilike, lte, sql } from 'drizzle-orm';
 import {
   QueryOperationLogDto,
   CreateOperationLogDto,
   QueryLoginLogDto,
 } from './dto/operation-log.dto';
 import { RedisService } from '@/app/library/redis/redis.service';
-import { Prisma } from '@prisma/client';
+import { DrizzleService, LoginLog, OperationLog } from '@/app/library/drizzle';
 
 const OPERATION_LOG_QUEUE_KEY = 'operation-log:queue';
 const BATCH_SIZE = 100;
@@ -17,7 +17,7 @@ export class OperationLogService {
   private readonly logger = new Logger(OperationLogService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly drizzle: DrizzleService,
     private readonly redis: RedisService,
   ) {}
 
@@ -36,50 +36,34 @@ export class OperationLogService {
       status,
     } = query;
 
-    const where: Prisma.OperationLogWhereInput = {};
-
-    if (username) {
-      where.username = { contains: username, mode: 'insensitive' };
-    }
-
-    if (module) {
-      where.module = module;
-    }
-
-    if (operation) {
-      where.operation = operation;
-    }
-
-    if (status !== undefined) {
-      where.status = status;
-    }
-
-    if (startTime || endTime) {
-      where.createdAt = {};
-      if (startTime) {
-        where.createdAt.gte = new Date(startTime);
-      }
-      if (endTime) {
-        where.createdAt.lte = new Date(endTime);
-      }
-    }
+    const where = and(
+      username ? ilike(OperationLog.username, `%${username}%`) : undefined,
+      module ? eq(OperationLog.module, module) : undefined,
+      operation ? eq(OperationLog.operation, operation) : undefined,
+      status !== undefined ? eq(OperationLog.status, status) : undefined,
+      startTime ? gte(OperationLog.createdAt, new Date(startTime)) : undefined,
+      endTime ? lte(OperationLog.createdAt, new Date(endTime)) : undefined,
+    );
 
     const skip = (pageNo - 1) * pageSize;
-    const take = pageSize;
 
     const [list, total] = await Promise.all([
-      this.prisma.operationLog.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.operationLog.count({ where }),
+      this.drizzle.db
+        .select()
+        .from(OperationLog)
+        .where(where)
+        .orderBy(desc(OperationLog.createdAt))
+        .limit(pageSize)
+        .offset(skip),
+      this.drizzle.db
+        .select({ total: sql<number>`count(*)` })
+        .from(OperationLog)
+        .where(where),
     ]);
 
     return {
       list,
-      total,
+      total: total[0]?.total ?? 0,
       pageNo,
       pageSize,
     };
@@ -89,9 +73,7 @@ export class OperationLogService {
    * 查询日志详情
    */
   async findOne(id: number) {
-    return this.prisma.operationLog.findUnique({
-      where: { id },
-    });
+    return this.drizzle.findFirst(OperationLog, eq(OperationLog.id, id));
   }
 
   /**
@@ -123,11 +105,7 @@ export class OperationLogService {
         return 0;
       }
 
-      // 批量写入数据库
-      await this.prisma.operationLog.createMany({
-        data: logs,
-        skipDuplicates: true,
-      });
+      await this.drizzle.db.insert(OperationLog).values(logs as any);
 
       this.logger.debug(`Flushed ${logs.length} operation logs`);
       return logs.length;
@@ -147,16 +125,13 @@ export class OperationLogService {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-      const result = await this.prisma.operationLog.deleteMany({
-        where: {
-          createdAt: {
-            lt: sixMonthsAgo,
-          },
-        },
-      });
+      const result = await this.drizzle.db
+        .delete(OperationLog)
+        .where(lte(OperationLog.createdAt, sixMonthsAgo))
+        .returning({ id: OperationLog.id });
 
-      this.logger.log(`Cleaned ${result.count} old operation logs`);
-      return result.count;
+      this.logger.log(`Cleaned ${result.length} old operation logs`);
+      return result.length;
     } catch (error) {
       this.logger.error('Failed to clean old logs:', error);
       return 0;
@@ -176,42 +151,32 @@ export class OperationLogService {
       endTime,
     } = query;
 
-    const where: Prisma.LoginLogWhereInput = {};
-
-    if (username) {
-      where.username = { contains: username, mode: 'insensitive' };
-    }
-
-    if (status !== undefined) {
-      where.status = status;
-    }
-
-    if (startTime || endTime) {
-      where.createdAt = {};
-      if (startTime) {
-        where.createdAt.gte = new Date(startTime);
-      }
-      if (endTime) {
-        where.createdAt.lte = new Date(endTime);
-      }
-    }
+    const where = and(
+      username ? ilike(LoginLog.username, `%${username}%`) : undefined,
+      status !== undefined ? eq(LoginLog.status, status) : undefined,
+      startTime ? gte(LoginLog.createdAt, new Date(startTime)) : undefined,
+      endTime ? lte(LoginLog.createdAt, new Date(endTime)) : undefined,
+    );
 
     const skip = (pageNo - 1) * pageSize;
-    const take = pageSize;
 
     const [list, total] = await Promise.all([
-      this.prisma.loginLog.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.loginLog.count({ where }),
+      this.drizzle.db
+        .select()
+        .from(LoginLog)
+        .where(where)
+        .orderBy(desc(LoginLog.createdAt))
+        .limit(pageSize)
+        .offset(skip),
+      this.drizzle.db
+        .select({ total: sql<number>`count(*)` })
+        .from(LoginLog)
+        .where(where),
     ]);
 
     return {
       list,
-      total,
+      total: total[0]?.total ?? 0,
       pageNo,
       pageSize,
     };

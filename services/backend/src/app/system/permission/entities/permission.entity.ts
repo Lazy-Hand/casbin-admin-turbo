@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MenuType, Permission, ResourceType } from '@prisma/client';
 import { BaseEntity } from '@/common/entities/base.entity';
+import type { MenuTypeValue, ResourceTypeValue } from '@/app/library/drizzle';
 
-export class PermissionEntity extends BaseEntity implements Permission {
+export class PermissionEntity extends BaseEntity {
   @ApiProperty({ description: '权限编码' })
   permCode: string;
   @ApiProperty({ description: '权限名称' })
@@ -10,9 +10,9 @@ export class PermissionEntity extends BaseEntity implements Permission {
   @ApiProperty({ description: '权限url' })
   path: string;
   @ApiProperty({ description: '权限类型-menu:菜单、api:接口、button:按钮' })
-  resourceType: ResourceType;
+  resourceType: ResourceTypeValue | null;
   @ApiProperty({ description: '菜单类型' })
-  menuType: MenuType;
+  menuType: MenuTypeValue | null;
   @ApiProperty({ description: '页面是否缓存' })
   cache: number;
   @ApiProperty({ description: '接口方法' })

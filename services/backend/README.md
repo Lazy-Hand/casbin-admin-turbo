@@ -1,13 +1,13 @@
 # @casbin-admin/backend
 
-`services/backend` 是本仓库中的服务端应用，基于 NestJS + Prisma + PostgreSQL。
+`services/backend` 是本仓库中的服务端应用，基于 NestJS + PostgreSQL，运行时数据库访问统一使用 Drizzle ORM。
 
 如果你是从仓库根目录进入，建议先看根 [README.md](../../README.md)；这里主要补充 backend 自身的说明。
 
 ## 技术栈
 
 - NestJS
-- Prisma
+- Drizzle ORM
 - PostgreSQL
 - Redis
 - CASL
@@ -21,7 +21,7 @@ src/
     system/       # 业务模块
     library/      # 基础能力
   common/         # 通用拦截器、过滤器、DTO、装饰器、工具
-prisma/           # schema、迁移、seed
+db/               # SQL migrations、seed
 config/           # default/development/production.yaml
 test/             # e2e 测试
 scripts/          # 数据库维护与性能脚本
@@ -33,35 +33,40 @@ scripts/          # 数据库维护与性能脚本
 
 ```bash
 pnpm --filter @casbin-admin/backend dev
-pnpm --filter @casbin-admin/backend prisma:generate
 pnpm --filter @casbin-admin/backend type-check
 pnpm --filter @casbin-admin/backend lint
 pnpm --filter @casbin-admin/backend build
 pnpm --filter @casbin-admin/backend test
 pnpm --filter @casbin-admin/backend test:e2e
+pnpm --filter @casbin-admin/backend db:generate
+pnpm --filter @casbin-admin/backend db:migrate
 ```
 
 如果当前目录就在 `services/backend`，也可以直接执行：
 
 ```bash
 pnpm dev
-pnpm prisma:generate
 pnpm type-check
 pnpm lint
 pnpm build
 pnpm test
+pnpm db:generate
+pnpm db:migrate
 ```
 
-## Prisma
+## Database Tooling
 
-- Prisma schema 位于 `prisma/schema.prisma`
-- `pnpm install`、`pnpm build`、`pnpm type-check` 前会自动执行 `prisma generate`
+- 数据库 schema 位于 `src/app/library/drizzle/schema.ts`
+- SQL 迁移位于 `db/migrations`
 - 本地数据库连接通过 `.env` 中的 `DATABASE_URL` 提供
 
-初始化迁移示例：
+Drizzle 相关命令：
 
 ```bash
-pnpm --filter @casbin-admin/backend exec prisma migrate deploy
+pnpm --filter @casbin-admin/backend db:generate
+pnpm --filter @casbin-admin/backend db:migrate
+pnpm --filter @casbin-admin/backend drizzle:studio
+pnpm --filter @casbin-admin/backend db:seed
 ```
 
 ## 接口文档

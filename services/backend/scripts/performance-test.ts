@@ -4,10 +4,11 @@
  * 用于验证优化效果
  */
 
-import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import 'dotenv/config';
 
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
 });
 
 async function testQueryPerformance() {
@@ -21,22 +22,18 @@ async function testQueryPerformance() {
 
     const start1 = Date.now();
     for (let i = 0; i < iterations; i++) {
-      await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          roles: {
-            include: {
-              role: {
-                include: {
-                  permissions: {
-                    include: { permission: true },
-                  },
-                },
-              },
-            },
-          },
-        },
-      });
+      await pool.query(
+        `
+          select u.id, r.id as role_id, p.id as permission_id
+          from sys_user u
+          left join sys_user_role ur on ur.user_id = u.id
+          left join sys_role r on r.id = ur.role_id and r.deleted_at is null
+          left join sys_role_permission rp on rp.role_id = r.id
+          left join sys_permission p on p.id = rp.permission_id and p.deleted_at is null
+          where u.id = $1 and u.deleted_at is null
+        `,
+        [userId],
+      );
     }
     const duration1 = Date.now() - start1;
     console.log(`  ✅ 完成 ${iterations} 次查询`);
@@ -51,22 +48,18 @@ async function testQueryPerformance() {
     const userIds = Array.from({ length: 100 }, (_, i) => i + 1);
 
     const start2 = Date.now();
-    await prisma.user.findMany({
-      where: { id: { in: userIds } },
-      include: {
-        roles: {
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  include: { permission: true },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    await pool.query(
+      `
+        select u.id, r.id as role_id, p.id as permission_id
+        from sys_user u
+        left join sys_user_role ur on ur.user_id = u.id
+        left join sys_role r on r.id = ur.role_id and r.deleted_at is null
+        left join sys_role_permission rp on rp.role_id = r.id
+        left join sys_permission p on p.id = rp.permission_id and p.deleted_at is null
+        where u.id = any($1::int[]) and u.deleted_at is null
+      `,
+      [userIds],
+    );
     const duration2 = Date.now() - start2;
     console.log(`  ✅ 完成 ${userIds.length} 个用户查询`);
     console.log(`  ⏱️  总耗时: ${duration2}ms`);
@@ -81,9 +74,10 @@ async function testQueryPerformance() {
 
     const start3 = Date.now();
     for (let i = 0; i < permIterations; i++) {
-      await prisma.permission.findFirst({
-        where: { permCode: 'article:read' },
-      });
+      await pool.query(
+        'select id from sys_permission where perm_code = $1 and deleted_at is null limit 1',
+        ['article:read'],
+      );
     }
     const duration3 = Date.now() - start3;
     console.log(`  ✅ 完成 ${permIterations} 次查询`);
@@ -99,9 +93,10 @@ async function testQueryPerformance() {
 
     const start4 = Date.now();
     for (let i = 0; i < roleIterations; i++) {
-      await prisma.role.findFirst({
-        where: { roleCode: 'admin' },
-      });
+      await pool.query(
+        'select id from sys_role where role_code = $1 and deleted_at is null limit 1',
+        ['admin'],
+      );
     }
     const duration4 = Date.now() - start4;
     console.log(`  ✅ 完成 ${roleIterations} 次查询`);
@@ -133,7 +128,7 @@ async function testQueryPerformance() {
     console.error('❌ 测试失败:', error);
     process.exit(1);
   } finally {
-    await prisma.$disconnect();
+    await pool.end();
   }
 }
 

@@ -4,8 +4,16 @@ import {
   createMongoAbility,
   ExtractSubjectType,
 } from '@casl/ability';
-import { PrismaService } from 'nestjs-prisma';
+import { and, eq } from 'drizzle-orm';
 import type { AppAbility, Action, Subject } from './types';
+import {
+  DrizzleService,
+  Permission,
+  Role,
+  RolePermission,
+  UserRole,
+  withSoftDelete,
+} from '@/app/library/drizzle';
 
 /**
  * 动态 Ability Factory
@@ -13,7 +21,7 @@ import type { AppAbility, Action, Subject } from './types';
  */
 @Injectable()
 export class AbilityDynamicFactory {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly drizzle: DrizzleService) {}
 
   /**
    * 为用户创建 Ability 实例（从数据库动态加载）
@@ -24,23 +32,31 @@ export class AbilityDynamicFactory {
     const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
 
     // 从数据库加载用户的所有权限
-    const userRoles = await this.prisma.userRole.findMany({
-      where: { userId },
-      include: {
+    const rows = await this.drizzle.db
+      .select({
         role: {
-          include: {
-            permissions: {
-              include: {
-                permission: true,
-              },
-            },
-          },
+          id: Role.id,
+          roleCode: Role.roleCode,
+          roleName: Role.roleName,
         },
-      },
-    });
+        permission: {
+          id: Permission.id,
+          permCode: Permission.permCode,
+          permName: Permission.permName,
+          resourceType: Permission.resourceType,
+          method: Permission.method,
+          path: Permission.path,
+          menuType: Permission.menuType,
+        },
+      })
+      .from(UserRole)
+      .innerJoin(Role, eq(UserRole.roleId, Role.id))
+      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
+      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .where(and(eq(UserRole.userId, userId), withSoftDelete(Role)));
 
     // 检查是否是管理员
-    const isAdmin = userRoles.some((ur) => ur.role.roleCode === 'admin');
+    const isAdmin = rows.some((row) => row.role.roleCode === 'admin');
     if (isAdmin) {
       can('manage', 'all');
       return build({
@@ -49,31 +65,34 @@ export class AbilityDynamicFactory {
     }
 
     // 遍历所有角色的权限
-    for (const userRole of userRoles) {
-      for (const rolePermission of userRole.role.permissions) {
-        const permission = rolePermission.permission;
+    const seen = new Set<number>();
+    for (const row of rows) {
+      const permission = row.permission;
+      if (!permission?.id || seen.has(permission.id)) {
+        continue;
+      }
+      seen.add(permission.id);
 
-        // 根据 resourceType 和 method 映射到 CASL 的 action 和 subject
-        const action = this.mapToAction(
-          permission.method,
-          permission.resourceType,
+      // 根据 resourceType 和 method 映射到 CASL 的 action 和 subject
+      const action = this.mapToAction(
+        permission.method,
+        permission.resourceType,
+        permission.permCode,
+      );
+      const subject = this.mapToSubject(permission.permCode);
+
+      if (action && subject) {
+        // 检查是否需要条件权限
+        const conditions = this.getConditions(
           permission.permCode,
+          permission.resourceType,
+          userId,
         );
-        const subject = this.mapToSubject(permission.permCode);
 
-        if (action && subject) {
-          // 检查是否需要条件权限
-          const conditions = this.getConditions(
-            permission.permCode,
-            permission.resourceType,
-            userId,
-          );
-
-          if (conditions) {
-            can(action, subject, conditions);
-          } else {
-            can(action, subject);
-          }
+        if (conditions) {
+          can(action, subject, conditions);
+        } else {
+          can(action, subject);
         }
       }
     }

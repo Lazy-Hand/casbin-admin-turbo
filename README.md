@@ -20,7 +20,7 @@
 ├── apps/
 │   └── frontend/          # Vue 3 + Vite + TypeScript 管理端
 ├── services/
-│   └── backend/           # NestJS + Prisma + PostgreSQL 服务端
+│   └── backend/           # NestJS + Drizzle + PostgreSQL 服务端
 ├── packages/
 │   └── eslint-config/     # 共享 ESLint 配置
 ├── AGENTS.md              # Monorepo 统一协作规范
@@ -33,7 +33,7 @@
 
 - Monorepo: `pnpm workspace`, `turbo`
 - Frontend: Vue 3, Vite, TypeScript, Pinia, Vue Router, Naive UI, Tailwind CSS 4
-- Backend: NestJS, Prisma, PostgreSQL, Redis, CASL, Swagger
+- Backend: NestJS, Drizzle ORM, PostgreSQL, Redis, CASL, Swagger
 - Quality: ESLint, oxlint, oxfmt, TypeScript
 
 ## 环境要求
@@ -48,8 +48,6 @@
 ```bash
 pnpm install
 ```
-
-> backend 在安装、构建和类型检查前会自动执行 `prisma generate`。
 
 ### 2. 配置环境变量
 
@@ -69,13 +67,11 @@ DATABASE_URL="postgresql://postgres:123456@localhost:5432/casbin-admin?schema=pu
 
 ### 3. 初始化数据库
 
-在 backend 工作区执行 Prisma 迁移：
+在 backend 工作区执行数据库迁移：
 
 ```bash
-pnpm --filter @casbin-admin/backend exec prisma migrate deploy
+pnpm --filter @casbin-admin/backend db:migrate
 ```
-
-如需本地开发迁移，也可以使用对应的 Prisma 命令自行调整。
 
 ### 4. 启动开发环境
 
@@ -124,7 +120,8 @@ pnpm --filter @casbin-admin/backend dev
 pnpm --filter @casbin-admin/backend build
 pnpm --filter @casbin-admin/backend test
 pnpm --filter @casbin-admin/backend test:e2e
-pnpm --filter @casbin-admin/backend prisma:generate
+pnpm --filter @casbin-admin/backend db:generate
+pnpm --filter @casbin-admin/backend db:migrate
 ```
 
 ## 依赖与规范
@@ -171,7 +168,7 @@ src/
     system/       # 业务模块
     library/      # 基础能力
   common/         # 通用拦截器、过滤器、DTO、装饰器、工具
-prisma/           # schema、迁移、seed
+db/               # SQL migrations、seed
 config/           # default/development/production.yaml
 test/             # e2e 测试
 scripts/          # 数据库维护与性能脚本
@@ -191,11 +188,11 @@ pnpm --filter @casbin-admin/backend test
 推荐使用 Conventional Commits，例如：
 
 - `feat: add role filter`
-- `fix: handle prisma generate on install`
+- `chore: remove prisma cli`
 - `chore: align workspace catalog`
 
 ## 安全说明
 
 - 不要提交真实数据库账号、JWT 密钥、Redis 密码等敏感信息。
-- 后端数据库与 Prisma 变更应通过 schema / migration 流程管理，不要直接在生产环境手工修改。
+- 后端数据库结构变更应通过 schema / migration 流程管理，不要直接在生产环境手工修改。
 - 修改 `packages/*` 或根工具链配置前，注意它会影响整个 monorepo。

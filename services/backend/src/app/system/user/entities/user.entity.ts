@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '@prisma/client';
 import { BaseEntity } from '@/common/entities/base.entity';
-export class UserEntity extends BaseEntity implements User {
+
+export class UserEntity extends BaseEntity {
   @ApiProperty({ description: '用户名' })
   username: string;
   @ApiProperty({ description: '登录密码' })

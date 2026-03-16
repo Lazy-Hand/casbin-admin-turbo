@@ -1,6 +1,5 @@
 import { Module, Global } from '@nestjs/common';
 import { DataScopeService } from './data-scope.service';
-import { PrismaModule } from '../prisma/prisma.module';
 import { RedisModule } from '../redis/redis.module';
 
 /**
@@ -9,7 +8,7 @@ import { RedisModule } from '../redis/redis.module';
  */
 @Global()
 @Module({
-  imports: [PrismaModule, RedisModule],
+  imports: [RedisModule],
   providers: [DataScopeService],
   exports: [DataScopeService],
 })

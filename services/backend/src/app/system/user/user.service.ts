@@ -1,64 +1,99 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from 'nestjs-prisma';
+import { desc, eq } from 'drizzle-orm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SearchUserDto } from './dto/search-user.dto';
-import { DataScopeService } from '@/app/library/data-scope/data-scope.service';
 import { UserRepository } from './repositories/user.repository';
+import {
+  Dept,
+  DrizzleService,
+  insertWithAudit,
+  Post,
+  Role,
+  softDeleteWhere,
+  updateWithAudit,
+  User,
+  UserRole,
+  withSoftDelete,
+} from '@/app/library/drizzle';
 
 @Injectable()
 export class UserService {
   constructor(
-    private prisma: PrismaService,
-    private dataScopeService: DataScopeService,
+    private drizzle: DrizzleService,
     private userRepository: UserRepository,
   ) {}
 
   // 获取所有用户（带角色信息和部门信息）
   async findAll() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        nickname: true,
-        gender: true,
-        avatar: true,
-        email: true,
-        mobile: true,
-        status: true,
-        deptId: true,
-        postId: true,
-        createdAt: true,
-        updatedAt: true,
+    const rows = await this.drizzle.db
+      .select({
+        id: User.id,
+        username: User.username,
+        nickname: User.nickname,
+        gender: User.gender,
+        avatar: User.avatar,
+        email: User.email,
+        mobile: User.mobile,
+        status: User.status,
+        deptId: User.deptId,
+        postId: User.postId,
+        createdAt: User.createdAt,
+        updatedAt: User.updatedAt,
         dept: {
-          select: {
-            id: true,
-            name: true,
-          },
+          id: Dept.id,
+          name: Dept.name,
         },
         post: {
-          select: {
-            id: true,
-            postName: true,
-          },
+          id: Post.id,
+          postName: Post.postName,
         },
-        roles: {
-          include: {
-            role: {
-              select: {
-                id: true,
-                roleName: true,
-                roleCode: true,
-              },
-            },
-          },
+        role: {
+          id: Role.id,
+          roleName: Role.roleName,
+          roleCode: Role.roleCode,
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+      })
+      .from(User)
+      .leftJoin(Dept, eq(User.deptId, Dept.id))
+      .leftJoin(Post, eq(User.postId, Post.id))
+      .leftJoin(UserRole, eq(User.id, UserRole.userId))
+      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .where(withSoftDelete(User))
+      .orderBy(desc(User.createdAt));
+
+    const users = new Map<number, any>();
+
+    for (const row of rows) {
+      const current =
+        users.get(row.id) ??
+        {
+          id: row.id,
+          username: row.username,
+          nickname: row.nickname,
+          gender: row.gender,
+          avatar: row.avatar,
+          email: row.email,
+          mobile: row.mobile,
+          status: row.status,
+          deptId: row.deptId,
+          postId: row.postId,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          dept: row.dept?.id ? row.dept : null,
+          post: row.post?.id ? row.post : null,
+          roles: [],
+        };
+
+      if (row.role?.id) {
+        current.roles.push({ role: row.role });
+      }
+
+      users.set(row.id, current);
+    }
+
+    return [...users.values()];
   }
 
   // 获取用户详情
@@ -76,10 +111,7 @@ export class UserService {
 
     // 验证部门是否存在
     if (deptId) {
-      const dept = await this.prisma.dept.findUnique({
-        where: { id: deptId },
-        select: { id: true },
-      });
+      const dept = await this.drizzle.findFirst(Dept, eq(Dept.id, deptId));
       if (!dept) {
         throw new BadRequestException('指定的部门不存在');
       }
@@ -87,38 +119,33 @@ export class UserService {
 
     // 验证岗位是否存在
     if (postId) {
-      const post = await this.prisma.post.findUnique({
-        where: { id: postId },
-        select: { id: true },
-      });
+      const post = await this.drizzle.findFirst(Post, eq(Post.id, postId));
       if (!post) {
         throw new BadRequestException('指定的岗位不存在');
       }
     }
 
-    // 使用 transaction 方法，有完整的类型提示
-    const result = await this.prisma.$transaction(async (tx) => {
-      // 创建用户 - tx 有完整的类型提示
-      const user = await tx.user.create({
-        data: {
+    const result = await this.drizzle.db.transaction(async (tx: any) => {
+      const createdUsers = await insertWithAudit(tx, User, {
           ...userData,
           password: hashedPassword,
           deptId,
           postId,
-        },
+          isAdmin: false,
+          updatedAt: new Date(),
       });
+      const user = Array.isArray(createdUsers) ? createdUsers[0] : createdUsers;
 
-      // 如果有角色，创建用户角色关联
-      if (roles && roles.length > 0) {
-        await tx.userRole.createMany({
-          data: roles.map((roleId) => ({
+      if (user && roles && roles.length > 0) {
+        await tx.insert(UserRole).values(
+          roles.map((roleId) => ({
             userId: user.id,
-            roleId: roleId,
+            roleId,
           })),
-        });
+        );
       }
 
-      return user;
+      return user ?? null;
     });
 
     return result;
@@ -133,10 +160,7 @@ export class UserService {
 
     // 验证部门是否存在
     if (deptId !== undefined) {
-      const dept = await this.prisma.dept.findUnique({
-        where: { id: deptId },
-        select: { id: true },
-      });
+      const dept = await this.drizzle.findFirst(Dept, eq(Dept.id, deptId));
       if (!dept) {
         throw new BadRequestException('指定的部门不存在');
       }
@@ -144,48 +168,37 @@ export class UserService {
 
     // 验证岗位是否存在
     if (postId !== undefined) {
-      const post = await this.prisma.post.findUnique({
-        where: { id: postId },
-        select: { id: true },
-      });
+      const post = await this.drizzle.findFirst(Post, eq(Post.id, postId));
       if (!post) {
         throw new BadRequestException('指定的岗位不存在');
       }
     }
 
-    const result = await this.prisma.$transaction(async (tx) => {
-      // 更新用户基本信息
-      const user = await tx.user.update({
-        where: { id },
-        data: {
+    const result = await this.drizzle.db.transaction(async (tx: any) => {
+      const updatedUsers = await updateWithAudit(tx, User, eq(User.id, id), {
           ...userData,
           ...(hashedPassword ? { password: hashedPassword } : {}),
           deptId,
           postId,
           gender: userData.gender !== undefined ? +userData.gender : undefined,
           status: userData.status !== undefined ? +userData.status : undefined,
-        },
       });
+      const user = Array.isArray(updatedUsers) ? updatedUsers[0] : updatedUsers;
 
-      // 如果传入了角色数组，更新角色关联
       if (roles !== undefined) {
-        // 先删除旧的角色关联
-        await tx.userRole.deleteMany({
-          where: { userId: id },
-        });
+        await tx.delete(UserRole).where(eq(UserRole.userId, id));
 
-        // 如果有新角色，创建新的关联
         if (roles.length > 0) {
-          await tx.userRole.createMany({
-            data: roles.map((roleId) => ({
+          await tx.insert(UserRole).values(
+            roles.map((roleId) => ({
               userId: id,
-              roleId: roleId,
+              roleId,
             })),
-          });
+          );
         }
       }
 
-      return user;
+      return user ?? null;
     });
 
     return result;
@@ -193,16 +206,10 @@ export class UserService {
 
   // 删除用户
   async delete(id: number) {
-    return this.prisma.$transaction(async (tx) => {
-      // 先删除用户角色关联
-      await tx.userRole.deleteMany({
-        where: { userId: id },
-      });
-
-      // 删除用户
-      return tx.user.delete({
-        where: { id },
-      });
+    return this.drizzle.db.transaction(async (tx: any) => {
+      await tx.delete(UserRole).where(eq(UserRole.userId, id));
+      const deletedUsers = await softDeleteWhere(tx, User, eq(User.id, id));
+      return Array.isArray(deletedUsers) ? deletedUsers[0] ?? null : null;
     });
   }
 

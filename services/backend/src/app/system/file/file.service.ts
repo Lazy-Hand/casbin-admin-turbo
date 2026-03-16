@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { PrismaService } from 'nestjs-prisma';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { CreateFileDto, UpdateFileDto } from './dto/file.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { FileType } from './entities/file.entity';
@@ -15,7 +15,14 @@ import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { extname } from 'path';
 import { pipeline } from 'stream/promises';
-import { Prisma, SysFile } from '@prisma/client';
+import {
+  DrizzleService,
+  SysFile,
+  insertWithAudit,
+  softDeleteWhere,
+  updateWithAudit,
+  withSoftDelete,
+} from '../../library/drizzle';
 
 export interface UploadedFile {
   filename: string;
@@ -30,8 +37,8 @@ export interface UploadedFile {
 @Injectable()
 export class FileService {
   constructor(
-    private prisma: PrismaService,
-    private configService: ConfigService,
+    private readonly drizzle: DrizzleService,
+    private readonly configService: ConfigService,
   ) {}
 
   // 获取上传目录
@@ -77,7 +84,7 @@ export class FileService {
     filename?: string,
     businessId?: number,
     businessType?: string,
-  ): Promise<SysFile & { url: string }> {
+  ): Promise<Record<string, unknown> & { url: string }> {
     const decodedOriginalName = this.decodeOriginalName(file.originalname);
     const finalFilename =
       filename ||
@@ -141,7 +148,7 @@ export class FileService {
     totalSize: number,
     businessId?: number,
     businessType?: string,
-  ): Promise<SysFile & { url: string }> {
+  ): Promise<Record<string, unknown> & { url: string }> {
     const chunkDir = this.resolveChunkDir(uploadId);
     if (!existsSync(chunkDir)) {
       throw new BadRequestException('分片不存在或已过期，请重新上传');
@@ -212,38 +219,36 @@ export class FileService {
 
   // 根据业务类型查询文件
   async findByBusiness(businessType: string, businessId: number) {
-    return this.prisma.sysFile.findMany({
-      where: {
-        businessType,
-        businessId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    return this.drizzle.db
+      .select()
+      .from(SysFile)
+      .where(
+        and(
+          withSoftDelete(SysFile),
+          eq(SysFile.businessType, businessType),
+          eq(SysFile.businessId, businessId),
+        ),
+      )
+      .orderBy(desc(SysFile.createdAt));
   }
 
   // 获取所有文件
   async findAll() {
-    return this.prisma.sysFile.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    return this.drizzle.db
+      .select()
+      .from(SysFile)
+      .where(withSoftDelete(SysFile))
+      .orderBy(desc(SysFile.createdAt));
   }
 
   // 获取文件详情
   async findOne(id: number) {
-    return this.prisma.sysFile.findUnique({
-      where: { id },
-    });
+    return this.drizzle.findFirst(SysFile, eq(SysFile.id, id));
   }
 
   // 根据文件名获取文件
   async findByFilename(filename: string) {
-    return this.prisma.sysFile.findUnique({
-      where: { filename },
-    });
+    return this.drizzle.findFirst(SysFile, eq(SysFile.filename, filename));
   }
 
   // 创建文件记录
@@ -252,27 +257,32 @@ export class FileService {
     const fileType =
       dto.fileType || this.getFileType(dto.extension, dto.mimetype);
 
-    return this.prisma.sysFile.create({
-      data: {
+    const createdFiles = await insertWithAudit(this.drizzle.db, SysFile, {
         ...dto,
         fileType,
-      },
-    });
+        isPublic: dto.isPublic ?? false,
+        status: 1,
+        businessId: dto.businessId ?? null,
+        businessType: dto.businessType ?? null,
+        updatedAt: new Date(),
+      });
+    return Array.isArray(createdFiles) ? createdFiles[0] ?? null : createdFiles;
   }
 
   // 更新文件记录
   async update(id: number, dto: UpdateFileDto) {
-    return this.prisma.sysFile.update({
-      where: { id },
-      data: dto,
+    const updatedFiles = await updateWithAudit(this.drizzle.db, SysFile, eq(SysFile.id, id), {
+      ...dto,
+      businessId: dto.businessId !== undefined ? dto.businessId : undefined,
+      businessType: dto.businessType !== undefined ? dto.businessType : undefined,
     });
+    return Array.isArray(updatedFiles) ? updatedFiles[0] ?? null : updatedFiles;
   }
 
   // 删除文件记录
   async delete(id: number) {
-    return this.prisma.sysFile.delete({
-      where: { id },
-    });
+    const deletedFiles = await softDeleteWhere(this.drizzle.db, SysFile, eq(SysFile.id, id));
+    return Array.isArray(deletedFiles) ? deletedFiles[0] ?? null : deletedFiles;
   }
 
   // 分页查询文件
@@ -281,31 +291,29 @@ export class FileService {
   ) {
     const { pageNo = 1, pageSize = 10, fileType, isPublic } = dto;
     const skip = (pageNo - 1) * pageSize;
-    const take = pageSize;
-
-    const where: Prisma.SysFileWhereInput = {};
-    if (fileType) {
-      where.fileType = fileType;
-    }
-    if (isPublic !== undefined) {
-      where.isPublic = isPublic;
-    }
+    const where = and(
+      withSoftDelete(SysFile),
+      fileType ? eq(SysFile.fileType, fileType) : undefined,
+      isPublic !== undefined ? eq(SysFile.isPublic, isPublic) : undefined,
+    );
 
     const [list, total] = await Promise.all([
-      this.prisma.sysFile.findMany({
-        skip,
-        take,
-        where,
-        orderBy: {
-          createdAt: 'desc',
-        },
-      }),
-      this.prisma.sysFile.count({ where }),
+      this.drizzle.db
+        .select()
+        .from(SysFile)
+        .where(where)
+        .orderBy(desc(SysFile.createdAt))
+        .limit(pageSize)
+        .offset(skip),
+      this.drizzle.db
+        .select({ total: sql<number>`count(*)` })
+        .from(SysFile)
+        .where(where),
     ]);
 
     return {
       list,
-      total,
+      total: total[0]?.total ?? 0,
       pageNo,
       pageSize,
     };

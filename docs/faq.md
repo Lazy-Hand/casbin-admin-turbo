@@ -1,10 +1,10 @@
 # 常见问题
 
-## 为什么 backend 需要自动执行 Prisma generate？
+## 为什么 backend 不再需要安装时自动 generate？
 
-因为 `@prisma/client` 的类型与运行时代码依赖生成产物；如果没有先执行 `prisma generate`，backend 的类型检查和构建会直接失败。
+因为 backend 现在直接以 Drizzle schema 文件作为唯一源头，构建和类型检查不再依赖额外生成步骤。只有在你主动生成新 migration SQL 时，才需要运行 `pnpm db:generate`。
 
-## 为什么 Prisma 现在不抽到 `packages/`？
+## 为什么数据库 schema 现在不抽到 `packages/`？
 
 当前数据库能力只被 backend 使用，提前抽包会增加生成路径、迁移命令、环境变量和构建链路复杂度，收益不高。
 

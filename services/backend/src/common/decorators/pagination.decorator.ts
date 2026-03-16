@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { PrismaPaginationParams } from '../dto/pagination.dto';
+import { OffsetPaginationParams } from '../dto/pagination.dto';
 
 /**
  * 分页参数装饰器
@@ -8,8 +8,8 @@ import { PrismaPaginationParams } from '../dto/pagination.dto';
  * @example
  * ```typescript
  * @Get('users')
- * async getUsers(@Pagination() pagination: PrismaPaginationParams) {
- *   return this.prisma.user.findMany({
+ * async getUsers(@Pagination() pagination: OffsetPaginationParams) {
+ *   return this.userService.findPage({
  *     skip: pagination.skip,
  *     take: pagination.take,
  *   });
@@ -17,7 +17,7 @@ import { PrismaPaginationParams } from '../dto/pagination.dto';
  * ```
  */
 export const Pagination = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): PrismaPaginationParams => {
+  (data: unknown, ctx: ExecutionContext): OffsetPaginationParams => {
     const request = ctx.switchToHttp().getRequest();
     const query = request.query;
 

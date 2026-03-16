@@ -1,10 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'nestjs-prisma';
+import { and, eq } from 'drizzle-orm';
 import type {
   UserWithPermissions,
   RoleWithPermissions,
   PermissionInfo,
 } from './types';
+import {
+  DrizzleService,
+  Permission,
+  Role,
+  RolePermission,
+  User,
+  UserRole,
+  withSoftDelete,
+} from '@/app/library/drizzle';
 
 /**
  * User Hook
@@ -13,7 +22,7 @@ import type {
  */
 @Injectable()
 export class UserHook {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly drizzle: DrizzleService) {}
 
   /**
    * 加载用户完整信息
@@ -21,57 +30,77 @@ export class UserHook {
    * @returns 包含用户信息、角色和权限的完整对象，如果用户不存在则返回 null
    */
   async run(userId: number): Promise<UserWithPermissions | null> {
-    // 从数据库查询用户及其关联的角色和权限
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        roles: {
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  include: {
-                    permission: true,
-                  },
-                },
-              },
-            },
-          },
+    const rows = await this.drizzle.db
+      .select({
+        id: User.id,
+        username: User.username,
+        role: {
+          id: Role.id,
+          roleCode: Role.roleCode,
+          roleName: Role.roleName,
         },
-      },
-    });
+        permission: {
+          id: Permission.id,
+          permCode: Permission.permCode,
+          permName: Permission.permName,
+          resourceType: Permission.resourceType,
+          method: Permission.method,
+          path: Permission.path,
+          menuType: Permission.menuType,
+        },
+      })
+      .from(User)
+      .leftJoin(UserRole, eq(User.id, UserRole.userId))
+      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
+      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .where(and(withSoftDelete(User), eq(User.id, userId)));
 
-    // 用户不存在
-    if (!user) {
+    const first = rows[0];
+    if (!first) {
       return null;
     }
 
-    // 转换数据结构为 UserWithPermissions 格式
-    const userWithPermissions: UserWithPermissions = {
-      id: user.id,
-      username: user.username,
-      roles: user.roles.map((ur) => {
-        const role = ur.role;
-        const roleWithPermissions: RoleWithPermissions = {
-          id: role.id,
-          roleCode: role.roleCode,
-          roleName: role.roleName,
-          permissions: role.permissions.map((rp) => {
-            const perm = rp.permission;
-            const permissionInfo: PermissionInfo = {
-              id: perm.id,
-              permCode: perm.permCode,
-              permName: perm.permName,
-              resourceType: perm.resourceType as 'api' | 'menu' | 'button',
-              method: perm.method,
-              path: perm.path,
-              menuType: perm.menuType || undefined,
-            };
-            return permissionInfo;
-          }),
+    const roles = new Map<number, RoleWithPermissions>();
+
+    for (const row of rows) {
+      if (!row.role?.id) {
+        continue;
+      }
+
+      const currentRole =
+        roles.get(row.role.id) ??
+        {
+          id: row.role.id,
+          roleCode: row.role.roleCode ?? '',
+          roleName: row.role.roleName ?? '',
+          permissions: [],
         };
-        return roleWithPermissions;
-      }),
+
+      if (
+        row.permission?.id &&
+        row.permission.resourceType &&
+        !currentRole.permissions.some((permission) => permission.id === row.permission!.id)
+      ) {
+        const permissionInfo: PermissionInfo = {
+          id: row.permission.id,
+          permCode: row.permission.permCode ?? '',
+          permName: row.permission.permName ?? '',
+          resourceType: row.permission.resourceType,
+          method: row.permission.method ?? '',
+          path: row.permission.path ?? '',
+          menuType: row.permission.menuType || undefined,
+        };
+        currentRole.permissions.push(permissionInfo);
+      }
+
+      roles.set(row.role.id, currentRole);
+    }
+
+    const userWithPermissions: UserWithPermissions = {
+      id: first.id,
+      username: first.username,
+      roles: [...roles.values()],
     };
 
     return userWithPermissions;

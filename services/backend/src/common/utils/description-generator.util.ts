@@ -1,4 +1,4 @@
-import { LogOperation } from '@prisma/client';
+import type { LogOperationValue } from '@/app/library/drizzle';
 import { getModuleName } from './module-mapper.util';
 
 /**
@@ -17,7 +17,7 @@ const NAME_FIELD_MAP: Record<string, string> = {
 /**
  * 操作类型中文映射
  */
-const OPERATION_TEXT_MAP: Record<LogOperation, string> = {
+const OPERATION_TEXT_MAP: Record<LogOperationValue, string> = {
   CREATE: '创建',
   UPDATE: '修改',
   DELETE: '删除',
@@ -55,7 +55,7 @@ function extractEntityName(
  */
 export function generateDescription(
   module: string,
-  operation: LogOperation,
+  operation: LogOperationValue,
   responseData: unknown,
 ): string {
   const moduleName = getModuleName(module);

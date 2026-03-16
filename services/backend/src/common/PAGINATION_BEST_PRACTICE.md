@@ -6,7 +6,7 @@
 
 ## 解决方案
 
-使用 `PaginationPipe` 管道自动转换分页参数，让 DTO 自动包含 Prisma 所需的 `skip` 和 `take` 字段。
+使用 `PaginationPipe` 管道自动转换分页参数，让 DTO 自动包含通用的 `skip` 和 `take` 字段。
 
 ---
 
@@ -16,7 +16,7 @@
 
 `PaginationPipe` 会自动：
 1. 读取 `pageNo` 和 `pageSize` 参数
-2. 计算 Prisma 的 `skip` 和 `take`
+2. 计算分页查询所需的 `skip` 和 `take`
 3. 将这些字段添加到 DTO 对象中
 4. 保留所有其他查询参数
 
@@ -101,7 +101,7 @@ import { UserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UserController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
   @ApiPaginatedResponse(UserDto, { description: '获取用户列表' })
@@ -126,13 +126,13 @@ export class UserController {
 
     // 直接使用 skip 和 take，无需手动计算！
     const [users, total] = await Promise.all([
-      this.prisma.user.findMany({
+      this.userService.findMany({
         where,
         skip,    // 直接使用
         take,    // 直接使用
         orderBy,
       }),
-      this.prisma.user.count({ where }),
+      this.userService.count({ where }),
     ]);
 
     // pageNo 和 pageSize 也可以直接使用
@@ -163,8 +163,8 @@ async getUsers(@Query() query: UserQueryDto) {
   const take = pageSize;
 
   const [users, total] = await Promise.all([
-    this.prisma.user.findMany({ skip, take }),
-    this.prisma.user.count(),
+    this.userService.findMany({ skip, take }),
+    this.userService.count(),
   ]);
 
   return createPaginationResponse(users, total, pageNo, pageSize);
@@ -180,8 +180,8 @@ async getUsers(@Query(PaginationPipe) query: UserQueryDto) {
   const { skip, take, pageNo, pageSize, keyword, role } = query;
 
   const [users, total] = await Promise.all([
-    this.prisma.user.findMany({ skip, take }),
-    this.prisma.user.count(),
+    this.userService.findMany({ skip, take }),
+    this.userService.count(),
   ]);
 
   return createPaginationResponse(users, total, pageNo, pageSize);
@@ -263,12 +263,12 @@ import { createPaginationResponse } from '../common/dto/pagination.dto';
 import { PaginationPipe } from '../common/pipes/pagination.pipe';
 import { UserQueryDto } from './dto/user-query.dto';
 import { UserDto } from './dto/user.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserService } from '../user/user.service';
 
 @ApiTags('用户管理')
 @Controller('users')
 export class UserController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
   @ApiOperation({ summary: '获取用户列表' })

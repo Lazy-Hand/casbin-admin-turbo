@@ -1,212 +1,166 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { PrismaService } from 'nestjs-prisma';
+import { and, asc, eq, ilike, ne, sql } from 'drizzle-orm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchPostDto } from './dto/search-post.dto';
-import { Prisma } from '@prisma/client';
+import {
+  DrizzleService,
+  Post,
+  User,
+  insertWithAudit,
+  softDeleteWhere,
+  updateWithAudit,
+  withSoftDelete,
+} from '../../library/drizzle';
 
 @Injectable()
 export class PostService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly drizzle: DrizzleService) {}
 
   async findAll() {
-    return this.prisma.post.findMany({
-      where: {
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        postName: true,
-        postCode: true,
-        sort: true,
-        status: true,
-        remark: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        sort: 'asc',
-      },
-    });
+    return this.drizzle.db
+      .select({
+        id: Post.id,
+        postName: Post.postName,
+        postCode: Post.postCode,
+        sort: Post.sort,
+        status: Post.status,
+        remark: Post.remark,
+        createdAt: Post.createdAt,
+        updatedAt: Post.updatedAt,
+      })
+      .from(Post)
+      .where(withSoftDelete(Post))
+      .orderBy(asc(Post.sort));
   }
 
   async findPage(dto: SearchPostDto) {
     const { pageNo = 1, pageSize = 10, postName, postCode, status } = dto;
     const skip = (pageNo - 1) * pageSize;
-    const take = pageSize;
-
-    const where: Prisma.PostWhereInput = {
-      deletedAt: null,
-    };
-
-    if (postName) {
-      where.postName = {
-        contains: postName,
-      };
-    }
-
-    if (postCode) {
-      where.postCode = {
-        contains: postCode,
-      };
-    }
-
-    if (status !== undefined) {
-      where.status = status;
-    }
+    const where = and(
+      withSoftDelete(Post),
+      postName ? ilike(Post.postName, `%${postName}%`) : undefined,
+      postCode ? ilike(Post.postCode, `%${postCode}%`) : undefined,
+      status !== undefined ? eq(Post.status, status) : undefined,
+    );
 
     const [list, total] = await Promise.all([
-      this.prisma.post.findMany({
-        skip,
-        take,
-        where,
-        select: {
-          id: true,
-          postName: true,
-          postCode: true,
-          sort: true,
-          status: true,
-          remark: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-        orderBy: {
-          sort: 'asc',
-        },
-      }),
-      this.prisma.post.count({ where }),
+      this.drizzle.db
+        .select({
+          id: Post.id,
+          postName: Post.postName,
+          postCode: Post.postCode,
+          sort: Post.sort,
+          status: Post.status,
+          remark: Post.remark,
+          createdAt: Post.createdAt,
+          updatedAt: Post.updatedAt,
+        })
+        .from(Post)
+        .where(where)
+        .orderBy(asc(Post.sort))
+        .limit(pageSize)
+        .offset(skip),
+      this.drizzle.db
+        .select({ total: sql<number>`count(*)` })
+        .from(Post)
+        .where(where),
     ]);
 
     return {
       list,
-      total,
+      total: total[0]?.total ?? 0,
       pageNo,
       pageSize,
     };
   }
 
   async findOne(id: number) {
-    return this.prisma.post.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        postName: true,
-        postCode: true,
-        sort: true,
-        status: true,
-        remark: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    return this.drizzle.findFirst(Post, eq(Post.id, id));
   }
 
   async create(dto: CreatePostDto) {
-    const existPost = await this.prisma.post.findFirst({
-      where: {
-        postCode: dto.postCode,
-        deletedAt: null,
-      },
-    });
+    const existPost = await this.drizzle.findFirst(Post, eq(Post.postCode, dto.postCode));
 
     if (existPost) {
       throw new BadRequestException('岗位编码已存在');
     }
 
-    return this.prisma.post.create({
-      data: {
+    const createdPosts = await insertWithAudit(this.drizzle.db, Post, {
         postName: dto.postName,
         postCode: dto.postCode,
         sort: dto.sort ?? 0,
         status: dto.status ?? 1,
-        remark: dto.remark,
-      },
-      select: {
-        id: true,
-        postName: true,
-        postCode: true,
-        sort: true,
-        status: true,
-        remark: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+        remark: dto.remark ?? null,
+        updatedAt: new Date(),
     });
+    const created = Array.isArray(createdPosts) ? createdPosts[0] ?? null : createdPosts;
+    return created;
   }
 
   async update(id: number, dto: UpdatePostDto) {
     if (dto.postCode) {
-      const existPost = await this.prisma.post.findFirst({
-        where: {
-          postCode: dto.postCode,
-          id: { not: id },
-          deletedAt: null,
-        },
-      });
+      const rows = await this.drizzle.db
+        .select({ id: Post.id })
+        .from(Post)
+        .where(
+          and(
+            withSoftDelete(Post),
+            eq(Post.postCode, dto.postCode),
+            ne(Post.id, id),
+          ),
+        )
+        .limit(1);
+      const existPost = rows[0];
 
       if (existPost) {
         throw new BadRequestException('岗位编码已存在');
       }
     }
 
-    return this.prisma.post.update({
-      where: { id },
-      data: {
+    const updatedPosts = await updateWithAudit(this.drizzle.db, Post, eq(Post.id, id), {
         postName: dto.postName,
         postCode: dto.postCode,
         sort: dto.sort,
         status: dto.status,
         remark: dto.remark,
-      },
-      select: {
-        id: true,
-        postName: true,
-        postCode: true,
-        sort: true,
-        status: true,
-        remark: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
+    return Array.isArray(updatedPosts) ? updatedPosts[0] ?? null : updatedPosts;
   }
 
   async remove(id: number) {
-    const userCount = await this.prisma.user.count({
-      where: { postId: id },
-    });
+    const userCount = await this.drizzle.db
+      .select({ total: sql<number>`count(*)` })
+      .from(User)
+      .where(and(withSoftDelete(User), eq(User.postId, id)));
 
-    if (userCount > 0) {
+    if ((userCount[0]?.total ?? 0) > 0) {
       throw new BadRequestException('该岗位下存在用户，无法删除');
     }
 
-    return this.prisma.post.update({
-      where: { id },
-      data: {
-        deletedAt: new Date(),
-      },
-      select: {
-        id: true,
-        postName: true,
-        postCode: true,
-      },
-    });
+    const deletedPosts = await softDeleteWhere(this.drizzle.db, Post, eq(Post.id, id));
+    const deleted = Array.isArray(deletedPosts) ? deletedPosts[0] ?? null : deletedPosts;
+
+    if (!deleted) {
+      return null;
+    }
+
+    return {
+      id: deleted.id,
+      postName: deleted.postName,
+      postCode: deleted.postCode,
+    };
   }
 
   async getOptions() {
-    return this.prisma.post.findMany({
-      where: {
-        status: 1,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        postName: true,
-        postCode: true,
-      },
-      orderBy: {
-        sort: 'asc',
-      },
-    });
+    return this.drizzle.db
+      .select({
+        id: Post.id,
+        postName: Post.postName,
+        postCode: Post.postCode,
+      })
+      .from(Post)
+      .where(and(withSoftDelete(Post), eq(Post.status, 1)))
+      .orderBy(asc(Post.sort));
   }
 }

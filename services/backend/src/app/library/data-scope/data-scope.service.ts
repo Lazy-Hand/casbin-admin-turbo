@@ -1,8 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from 'nestjs-prisma';
+import { and, eq, like, or } from 'drizzle-orm';
 import { RedisService } from '@/app/library/redis/redis.service';
-import { BaseRepository, DataScopeConfig } from '@/common/repositories/base.repository';
+import {
+  DrizzleService,
+  Dept,
+  Role,
+  User,
+  UserRole,
+  withSoftDelete,
+} from '@/app/library/drizzle';
+import type { DataScopeValue } from '@/app/library/drizzle';
 
 /**
  * Redis 缓存键前缀
@@ -14,25 +21,29 @@ const DATA_SCOPE_CACHE_TTL = 1800; // 30 分钟
  * 数据范围配置（从数据库读取的原始值）
  */
 interface DbDataScopeConfig {
-  scope: 'ALL' | 'CUSTOM' | 'DEPT' | 'DEPT_AND_CHILD';
+  scope: DataScopeValue;
   deptId: number | null;
   customDepts: number[];
 }
 
+export interface DataScopeConfig {
+  scope: DataScopeValue;
+  deptId: number | null;
+  customDepts?: number[];
+}
+
 /**
  * 数据范围服务
- * 负责计算用户数据范围配置和构建 Prisma where 条件
+ * 负责计算用户数据范围配置和构建兼容旧仓储层的过滤条件
  */
 @Injectable()
-export class DataScopeService extends BaseRepository {
+export class DataScopeService {
   private readonly logger = new Logger(DataScopeService.name);
 
   constructor(
-    protected readonly prisma: PrismaService,
+    private readonly drizzle: DrizzleService,
     private readonly redis: RedisService,
-  ) {
-    super(prisma, null as any); // 基类需要 dataScopeService，但这个服务本身就是
-  }
+  ) {}
 
   /**
    * 获取用户数据范围配置（带缓存）
@@ -64,24 +75,22 @@ export class DataScopeService extends BaseRepository {
    * 从数据库获取数据范围配置
    */
   private async fetchDataScopeFromDb(userId: number): Promise<DataScopeConfig> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        isAdmin: true,
-        deptId: true,
-        roles: {
-          select: {
-            role: {
-              select: {
-                dataScope: true,
-                customDepts: true,
-              },
-            },
-          },
+    const rows = await this.drizzle.db
+      .select({
+        id: User.id,
+        isAdmin: User.isAdmin,
+        deptId: User.deptId,
+        role: {
+          dataScope: Role.dataScope,
+          customDepts: Role.customDepts,
         },
-      },
-    });
+      })
+      .from(User)
+      .leftJoin(UserRole, eq(User.id, UserRole.userId))
+      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .where(withSoftDelete(User, eq(User.id, userId)));
+
+    const user = rows[0];
 
     if (!user) {
       return {
@@ -110,8 +119,11 @@ export class DataScopeService extends BaseRepository {
       'ALL': 4,
     };
 
-    for (const userRole of user.roles) {
-      const role = userRole.role;
+    for (const row of rows) {
+      const role = row.role;
+      if (!role?.dataScope) {
+        continue;
+      }
       const roleScope = role.dataScope;
       const currentPriority = scopePriority[dataScope];
       const rolePriority = scopePriority[roleScope];
@@ -120,7 +132,7 @@ export class DataScopeService extends BaseRepository {
       if (rolePriority > currentPriority) {
         dataScope = roleScope as DbDataScopeConfig['scope'];
         if (roleScope === 'DEPT_AND_CHILD' || roleScope === 'CUSTOM') {
-          customDepts = (role.customDepts as number[]) || [];
+          customDepts = role.customDepts || [];
         }
       }
     }
@@ -133,9 +145,9 @@ export class DataScopeService extends BaseRepository {
   }
 
   /**
-   * 构建 Prisma where 条件
+   * 构建数据范围过滤条件
    * @param config 数据范围配置
-   * @returns Prisma where 条件
+   * @returns 可复用的过滤条件对象
    */
   async buildWhereClause(
     config: DataScopeConfig,
@@ -182,18 +194,19 @@ export class DataScopeService extends BaseRepository {
    * @returns 所有后代部门ID（包含自己）
    */
   async getDescendantDeptIds(deptId: number): Promise<number[]> {
-    // 查询 ancestors 字段包含该部门 ID 的所有部门
-    const depts = await this.prisma.dept.findMany({
-      where: {
-        deletedAt: null,
-        OR: [
-          { id: deptId },
-          { ancestors: { contains: `,${deptId}` } },
-          { ancestors: { equals: `0,${deptId}` } },
-        ],
-      },
-      select: { id: true },
-    });
+    const depts = await this.drizzle.db
+      .select({ id: Dept.id })
+      .from(Dept)
+      .where(
+        and(
+          withSoftDelete(Dept),
+          or(
+            eq(Dept.id, deptId),
+            eq(Dept.ancestors, `0,${deptId}`),
+            like(Dept.ancestors, `%,${deptId},%`),
+          ),
+        ),
+      );
 
     return depts.map((d) => d.id);
   }

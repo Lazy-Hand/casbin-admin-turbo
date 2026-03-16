@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SysFile as SysFileModel } from '@prisma/client';
 import { BaseEntity } from '@/common/entities/base.entity';
 
-export class FileEntity extends BaseEntity implements SysFileModel {
+export class FileEntity extends BaseEntity {
   @ApiProperty({ description: '存储的文件名' })
   filename: string;
 

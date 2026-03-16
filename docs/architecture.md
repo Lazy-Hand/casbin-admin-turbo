@@ -6,7 +6,7 @@
 flowchart TD
     ROOT["casbin-admin-turbo"]
     ROOT --> APPS["apps/frontend<br/>Vue 3 + Vite"]
-    ROOT --> SERVICES["services/backend<br/>NestJS + Prisma"]
+    ROOT --> SERVICES["services/backend<br/>NestJS + Drizzle"]
     ROOT --> PACKAGES["packages/eslint-config<br/>Shared ESLint Config"]
     ROOT --> DOCS["docs<br/>Wiki"]
     ROOT --> TOOLING["pnpm-workspace.yaml + turbo.json"]

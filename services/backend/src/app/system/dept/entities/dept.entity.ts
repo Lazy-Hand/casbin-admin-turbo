@@ -1,9 +1,7 @@
-import { Dept } from '@prisma/client';
-
 /**
  * 部门实体响应类
  */
-export class DeptEntity implements Dept {
+export class DeptEntity {
   id: number;
   name: string;
   parentId: number | null;
@@ -32,7 +30,7 @@ export class DeptEntity implements Dept {
   children?: DeptEntity[];
 
   /**
-   * 从 Prisma 模型转换为实体
+   * 从原始模型转换为实体
    */
   static fromModel(dept: any & { leader?: any; parent?: any; children?: any[] }): DeptEntity {
     const entity: DeptEntity = {

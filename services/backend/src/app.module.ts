@@ -6,7 +6,7 @@ import { WinstonModule } from 'nest-winston';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import configuration from './config/configuration';
-import { PrismaModule } from './app/library/prisma/prisma.module';
+import { DrizzleModule } from './app/library/drizzle';
 import { RedisModule } from '@/app/library/redis';
 import { AuthModule } from './app/system/auth/auth.module';
 import { CaslModule, CaslExceptionFilter } from './app/library/casl';
@@ -52,7 +52,7 @@ import { DataScopeModule } from './app/library/data-scope/data-scope.module';
         max: configService.get<number>('casl.cache.max', 1000),
       }),
     }),
-    PrismaModule,
+    DrizzleModule,
     RedisModule,
     DataScopeModule,
     AuthModule,

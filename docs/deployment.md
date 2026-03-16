@@ -6,7 +6,7 @@
 flowchart TD
     PREP["Prepare env vars"]
     INSTALL["pnpm install"]
-    MIGRATE["Prisma migrate deploy"]
+    MIGRATE["Run db:migrate"]
     BUILD["pnpm build"]
     START_BE["Start backend service"]
     PUBLISH_FE["Publish frontend assets"]
@@ -37,7 +37,7 @@ flowchart TD
 
 1. 安装依赖：`pnpm install`
 2. 配置后端环境变量
-3. 执行 Prisma migration
+3. 执行数据库 migration
 4. 执行 `pnpm build`
 5. 启动后端服务
 6. 发布前端静态资源

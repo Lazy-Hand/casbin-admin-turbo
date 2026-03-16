@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ConfigService } from '@nestjs/config';
 import { AbilityFactory } from '../ability.factory';
 import { UserHook } from '../user.hook';
 import { AbilityGuard } from '../guards';
 import { PermissionService } from '../../../system/permission/permission.service';
-import { PrismaModule } from '../../prisma/prisma.module';
+import { DrizzleService } from '../../drizzle';
 
 /**
  * Ability Testing Module
@@ -16,9 +17,27 @@ import { PrismaModule } from '../../prisma/prisma.module';
       isGlobal: true,
       ttl: 1800000,
     }),
-    PrismaModule,
   ],
-  providers: [AbilityFactory, UserHook, AbilityGuard, PermissionService],
+  providers: [
+    AbilityFactory,
+    UserHook,
+    AbilityGuard,
+    PermissionService,
+    {
+      provide: DrizzleService,
+      useValue: {
+        db: {
+          select: jest.fn(),
+        },
+      },
+    },
+    {
+      provide: ConfigService,
+      useValue: {
+        get: jest.fn().mockImplementation((_: string, fallback: unknown) => fallback),
+      },
+    },
+  ],
   exports: [AbilityFactory, UserHook, AbilityGuard, PermissionService],
 })
 export class AbilityTestingModule {}

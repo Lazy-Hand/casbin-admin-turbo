@@ -5,7 +5,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { PrismaModule } from '../../library/prisma/prisma.module';
 import { RedisModule } from '../../library/redis/redis.module';
 
 export function resolveJwtModuleOptions(configService: ConfigService) {
@@ -26,7 +25,6 @@ export function resolveJwtModuleOptions(configService: ConfigService) {
 
 @Module({
   imports: [
-    PrismaModule,
     RedisModule,
     PassportModule,
     JwtModule.registerAsync({

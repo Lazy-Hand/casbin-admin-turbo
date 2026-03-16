@@ -1,36 +1,39 @@
-# 数据库与 Prisma
+# 数据库与 Drizzle Tooling
 
-## Prisma 链路图
+## Schema 与迁移链路图
 
 ```mermaid
 flowchart TD
-    SCHEMA["prisma/schema.prisma"]
-    CMD["pnpm install / build / type-check"]
-    GENERATE["pnpm prisma:generate"]
-    CLIENT["Generated Prisma Client"]
+    SCHEMA["src/app/library/drizzle/schema.ts"]
+    GENERATE["pnpm db:generate"]
+    MIGRATE["pnpm db:migrate"]
+    SQL["db/migrations/*.sql"]
     BACKEND["NestJS Backend"]
     DB["PostgreSQL"]
 
-    CMD --> GENERATE
     SCHEMA --> GENERATE
-    GENERATE --> CLIENT
-    CLIENT --> BACKEND
+    GENERATE --> SQL
+    SQL --> MIGRATE
+    SCHEMA --> BACKEND
     BACKEND --> DB
 ```
 
 ## 当前策略
 
-- Prisma schema 保留在 `services/backend/prisma/schema.prisma`
-- Prisma Client 由 backend 在安装、构建、类型检查前自动生成
-- 当前不单独抽 `packages/prisma`，因为数据库能力仍只被 backend 使用
+- 数据库 schema 以 `services/backend/src/app/library/drizzle/schema.ts` 为唯一源头
+- 迁移 SQL 位于 `services/backend/db/migrations`
+- 使用项目内置 migration runner 执行 SQL 迁移
+- 运行时 ORM 与 schema 工具链都已统一为 Drizzle
+- 当前不单独抽数据库基础设施包，因为数据库能力仍只被 backend 使用
 
 ## 常用命令
 
 ```bash
-pnpm --filter @casbin-admin/backend prisma:generate
-pnpm --filter @casbin-admin/backend exec prisma migrate deploy
-pnpm --filter @casbin-admin/backend exec prisma migrate dev
-pnpm --filter @casbin-admin/backend exec prisma studio
+pnpm --filter @casbin-admin/backend db:generate
+pnpm --filter @casbin-admin/backend db:migrate
+pnpm --filter @casbin-admin/backend db:migrate:status
+pnpm --filter @casbin-admin/backend db:seed
+pnpm --filter @casbin-admin/backend drizzle:studio
 ```
 
 ## 环境变量
@@ -39,7 +42,7 @@ pnpm --filter @casbin-admin/backend exec prisma studio
 
 ## 迁移约定
 
-- 结构变更优先通过 Prisma migration 管理
+- 结构变更优先通过 Drizzle schema + SQL migration 管理
 - 提交数据库结构变更时，应同步提交对应 migration
 - 不建议通过手工 SQL 修改生产结构后再回填 schema
 
@@ -48,5 +51,5 @@ pnpm --filter @casbin-admin/backend exec prisma studio
 仅当以下场景出现时再考虑抽离数据库基础设施包：
 
 - 多个服务需要直接访问同一份数据库 schema
-- 需要共享 Prisma client、seed、迁移能力
+- 需要共享 schema、seed、迁移能力
 - monorepo 中新增 worker / api / task 等多个后端服务

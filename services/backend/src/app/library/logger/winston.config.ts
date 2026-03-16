@@ -23,9 +23,9 @@ export function createWinstonConfig(
       createFileTransport(config, 'error', 'error'),
     );
 
-    // 添加 Prisma 查询日志专用传输器
+    // 添加数据库查询日志专用传输器
     if (config.enablePrismaLogging) {
-      transports.push(createPrismaQueryTransport(config));
+      transports.push(createDatabaseQueryTransport(config));
     }
   }
 
@@ -97,7 +97,7 @@ function createFileTransport(
   return transport;
 }
 
-function createPrismaQueryTransport(config: LoggerConfig): winston.transport {
+function createDatabaseQueryTransport(config: LoggerConfig): winston.transport {
   const transport = new DailyRotateFile({
     filename: `${config.logDir}/prisma-query-%DATE%.log`,
     datePattern: config.datePattern,
@@ -106,8 +106,8 @@ function createPrismaQueryTransport(config: LoggerConfig): winston.transport {
     format: winston.format.combine(
       winston.format.timestamp(),
       winston.format((info) => {
-        // 只记录来自 PrismaService 的日志
-        if (info.context === 'PrismaService') {
+        // 只记录来自数据库层的查询日志
+        if (info.context === 'DrizzleService') {
           return info;
         }
         return false;
@@ -118,7 +118,7 @@ function createPrismaQueryTransport(config: LoggerConfig): winston.transport {
 
   // 添加错误处理
   transport.on('error', (error) => {
-    console.error('Logger Prisma transport error:', error.message);
+    console.error('Logger database transport error:', error.message);
   });
 
   return transport;

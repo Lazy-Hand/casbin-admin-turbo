@@ -9,8 +9,8 @@ import {
 } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { MenuType, ResourceType } from '@prisma/client';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import type { MenuTypeValue, ResourceTypeValue } from '@/app/library/drizzle';
 
 export class CreatePermissionDto {
   @ApiProperty({ description: '权限名称', example: '查看文章' })
@@ -39,7 +39,7 @@ export class CreatePermissionDto {
   })
   @IsString()
   @IsIn(['menu', 'api', 'button'])
-  resourceType: ResourceType;
+  resourceType: ResourceTypeValue;
 
   @ApiProperty({
     description: '菜单类型',
@@ -48,7 +48,7 @@ export class CreatePermissionDto {
   })
   @IsString()
   @IsOptional()
-  menuType?: MenuType;
+  menuType?: MenuTypeValue;
 
   @ApiProperty({
     description: '路径',

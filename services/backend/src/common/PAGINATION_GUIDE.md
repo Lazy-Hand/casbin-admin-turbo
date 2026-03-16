@@ -15,12 +15,12 @@ export class PaginationDto {
 }
 ```
 
-### 2. PrismaPaginationParams
+### 2. OffsetPaginationParams
 
-Prisma 分页参数接口，包含 `skip` 和 `take` 字段。
+偏移分页参数接口，包含 `skip` 和 `take` 字段。
 
 ```typescript
-export interface PrismaPaginationParams {
+export interface OffsetPaginationParams {
   skip: number;   // 跳过的记录数
   take: number;   // 获取的记录数
 }
@@ -46,7 +46,7 @@ export class PaginationResponseDto<T> {
 
 ### 方法 1: 使用 @Pagination 装饰器（推荐）
 
-最简单的方式，自动转换为 Prisma 格式。
+最简单的方式，自动转换为通用偏移分页格式。
 
 ```typescript
 import { Controller, Get } from '@nestjs/common';
@@ -57,20 +57,20 @@ import { UserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UserController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
   @ApiPaginatedResponse(UserDto, { description: '获取用户列表' })
   async getUsers(
     @Pagination() pagination: { skip: number; take: number },
   ) {
-    // 直接使用 Prisma 查询
+    // 直接使用 skip / take 查询
     const [users, total] = await Promise.all([
-      this.prisma.user.findMany({
+      this.userService.findMany({
         skip: pagination.skip,
         take: pagination.take,
       }),
-      this.prisma.user.count(),
+      this.userService.count(),
     ]);
 
     // 计算原始分页参数
@@ -128,8 +128,8 @@ async getUsers(
   const take = pageSize;
 
   const [users, total] = await Promise.all([
-    this.prisma.user.findMany({ skip, take }),
-    this.prisma.user.count(),
+    this.userService.findMany({ skip, take }),
+    this.userService.count(),
   ]);
 
   return createPaginationResponse(users, total, pageNo, pageSize);
@@ -342,7 +342,7 @@ const response = createPaginationResponse(
 ## 最佳实践
 
 1. **使用 @Pagination 装饰器**
-   - 最简单直接，自动转换为 Prisma 格式
+   - 最简单直接，自动转换为通用偏移分页格式
    - 适合大多数场景
 
 2. **使用 createPaginationResponse**

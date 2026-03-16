@@ -4,10 +4,17 @@ import {
   ConflictException,
   Logger,
 } from '@nestjs/common';
-import { PrismaService } from 'nestjs-prisma';
+import { and, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 import { RedisService } from '@/app/library/redis/redis.service';
 import { CreateConfigDto, UpdateConfigDto, ConfigQueryDto } from './dto/config.dto';
-import type { Prisma } from '@prisma/client';
+import {
+  DrizzleService,
+  SysConfig,
+  insertWithAudit,
+  softDeleteWhere,
+  updateWithAudit,
+  withSoftDelete,
+} from '../../library/drizzle';
 
 const CONFIG_CACHE_PREFIX = 'config:';
 const CONFIG_CACHE_TTL = 86400; // 24 hours
@@ -17,8 +24,8 @@ export class ConfigService {
   private readonly logger = new Logger(ConfigService.name);
 
   constructor(
-    private prisma: PrismaService,
-    private redis: RedisService,
+    private readonly drizzle: DrizzleService,
+    private readonly redis: RedisService,
   ) {}
 
   /** 获取缓存键 */
@@ -30,44 +37,41 @@ export class ConfigService {
   async findPage(dto: ConfigQueryDto) {
     const { pageNo = 1, pageSize = 10, configKey, status } = dto;
     const skip = (pageNo - 1) * pageSize;
-    const take = pageSize;
-
-    const where: Prisma.SysConfigWhereInput = {
-      deletedAt: null,
-    };
-    if (configKey) {
-      where.configKey = { contains: configKey, mode: 'insensitive' };
-    }
-    if (status !== undefined) {
-      where.status = status;
-    }
+    const where = and(
+      withSoftDelete(SysConfig),
+      configKey ? ilike(SysConfig.configKey, `%${configKey}%`) : undefined,
+      status !== undefined ? eq(SysConfig.status, status) : undefined,
+    );
 
     const [list, total] = await Promise.all([
-      this.prisma.sysConfig.findMany({
-        skip,
-        take,
-        where,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.sysConfig.count({ where }),
+      this.drizzle.db
+        .select()
+        .from(SysConfig)
+        .where(where)
+        .orderBy(desc(SysConfig.createdAt))
+        .limit(pageSize)
+        .offset(skip),
+      this.drizzle.db
+        .select({ total: sql<number>`count(*)` })
+        .from(SysConfig)
+        .where(where),
     ]);
 
-    return { list, total, pageNo, pageSize };
+    return { list, total: total[0]?.total ?? 0, pageNo, pageSize };
   }
 
   /** 获取所有启用的配置 (不缓存) */
   async findAll() {
-    return this.prisma.sysConfig.findMany({
-      where: { status: 1, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.drizzle.db
+      .select()
+      .from(SysConfig)
+      .where(and(withSoftDelete(SysConfig), eq(SysConfig.status, 1)))
+      .orderBy(desc(SysConfig.createdAt));
   }
 
   /** 根据 ID 获取配置详情 */
   async findOne(id: number) {
-    const config = await this.prisma.sysConfig.findUnique({
-      where: { id, deletedAt: null },
-    });
+    const config = await this.drizzle.findFirst(SysConfig, eq(SysConfig.id, id));
     if (!config) {
       throw new NotFoundException(`配置 ID=${id} 不存在`);
     }
@@ -89,9 +93,13 @@ export class ConfigService {
     }
 
     // 2. 从数据库获取
-    const config = await this.prisma.sysConfig.findFirst({
-      where: { configKey: key, status: 1, deletedAt: null },
-    });
+    const config = await this.drizzle.findFirst(
+      SysConfig,
+      and(
+        eq(SysConfig.configKey, key),
+        eq(SysConfig.status, 1),
+      ),
+    );
 
     if (!config) {
       return null;
@@ -133,16 +141,19 @@ export class ConfigService {
 
     // 3. 从数据库获取缺失的配置
     if (missingKeys.length > 0) {
-      const configs = await this.prisma.sysConfig.findMany({
-        where: {
-          configKey: { in: missingKeys },
-          status: 1,
-          deletedAt: null,
-        },
-      });
+      const filteredConfigs = await this.drizzle.db
+        .select()
+        .from(SysConfig)
+        .where(
+          and(
+            withSoftDelete(SysConfig),
+            inArray(SysConfig.configKey, missingKeys),
+            eq(SysConfig.status, 1),
+          ),
+        );
 
       // 4. 使用 pipeline 批量写入缓存
-      const cacheEntries = configs.map(config => ({
+      const cacheEntries = filteredConfigs.map(config => ({
         key: this.getCacheKey(config.configKey),
         value: config.configValue,
       }));
@@ -161,7 +172,7 @@ export class ConfigService {
       }
 
       // 5. 合并结果
-      configs.forEach(config => {
+      filteredConfigs.forEach(config => {
         result[config.configKey] = config.configValue;
       });
     }
@@ -171,48 +182,41 @@ export class ConfigService {
 
   /** 创建配置 */
   async create(dto: CreateConfigDto) {
-    // 检查 key 唯一性
-    const existing = await this.prisma.sysConfig.findUnique({
-      where: { configKey: dto.configKey },
-    });
+    const existing = await this.drizzle.findFirst(SysConfig, eq(SysConfig.configKey, dto.configKey));
     if (existing) {
       throw new ConflictException(`配置键 '${dto.configKey}' 已存在`);
     }
 
-    return this.prisma.sysConfig.create({
-      data: {
-        configKey: dto.configKey,
-        configValue: dto.configValue,
-        description: dto.description ?? '',
-        status: dto.status ?? 1,
-      },
+    const createdConfigs = await insertWithAudit(this.drizzle.db, SysConfig, {
+      configKey: dto.configKey,
+      configValue: dto.configValue,
+      description: dto.description ?? '',
+      status: dto.status ?? 1,
+      updatedAt: new Date(),
     });
+    return Array.isArray(createdConfigs) ? createdConfigs[0] ?? null : createdConfigs;
   }
 
   /** 更新配置 */
   async update(id: number, dto: UpdateConfigDto) {
-    const existing = await this.prisma.sysConfig.findUnique({ where: { id } });
+    const existing = await this.drizzle.findFirst(SysConfig, eq(SysConfig.id, id));
     if (!existing) {
       throw new NotFoundException(`配置 ID=${id} 不存在`);
     }
 
     // 如果修改了 key，检查唯一性
     if (dto.configKey && dto.configKey !== existing.configKey) {
-      const keyExists = await this.prisma.sysConfig.findUnique({
-        where: { configKey: dto.configKey },
-      });
+      const keyExists = await this.drizzle.findFirst(SysConfig, eq(SysConfig.configKey, dto.configKey));
       if (keyExists) {
         throw new ConflictException(`配置键 '${dto.configKey}' 已存在`);
       }
     }
 
-    const updated = await this.prisma.sysConfig.update({
-      where: { id },
-      data: {
-        ...dto,
-        status: dto.status !== undefined ? +dto.status : undefined,
-      },
+    const updatedConfigs = await updateWithAudit(this.drizzle.db, SysConfig, eq(SysConfig.id, id), {
+      ...dto,
+      status: dto.status !== undefined ? +dto.status : undefined,
     });
+    const updated = Array.isArray(updatedConfigs) ? updatedConfigs[0] ?? null : updatedConfigs;
 
     // 删除缓存
     await this.clearCache(existing.configKey);
@@ -225,7 +229,7 @@ export class ConfigService {
 
   /** 删除配置 (软删除) */
   async remove(id: number) {
-    const existing = await this.prisma.sysConfig.findUnique({ where: { id } });
+    const existing = await this.drizzle.findFirst(SysConfig, eq(SysConfig.id, id));
     if (!existing) {
       throw new NotFoundException(`配置 ID=${id} 不存在`);
     }
@@ -233,7 +237,8 @@ export class ConfigService {
     // 删除缓存
     await this.clearCache(existing.configKey);
 
-    return this.prisma.sysConfig.delete({ where: { id } });
+    const deletedConfigs = await softDeleteWhere(this.drizzle.db, SysConfig, eq(SysConfig.id, id));
+    return Array.isArray(deletedConfigs) ? deletedConfigs[0] ?? null : deletedConfigs;
   }
 
   /** 清除缓存 */

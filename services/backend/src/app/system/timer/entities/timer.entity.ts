@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskType, Timer } from '@prisma/client';
 import { BaseEntity } from '@/common/entities/base.entity';
+import type { TaskTypeValue } from '@/app/library/drizzle';
 
-export class TimerEntity extends BaseEntity implements Timer {
+export class TimerEntity extends BaseEntity {
   @ApiProperty({ description: '定时任务名称' })
   name: string;
 
@@ -16,7 +16,7 @@ export class TimerEntity extends BaseEntity implements Timer {
     description: '任务类型：HTTP | SCRIPT',
     enum: ['HTTP', 'SCRIPT'],
   })
-  taskType: TaskType;
+  taskType: TaskTypeValue;
 
   @ApiProperty({ description: '目标 URL 或脚本路径' })
   target: string;

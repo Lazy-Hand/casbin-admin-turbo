@@ -88,7 +88,7 @@ npm run db:enable-slow-log
 ### 首次设置
 ```bash
 # 1. 应用数据库迁移（包含索引）
-npx prisma migrate deploy
+npm run db:migrate
 
 # 2. 验证索引
 npm run db:check-indexes
@@ -149,7 +149,7 @@ npm run test:performance
 **解决**:
 ```bash
 # 运行 seed 脚本
-npx prisma db seed
+npm run db:seed
 ```
 
 ### 问题2: 索引检查显示缺少索引
@@ -158,7 +158,7 @@ npx prisma db seed
 **解决**:
 ```bash
 # 应用迁移
-npx prisma migrate deploy
+npm run db:migrate
 ```
 
 ### 问题3: psql 命令不可用
@@ -182,7 +182,7 @@ docker exec -i postgres_container psql -U user -d dbname < script.sql
 
 - [DATABASE_GUIDE.md](../docs/database/DATABASE_GUIDE.md) - 数据库优化完整指南
 - [OPTIMIZATION_STATUS.md](../docs/database/OPTIMIZATION_STATUS.md) - 优化实施状态
-- [Prisma Performance](https://www.prisma.io/docs/guides/performance-and-optimization)
+- [Drizzle Kit 文档](https://orm.drizzle.team/docs/kit-overview)
 
 ---
 

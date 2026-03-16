@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PrismaService } from 'nestjs-prisma';
+import { DrizzleService } from './app/library/drizzle';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -12,8 +12,12 @@ describe('AppController', () => {
       providers: [
         AppService,
         {
-          provide: PrismaService,
-          useValue: { user: { findMany: jest.fn() } },
+          provide: DrizzleService,
+          useValue: {
+            findMany: jest.fn(),
+            findFirst: jest.fn(),
+            insertWithAudit: jest.fn(),
+          },
         },
       ],
     }).compile();

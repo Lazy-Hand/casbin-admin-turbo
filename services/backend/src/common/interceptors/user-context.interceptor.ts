@@ -5,12 +5,12 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { asyncLocalStorage } from '../../app/library/prisma/user-context';
+import { asyncLocalStorage } from '../../app/library/context/user-context';
 
 /**
  * 用户上下文拦截器
  * 将当前请求的用户 ID 存储到 AsyncLocalStorage 中
- * 供 Prisma middleware 使用，自动设置 createdBy/updatedBy
+ * 供数据库审计辅助层使用，自动设置 createdBy/updatedBy
  */
 @Injectable()
 export class UserContextInterceptor implements NestInterceptor {

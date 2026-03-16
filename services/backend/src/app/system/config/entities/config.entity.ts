@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SysConfig } from '@prisma/client';
 import { BaseEntity } from '@/common/entities/base.entity';
 
-export class ConfigEntity extends BaseEntity implements SysConfig {
+export class ConfigEntity extends BaseEntity {
   @ApiProperty({ description: '配置键' })
   configKey: string;
 

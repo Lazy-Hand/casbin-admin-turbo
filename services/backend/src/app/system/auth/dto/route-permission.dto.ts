@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MenuType } from '@prisma/client';
+import type { MenuTypeValue } from '@/app/library/drizzle';
 
 /**
  * 路由/菜单权限树节点（供前端路由渲染）
@@ -20,8 +20,8 @@ export class RoutePermissionTreeNodeDto {
   @ApiProperty({ description: '图标', required: false })
   icon?: string;
 
-  @ApiProperty({ description: '菜单类型', enum: MenuType, required: false })
-  menuType?: MenuType | null;
+  @ApiProperty({ description: '菜单类型', enum: ['menu', 'page', 'link', 'iframe', 'window', 'divider', 'group'], required: false })
+  menuType?: MenuTypeValue | null;
 
   @ApiProperty({ description: '排序' })
   sort: number;
