@@ -5,7 +5,7 @@
         <div class="flex gap-2">
           <NButton @click="toggleDarkMode">
             <template #icon>
-              <i class="pi pi-moon" />
+              <AppIcon icon="ionicons5:MoonOutline" />
             </template>
             Toggle Dark Mode
           </NButton>

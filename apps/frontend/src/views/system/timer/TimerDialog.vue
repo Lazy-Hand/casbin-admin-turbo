@@ -36,7 +36,7 @@
           <template #suffix>
             <NButton text size="small" @click="openCronGenerator">
               <template #icon>
-                <i class="pi pi-clock" />
+                <AppIcon icon="antd:ClockCircleOutlined" />
               </template>
             </NButton>
           </template>

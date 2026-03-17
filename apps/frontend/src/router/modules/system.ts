@@ -7,7 +7,7 @@ export default [
     name: 'System',
     meta: {
       title: '系统管理',
-      icon: 'pi pi-fw pi-cog',
+      icon: 'antd:SettingOutlined',
       type: 'menu',
     },
     redirect: '/system/user',
@@ -18,7 +18,7 @@ export default [
         name: 'SystemUser',
         meta: {
           title: '用户管理',
-          icon: 'pi pi-fw pi-user',
+          icon: 'antd:UserOutlined',
           type: 'page',
           cache: false,
         },
@@ -29,7 +29,7 @@ export default [
         name: 'SystemRole',
         meta: {
           title: '角色管理',
-          icon: 'pi pi-fw pi-users',
+          icon: 'antd:TeamOutlined',
           type: 'page',
           cache: false,
         },
@@ -40,7 +40,7 @@ export default [
         name: 'SystemDept',
         meta: {
           title: '部门管理',
-          icon: 'pi pi-fw pi-sitemap',
+          icon: 'antd:ApartmentOutlined',
           type: 'page',
           cache: false,
         },
@@ -51,7 +51,7 @@ export default [
         name: 'SystemPost',
         meta: {
           title: '岗位管理',
-          icon: 'pi pi-fw pi-briefcase',
+          icon: 'antd:SolutionOutlined',
           type: 'page',
           cache: false,
         },
@@ -62,7 +62,7 @@ export default [
         name: 'SystemMenu',
         meta: {
           title: '菜单管理',
-          icon: 'pi pi-fw pi-bars',
+          icon: 'antd:MenuOutlined',
           type: 'page',
           cache: false,
         },
@@ -73,7 +73,7 @@ export default [
         name: 'SystemTimer',
         meta: {
           title: '定时任务',
-          icon: 'pi pi-fw pi-clock',
+          icon: 'antd:ClockCircleOutlined',
           type: 'page',
           cache: false,
         },
@@ -84,7 +84,7 @@ export default [
         name: 'SystemFile',
         meta: {
           title: '文件管理',
-          icon: 'pi pi-fw pi-folder',
+          icon: 'antd:FolderOutlined',
           type: 'page',
           cache: false,
         },
@@ -95,7 +95,7 @@ export default [
         name: 'SystemDictionary',
         meta: {
           title: '字典管理',
-          icon: 'pi pi-fw pi-book',
+          icon: 'antd:BookOutlined',
           type: 'page',
           cache: false,
         },
@@ -106,7 +106,7 @@ export default [
         name: 'SystemLog',
         meta: {
           title: '日志管理',
-          icon: 'pi pi-fw pi-file-text',
+          icon: 'antd:FileTextOutlined',
           type: 'page',
           cache: false,
         },

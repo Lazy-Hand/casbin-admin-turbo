@@ -15,13 +15,13 @@
           />
           <NButton size="small" type="primary" @click="handleRefresh">
             <template #icon>
-              <i class="pi pi-search" />
+              <AppIcon icon="antd:SearchOutlined" />
             </template>
             查询
           </NButton>
           <NButton size="small" @click="handleRefresh">
             <template #icon>
-              <i class="pi pi-refresh" />
+              <AppIcon icon="antd:ReloadOutlined" />
             </template>
             刷新
           </NButton>
@@ -44,7 +44,7 @@
                   {{ log.status === 1 ? '成功' : '失败' }}
                 </NTag>
                 <span class="text-sm text-gray-600">
-                  <i class="pi pi-clock mr-1" />
+                  <AppIcon icon="antd:ClockCircleOutlined" class="mr-1" />
                   {{ formatTime(log.startAt) }}
                 </span>
                 <span v-if="log.duration" class="text-xs text-gray-500">

@@ -24,13 +24,13 @@
           <div class="flex gap-2">
             <NButton type="primary" @click="handleSearch">
               <template #icon>
-                <i class="pi pi-search" />
+                <AppIcon icon="antd:SearchOutlined" />
               </template>
               查询
             </NButton>
             <NButton @click="handleReset">
               <template #icon>
-                <i class="pi pi-refresh" />
+                <AppIcon icon="antd:ReloadOutlined" />
               </template>
               重置
             </NButton>
@@ -44,7 +44,7 @@
         <n-space>
           <NButton type="primary" size="small" @click="openDialog()" v-permission="['USER_ADD']">
             <template #icon>
-              <i class="pi pi-plus" />
+              <AppIcon icon="antd:PlusOutlined" />
             </template>
             新增用户
           </NButton>
@@ -85,6 +85,7 @@ import {
   type PaginationProps,
 } from 'naive-ui'
 import DictTag from '@/components/Dict/DictTag.vue'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 import type { Dept } from '@/api/dept'
 import { usePermission } from '@/composables/usePermission'
 
@@ -225,7 +226,7 @@ const columns: DataTableColumns<User> = [
               size: 'small',
               onClick: () => openDialog(row.id),
             },
-            { icon: () => h('i', { class: 'pi pi-pencil' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:EditOutlined' }) },
           ),
         )
       }
@@ -240,7 +241,7 @@ const columns: DataTableColumns<User> = [
               size: 'small',
               onClick: () => confirmDelete(row),
             },
-            { icon: () => h('i', { class: 'pi pi-trash' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:DeleteOutlined' }) },
           ),
         )
       }

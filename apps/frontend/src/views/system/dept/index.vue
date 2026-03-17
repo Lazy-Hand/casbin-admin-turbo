@@ -17,13 +17,13 @@
           <div class="flex gap-2">
             <NButton type="primary" @click="handleSearch">
               <template #icon>
-                <i class="pi pi-search" />
+                <AppIcon icon="antd:SearchOutlined" />
               </template>
               查询
             </NButton>
             <NButton @click="handleReset">
               <template #icon>
-                <i class="pi pi-refresh" />
+                <AppIcon icon="antd:ReloadOutlined" />
               </template>
               重置
             </NButton>
@@ -37,19 +37,19 @@
         <n-space>
           <NButton type="primary" size="small" @click="openDialog()" v-permission="['DEPT_ADD']">
             <template #icon>
-              <i class="pi pi-plus" />
+              <AppIcon icon="antd:PlusOutlined" />
             </template>
             新增部门
           </NButton>
           <NButton type="info" size="small" @click="expandAll">
             <template #icon>
-              <i class="pi pi-chevron-down" />
+              <AppIcon icon="antd:DownOutlined" />
             </template>
             展开全部
           </NButton>
           <NButton type="info" size="small" @click="collapseAll">
             <template #icon>
-              <i class="pi pi-chevron-up" />
+              <AppIcon icon="antd:UpOutlined" />
             </template>
             折叠全部
           </NButton>

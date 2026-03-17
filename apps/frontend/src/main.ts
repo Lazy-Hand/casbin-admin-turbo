@@ -4,6 +4,7 @@ import './styles/index.scss'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { registerPermissionDirective } from '@/directives/permission'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 const app = createApp(App)
 
 import App from './App.vue'
@@ -16,6 +17,7 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 app.use(i18n)
+app.component('AppIcon', DynamicIcon)
 registerPermissionDirective(app, pinia)
 
 createRouterGuard(router)

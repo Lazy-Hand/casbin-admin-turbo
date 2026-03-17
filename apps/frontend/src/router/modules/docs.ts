@@ -8,7 +8,7 @@ export default [
     redirect: '/docs/shadcn-vue',
     meta: {
       title: 'Docs',
-      icon: 'pi pi-fw pi-book',
+      icon: 'antd:BookOutlined',
       type: 'menu',
     },
     children: [
@@ -18,7 +18,7 @@ export default [
         component: () => import('@/views/iframe/index.vue'),
         meta: {
           title: 'shadcn-vue',
-          icon: 'pi pi-fw pi-book',
+          icon: 'antd:BookOutlined',
           type: 'iframe',
           frameUrl: 'https://shadcn-vue.com/',
         },
@@ -29,7 +29,7 @@ export default [
         component: () => import('@/views/iframe/index.vue'),
         meta: {
           title: 'prime-vue',
-          icon: 'pi pi-fw pi-book',
+          icon: 'antd:BookOutlined',
           type: 'iframe',
           frameUrl: 'https://primevue.org/',
         },
@@ -40,7 +40,7 @@ export default [
         component: AppLayout,
         meta: {
           title: 'Github',
-          icon: 'pi pi-fw pi-github',
+          icon: 'antd:GithubOutlined',
           type: 'link',
           url: 'https://github.com/primefaces/primevue',
         },

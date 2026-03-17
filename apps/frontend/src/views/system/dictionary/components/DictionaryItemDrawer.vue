@@ -6,6 +6,7 @@ import { usePermission } from '@/composables/usePermission'
 import { useDialog, useMessage, type DataTableColumns } from 'naive-ui'
 import { NDrawer, NDrawerContent, NButton, NDataTable, NSpace } from 'naive-ui'
 import DictTag from '@/components/Dict/DictTag.vue'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 import DictionaryItemDialog from './DictionaryItemDialog.vue'
 
 const message = useMessage()
@@ -43,7 +44,7 @@ const columns: DataTableColumns<DictionaryItem> = [
               quaternary: true,
               onClick: () => editItem(row),
             },
-            { icon: () => h('i', { class: 'pi pi-pencil' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:EditOutlined' }) },
           ),
         )
       }
@@ -59,7 +60,7 @@ const columns: DataTableColumns<DictionaryItem> = [
               type: 'error',
               onClick: () => confirmDeleteItem(row),
             },
-            { icon: () => h('i', { class: 'pi pi-trash' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:DeleteOutlined' }) },
           ),
         )
       }
@@ -141,7 +142,7 @@ defineExpose({
               @click="openNew"
             >
               <template #icon>
-                <i class="pi pi-plus" />
+                <AppIcon icon="antd:PlusOutlined" />
               </template>
               新增字典项
             </NButton>

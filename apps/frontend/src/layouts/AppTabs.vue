@@ -3,7 +3,7 @@
     <!-- Left Scroll Button -->
     <NButton v-if="isScrollable" text class="w-8 h-full shrink-0" @click="scrollLeft">
       <template #icon>
-        <NIcon size="16"><i class="pi pi-angle-left" /></NIcon>
+        <NIcon size="16"><AppIcon icon="antd:LeftOutlined" /></NIcon>
       </template>
     </NButton>
 
@@ -41,10 +41,11 @@
         <!-- Close Button -->
         <span
           v-if="tabsStore.tabs.length > 1"
-          class="pi pi-times text-xs! ml-2 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+          class="text-xs! ml-2 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-200 dark:hover:bg-gray-600"
           :class="{ 'opacity-100!': tab.fullPath === route.fullPath }"
           @click.stop="handleCloseTab(tab.fullPath)"
         >
+          <AppIcon icon="antd:CloseOutlined" />
         </span>
       </div>
     </div>
@@ -52,7 +53,7 @@
     <!-- Right Scroll Button -->
     <NButton v-if="isScrollable" text class="w-8 h-full shrink-0" @click="scrollRight">
       <template #icon>
-        <NIcon size="16"><i class="pi pi-angle-right" /></NIcon>
+        <NIcon size="16"><AppIcon icon="antd:RightOutlined" /></NIcon>
       </template>
     </NButton>
 

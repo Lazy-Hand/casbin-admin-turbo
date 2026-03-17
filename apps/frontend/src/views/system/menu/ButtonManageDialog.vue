@@ -18,13 +18,13 @@
           <div class="flex gap-2">
             <NButton type="primary" @click="handleSearch">
               <template #icon>
-                <i class="pi pi-search" />
+                <AppIcon icon="antd:SearchOutlined" />
               </template>
               查询
             </NButton>
             <NButton @click="handleReset">
               <template #icon>
-                <i class="pi pi-refresh" />
+                <AppIcon icon="antd:ReloadOutlined" />
               </template>
               重置
             </NButton>
@@ -42,7 +42,7 @@
           @click="openButtonForm()"
         >
           <template #icon>
-            <i class="pi pi-plus" />
+            <AppIcon icon="antd:PlusOutlined" />
           </template>
           新增按钮
         </NButton>
@@ -88,6 +88,7 @@ import {
 import { deleteMenu, getButtonPermissionPage, type Menu } from '@/api/menu'
 import { usePermission } from '@/composables/usePermission'
 import DictTag from '@/components/Dict/DictTag.vue'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 import ButtonFormDialog from './ButtonFormDialog.vue'
 
 const emit = defineEmits<{
@@ -175,7 +176,7 @@ const columns: DataTableColumns<Menu> = [
               size: 'small',
               onClick: () => openButtonForm(row.id),
             },
-            { icon: () => h('i', { class: 'pi pi-pencil' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:EditOutlined' }) },
           ),
         )
       }
@@ -190,7 +191,7 @@ const columns: DataTableColumns<Menu> = [
               size: 'small',
               onClick: () => confirmDelete(row),
             },
-            { icon: () => h('i', { class: 'pi pi-trash' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:DeleteOutlined' }) },
           ),
         )
       }

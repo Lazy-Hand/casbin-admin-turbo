@@ -26,13 +26,13 @@
         <div class="flex gap-2">
           <NButton type="primary" @click="handleSearch">
             <template #icon>
-              <i class="pi pi-search" />
+              <AppIcon icon="antd:SearchOutlined" />
             </template>
             查询
           </NButton>
           <NButton @click="handleReset">
             <template #icon>
-              <i class="pi pi-refresh" />
+              <AppIcon icon="antd:ReloadOutlined" />
             </template>
             重置
           </NButton>

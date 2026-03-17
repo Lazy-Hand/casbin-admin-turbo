@@ -1,10 +1,14 @@
 <template>
   <NInput v-model:value="iconValue" placeholder="点击选择图标" readonly>
     <template #prefix>
-      <DynamicIcon :icon="iconValue" />
+      <NIcon v-if="iconValue">
+        <DynamicIcon :icon="iconValue" />
+      </NIcon>
     </template>
     <template #suffix>
-      <i class="pi pi-ellipsis-v cursor-pointer" @click="showPicker = true"></i>
+      <NIcon class="cursor-pointer" @click="showPicker = true">
+        <DynamicIcon icon="antd:MoreOutlined" />
+      </NIcon>
     </template>
   </NInput>
 

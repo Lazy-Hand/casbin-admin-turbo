@@ -1,5 +1,4 @@
-import { ref, computed, shallowRef } from 'vue'
-import { PRIME_ICONS } from './generated-icons'
+import { computed, ref, shallowRef } from 'vue'
 
 export interface IconItem {
   name: string
@@ -7,34 +6,61 @@ export interface IconItem {
   component?: unknown
 }
 
-export interface PrimeIconItem {
-  name: string
-  className: string
-}
-
 const PAGE_SIZE = 64
 
+function isIconComponent(value: unknown) {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    ('render' in value || 'setup' in value || '__asyncLoader' in value)
+  )
+}
+
+function formatDisplayName(key: string, prefixes: RegExp[] = []) {
+  const normalized = prefixes.reduce((name, pattern) => name.replace(pattern, ''), key)
+
+  return (
+    normalized
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/\s+/g, ' ')
+      .trim() || key
+  )
+}
+
+async function loadIconLibrary(
+  loader: () => Promise<Record<string, unknown>>,
+  displayNamePrefixes: RegExp[] = [],
+) {
+  const iconsModule = await loader()
+  const icons: IconItem[] = []
+
+  for (const key in iconsModule) {
+    const value = iconsModule[key]
+    if (!isIconComponent(value)) continue
+
+    icons.push({
+      name: key,
+      displayName: formatDisplayName(key, displayNamePrefixes),
+      component: value,
+    })
+  }
+
+  icons.sort((a, b) => a.name.localeCompare(b.name))
+  return icons
+}
+
 export function useIconLoader() {
-  const primeIconsList = ref<PrimeIconItem[]>(PRIME_ICONS)
   const materialIconsList = shallowRef<IconItem[]>([])
-  const loadingPrime = ref(false)
+  const antdIconsList = shallowRef<IconItem[]>([])
+  const ioniconsIconsList = shallowRef<IconItem[]>([])
   const loadingMaterial = ref(false)
+  const loadingAntd = ref(false)
+  const loadingIonicons = ref(false)
 
-  const primeIconsPage = ref(1)
   const materialIconsPage = ref(1)
+  const antdIconsPage = ref(1)
+  const ioniconsIconsPage = ref(1)
 
-  // PrimeIcons 分页
-  const paginatedPrimeIcons = computed(() => {
-    const start = (primeIconsPage.value - 1) * PAGE_SIZE
-    const end = start + PAGE_SIZE
-    return primeIconsList.value.slice(start, end)
-  })
-
-  const primeIconsTotalPages = computed(() => {
-    return Math.ceil(primeIconsList.value.length / PAGE_SIZE)
-  })
-
-  // Material Icons 分页
   const paginatedMaterialIcons = computed(() => {
     const start = (materialIconsPage.value - 1) * PAGE_SIZE
     const end = start + PAGE_SIZE
@@ -45,35 +71,35 @@ export function useIconLoader() {
     return Math.ceil(materialIconsList.value.length / PAGE_SIZE)
   })
 
+  const paginatedAntdIcons = computed(() => {
+    const start = (antdIconsPage.value - 1) * PAGE_SIZE
+    const end = start + PAGE_SIZE
+    return antdIconsList.value.slice(start, end)
+  })
+
+  const antdIconsTotalPages = computed(() => {
+    return Math.ceil(antdIconsList.value.length / PAGE_SIZE)
+  })
+
+  const paginatedIoniconsIcons = computed(() => {
+    const start = (ioniconsIconsPage.value - 1) * PAGE_SIZE
+    const end = start + PAGE_SIZE
+    return ioniconsIconsList.value.slice(start, end)
+  })
+
+  const ioniconsIconsTotalPages = computed(() => {
+    return Math.ceil(ioniconsIconsList.value.length / PAGE_SIZE)
+  })
+
   const loadMaterialIcons = async () => {
     if (materialIconsList.value.length > 0) return
 
     loadingMaterial.value = true
     try {
-      const MaterialIcons = await import('@vicons/material')
-      const icons: IconItem[] = []
-
-      for (const key in MaterialIcons) {
-        const value = MaterialIcons[key as keyof typeof MaterialIcons]
-        if (
-          value &&
-          typeof value === 'object' &&
-          ('render' in value || 'setup' in value || '__asyncLoader' in value)
-        ) {
-          const displayName = key
-            .replace(/^(Md|Filled|Outlined|Rounded|Sharp|TwoTone)/, '')
-            .replace(/([A-Z])/g, ' $1')
-            .trim()
-          icons.push({
-            name: key,
-            displayName: displayName || key,
-            component: value,
-          })
-        }
-      }
-
-      icons.sort((a, b) => a.name.localeCompare(b.name))
-      materialIconsList.value = icons
+      materialIconsList.value = await loadIconLibrary(
+        () => import('@vicons/material') as Promise<Record<string, unknown>>,
+        [/^(Md|Filled|Outlined|Rounded|Sharp|TwoTone)/],
+      )
     } catch (error) {
       console.error('Failed to load material icons:', error)
     } finally {
@@ -81,19 +107,57 @@ export function useIconLoader() {
     }
   }
 
+  const loadAntdIcons = async () => {
+    if (antdIconsList.value.length > 0) return
+
+    loadingAntd.value = true
+    try {
+      antdIconsList.value = await loadIconLibrary(
+        () => import('@vicons/antd') as Promise<Record<string, unknown>>,
+        [/^(Ai|Outlined|Filled|Twotone)/],
+      )
+    } catch (error) {
+      console.error('Failed to load antd icons:', error)
+    } finally {
+      loadingAntd.value = false
+    }
+  }
+
+  const loadIoniconsIcons = async () => {
+    if (ioniconsIconsList.value.length > 0) return
+
+    loadingIonicons.value = true
+    try {
+      ioniconsIconsList.value = await loadIconLibrary(
+        () => import('@vicons/ionicons5') as Promise<Record<string, unknown>>,
+        [/^(Io|Ios|Logo|Md)/],
+      )
+    } catch (error) {
+      console.error('Failed to load ionicons icons:', error)
+    } finally {
+      loadingIonicons.value = false
+    }
+  }
+
   return {
-    // State
-    primeIconsList,
     materialIconsList,
-    loadingPrime,
+    antdIconsList,
+    ioniconsIconsList,
     loadingMaterial,
-    primeIconsPage,
+    loadingAntd,
+    loadingIonicons,
     materialIconsPage,
-    paginatedPrimeIcons,
+    antdIconsPage,
+    ioniconsIconsPage,
     paginatedMaterialIcons,
-    primeIconsTotalPages,
+    paginatedAntdIcons,
+    paginatedIoniconsIcons,
     materialIconsTotalPages,
+    antdIconsTotalPages,
+    ioniconsIconsTotalPages,
     PAGE_SIZE,
     loadMaterialIcons,
+    loadAntdIcons,
+    loadIoniconsIcons,
   }
 }

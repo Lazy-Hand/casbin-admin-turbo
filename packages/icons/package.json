@@ -1,0 +1,44 @@
+{
+  "name": "@casbin-admin/icons",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist",
+    "icons"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./meta": {
+      "types": "./dist/meta.d.ts",
+      "browser": "./dist/meta.js",
+      "import": "./dist/meta.js",
+      "default": "./dist/meta.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js",
+      "default": "./dist/vite.js"
+    }
+  },
+  "scripts": {
+    "build": "pnpm exec tsc -p tsconfig.json",
+    "postinstall": "pnpm exec tsc -p tsconfig.json",
+    "type-check": "pnpm exec tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "unplugin-icons": "^22.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

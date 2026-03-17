@@ -12,13 +12,13 @@
           <div class="flex gap-2">
             <NButton type="primary" @click="handleSearch">
               <template #icon>
-                <i class="pi pi-search" />
+                <AppIcon icon="antd:SearchOutlined" />
               </template>
               查询
             </NButton>
             <NButton @click="handleReset">
               <template #icon>
-                <i class="pi pi-refresh" />
+                <AppIcon icon="antd:ReloadOutlined" />
               </template>
               重置
             </NButton>
@@ -32,7 +32,7 @@
         <NSpace>
           <NButton type="primary" size="small" @click="openDialog()" v-permission="['MENU_ADD']">
             <template #icon>
-              <i class="pi pi-plus" />
+              <AppIcon icon="antd:PlusOutlined" />
             </template>
             新增菜单
           </NButton>
@@ -72,6 +72,7 @@ import {
   NDataTable,
   type DataTableColumns,
 } from 'naive-ui'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 import { renderIcon } from '@/layouts/composables/useMenu'
 import { usePermission } from '@/composables/usePermission'
 
@@ -161,7 +162,7 @@ const columns: DataTableColumns<Menu> = [
               title: '按钮管理',
               onClick: () => openButtonManageDialog(row),
             },
-            { icon: () => h('i', { class: 'pi pi-th-large' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:AppstoreOutlined' }) },
           ),
         )
       }
@@ -177,7 +178,7 @@ const columns: DataTableColumns<Menu> = [
               onClick: () => openDialog(undefined, row.id),
               title: 'Add Child',
             },
-            { icon: () => h('i', { class: 'pi pi-plus' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:PlusOutlined' }) },
           ),
         )
       }
@@ -192,7 +193,7 @@ const columns: DataTableColumns<Menu> = [
               size: 'small',
               onClick: () => openDialog(row.id),
             },
-            { icon: () => h('i', { class: 'pi pi-pencil' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:EditOutlined' }) },
           ),
         )
       }
@@ -207,7 +208,7 @@ const columns: DataTableColumns<Menu> = [
               size: 'small',
               onClick: () => confirmDelete(row),
             },
-            { icon: () => h('i', { class: 'pi pi-trash' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:DeleteOutlined' }) },
           ),
         )
       }

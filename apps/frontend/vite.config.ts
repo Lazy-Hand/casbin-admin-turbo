@@ -9,6 +9,7 @@ import tailwindcss from "@tailwindcss/vite";
 import AutoImport from "unplugin-auto-import/vite";
 import { autoProxyPlugin } from "./plugins/auto-proxy";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
+import { createIconsPlugin, createIconsResolver, resolveAppIconDir } from "@casbin-admin/icons/vite";
 
 const manualChunks = (id: string) => {
   if (!id.includes("node_modules")) {
@@ -48,13 +49,14 @@ const manualChunks = (id: string) => {
     return "data";
   }
 
-  if (id.includes("lucide-vue-next") || id.includes("primeicons")) {
+  if (id.includes("lucide-vue-next")) {
     return "icons";
   }
 };
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
+  const appIconDir = resolveAppIconDir(process.cwd());
 
   return {
     plugins: [
@@ -63,7 +65,16 @@ export default defineConfig(({ mode }) => {
       vueDevTools(),
       Components({
         dts: "types/components.d.ts",
-        resolvers: [NaiveUiResolver(), ProNaiveUIResolver()],
+        resolvers: [
+          NaiveUiResolver(),
+          ProNaiveUIResolver(),
+          createIconsResolver({
+            appIconDir,
+          }),
+        ],
+      }),
+      createIconsPlugin({
+        appIconDir,
       }),
       tailwindcss({
         optimize: {

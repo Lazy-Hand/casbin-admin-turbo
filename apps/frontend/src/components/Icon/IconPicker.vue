@@ -7,46 +7,58 @@
     @update:show="close"
   >
     <NTabs v-model:value="activeTab" type="line" animated>
-      <NTabPane name="primeicon" tab="PrimeIcons">
+      <NTabPane name="antd" tab="Ant Design">
         <div class="mb-4 flex gap-2">
-          <NInput v-model:value="primeSearch" placeholder="搜索图标..." clearable class="flex-1">
+          <NInput v-model:value="antdSearch" placeholder="搜索图标..." clearable class="flex-1">
             <template #prefix>
-              <i class="pi pi-search"></i>
+              <AppIcon icon="antd:SearchOutlined" />
             </template>
           </NInput>
           <NSelect
-            v-model:value="primeIconsPage"
-            :options="primePageOptions"
+            v-model:value="antdIconsPage"
+            :options="antdPageOptions"
             style="width: 120px"
             size="small"
           />
           <span class="text-sm text-gray-500 flex items-center">
-            共 {{ filteredPrimeIcons.length }} 个
+            共 {{ filteredAntdIcons.length }} 个
           </span>
         </div>
-        <div class="grid grid-cols-8 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
+        <div v-if="loadingAntd" class="text-center py-8">
+          <AppIcon icon="antd:LoadingOutlined" class="text-2xl animate-spin" />
+          <p class="text-sm text-gray-500 mt-2">加载中...</p>
+        </div>
+        <div v-else-if="filteredAntdIcons.length === 0" class="text-center py-8">
+          <p class="text-sm text-gray-500">没有找到图标</p>
+        </div>
+        <div v-else class="grid grid-cols-8 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
           <div
-            v-for="icon in searchPaginatedPrimeIcons"
-            :key="icon.className"
+            v-for="icon in searchPaginatedAntdIcons"
+            :key="icon.name"
             class="flex flex-col items-center justify-center p-3 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            :class="{ 'bg-primary/10 text-primary': selectedIcon === `primeicon:${icon.name}` }"
-            @click="selectIcon(icon.name, 'primeicon')"
+            :class="{ 'bg-primary/10 text-primary': selectedIcon === `antd:${icon.name}` }"
+            @click="selectIcon(icon.name, 'antd')"
           >
-            <i :class="icon.className" class="text-2xl mb-1"></i>
-            <span class="text-xs text-center truncate w-full">{{ icon.name }}</span>
+            <NIcon>
+              <component :is="icon.component" class="text-2xl mb-1"></component>
+            </NIcon>
+            <span class="text-xs text-center truncate w-full mt-2">{{ icon.displayName }}</span>
           </div>
         </div>
-        <div class="flex justify-center items-center gap-2 mt-4">
-          <NButton size="small" :disabled="primeIconsPage <= 1" @click="primeIconsPage--">
+        <div
+          v-if="!loadingAntd && filteredAntdIcons.length > 0"
+          class="flex justify-center items-center gap-2 mt-4"
+        >
+          <NButton size="small" :disabled="antdIconsPage <= 1" @click="antdIconsPage--">
             上一页
           </NButton>
           <span class="text-sm text-gray-500">
-            {{ primeIconsPage }} / {{ searchPrimeIconsTotalPages }}
+            {{ antdIconsPage }} / {{ searchAntdIconsTotalPages }}
           </span>
           <NButton
             size="small"
-            :disabled="primeIconsPage >= searchPrimeIconsTotalPages"
-            @click="primeIconsPage++"
+            :disabled="antdIconsPage >= searchAntdIconsTotalPages"
+            @click="antdIconsPage++"
           >
             下一页
           </NButton>
@@ -57,7 +69,7 @@
         <div class="mb-4 flex gap-2">
           <NInput v-model:value="materialSearch" placeholder="搜索图标..." clearable class="flex-1">
             <template #prefix>
-              <i class="pi pi-search"></i>
+              <AppIcon icon="antd:SearchOutlined" />
             </template>
           </NInput>
           <NSelect
@@ -71,7 +83,7 @@
           </span>
         </div>
         <div v-if="loadingMaterial" class="text-center py-8">
-          <i class="pi pi-spinner pi-spin text-2xl"></i>
+          <AppIcon icon="antd:LoadingOutlined" class="text-2xl animate-spin" />
           <p class="text-sm text-gray-500 mt-2">加载中...</p>
         </div>
         <div v-else-if="filteredMaterialIcons.length === 0" class="text-center py-8">
@@ -110,11 +122,73 @@
           </NButton>
         </div>
       </NTabPane>
+
+      <NTabPane name="ionicons5" tab="Ionicons5">
+        <div class="mb-4 flex gap-2">
+          <NInput v-model:value="ioniconsSearch" placeholder="搜索图标..." clearable class="flex-1">
+            <template #prefix>
+              <AppIcon icon="antd:SearchOutlined" />
+            </template>
+          </NInput>
+          <NSelect
+            v-model:value="ioniconsIconsPage"
+            :options="ioniconsPageOptions"
+            style="width: 120px"
+            size="small"
+          />
+          <span class="text-sm text-gray-500 flex items-center">
+            共 {{ filteredIoniconsIcons.length }} 个
+          </span>
+        </div>
+        <div v-if="loadingIonicons" class="text-center py-8">
+          <AppIcon icon="antd:LoadingOutlined" class="text-2xl animate-spin" />
+          <p class="text-sm text-gray-500 mt-2">加载中...</p>
+        </div>
+        <div v-else-if="filteredIoniconsIcons.length === 0" class="text-center py-8">
+          <p class="text-sm text-gray-500">没有找到图标</p>
+        </div>
+        <div v-else class="grid grid-cols-8 gap-2 max-h-96 overflow-y-auto custom-scrollbar">
+          <div
+            v-for="icon in searchPaginatedIoniconsIcons"
+            :key="icon.name"
+            class="flex flex-col items-center justify-center p-3 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            :class="{ 'bg-primary/10 text-primary': selectedIcon === `ionicons5:${icon.name}` }"
+            @click="selectIcon(icon.name, 'ionicons5')"
+          >
+            <NIcon>
+              <component :is="icon.component" class="text-2xl mb-1"></component>
+            </NIcon>
+            <span class="text-xs text-center truncate w-full mt-2">{{ icon.displayName }}</span>
+          </div>
+        </div>
+        <div
+          v-if="!loadingIonicons && filteredIoniconsIcons.length > 0"
+          class="flex justify-center items-center gap-2 mt-4"
+        >
+          <NButton
+            size="small"
+            :disabled="ioniconsIconsPage <= 1"
+            @click="ioniconsIconsPage--"
+          >
+            上一页
+          </NButton>
+          <span class="text-sm text-gray-500">
+            {{ ioniconsIconsPage }} / {{ searchIoniconsIconsTotalPages }}
+          </span>
+          <NButton
+            size="small"
+            :disabled="ioniconsIconsPage >= searchIoniconsIconsTotalPages"
+            @click="ioniconsIconsPage++"
+          >
+            下一页
+          </NButton>
+        </div>
+      </NTabPane>
     </NTabs>
 
     <template #footer>
       <div class="flex justify-between">
-        <NButton @click="clearIcon" v-if="selectedIcon">清除</NButton>
+        <NButton v-if="selectedIcon" @click="clearIcon">清除</NButton>
         <div class="flex justify-end gap-2">
           <NButton @click="close">取消</NButton>
           <NButton type="primary" :disabled="!selectedIcon" @click="confirm">确定</NButton>
@@ -125,8 +199,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { NModal, NTabs, NTabPane, NInput, NButton, NIcon, NSelect } from 'naive-ui'
+import { computed, onMounted, ref, watch } from 'vue'
+import { NButton, NIcon, NInput, NModal, NSelect, NTabPane, NTabs } from 'naive-ui'
 import { useIconLoader } from './useIconLoader'
 
 const props = defineProps<{
@@ -141,26 +215,25 @@ const emit = defineEmits<{
 
 const {
   loadingMaterial,
-  primeIconsPage,
+  loadingAntd,
+  loadingIonicons,
   materialIconsPage,
+  antdIconsPage,
+  ioniconsIconsPage,
   loadMaterialIcons,
-  primeIconsList,
+  loadAntdIcons,
+  loadIoniconsIcons,
   materialIconsList,
+  antdIconsList,
+  ioniconsIconsList,
   PAGE_SIZE,
 } = useIconLoader()
 
-const activeTab = ref<'primeicon' | 'material'>('primeicon')
-const primeSearch = ref('')
+const activeTab = ref<'material' | 'antd' | 'ionicons5'>('antd')
 const materialSearch = ref('')
+const antdSearch = ref('')
+const ioniconsSearch = ref('')
 const selectedIcon = ref<string>(props.value || '')
-
-// 搜索过滤
-const filteredPrimeIcons = computed(() => {
-  if (!primeSearch.value) return primeIconsList.value
-  return primeIconsList.value.filter((icon) =>
-    icon.name.toLowerCase().includes(primeSearch.value.toLowerCase()),
-  )
-})
 
 const filteredMaterialIcons = computed(() => {
   if (!materialSearch.value) return materialIconsList.value
@@ -171,15 +244,22 @@ const filteredMaterialIcons = computed(() => {
   )
 })
 
-// 重新计算分页（基于搜索结果）
-const searchPaginatedPrimeIcons = computed(() => {
-  const start = (primeIconsPage.value - 1) * PAGE_SIZE
-  const end = start + PAGE_SIZE
-  return filteredPrimeIcons.value.slice(start, end)
+const filteredAntdIcons = computed(() => {
+  if (!antdSearch.value) return antdIconsList.value
+  return antdIconsList.value.filter(
+    (icon) =>
+      icon.name.toLowerCase().includes(antdSearch.value.toLowerCase()) ||
+      icon.displayName.toLowerCase().includes(antdSearch.value.toLowerCase()),
+  )
 })
 
-const searchPrimeIconsTotalPages = computed(() => {
-  return Math.ceil(filteredPrimeIcons.value.length / PAGE_SIZE) || 1
+const filteredIoniconsIcons = computed(() => {
+  if (!ioniconsSearch.value) return ioniconsIconsList.value
+  return ioniconsIconsList.value.filter(
+    (icon) =>
+      icon.name.toLowerCase().includes(ioniconsSearch.value.toLowerCase()) ||
+      icon.displayName.toLowerCase().includes(ioniconsSearch.value.toLowerCase()),
+  )
 })
 
 const searchPaginatedMaterialIcons = computed(() => {
@@ -192,13 +272,24 @@ const searchMaterialIconsTotalPages = computed(() => {
   return Math.ceil(filteredMaterialIcons.value.length / PAGE_SIZE) || 1
 })
 
-// 页码选项
-const primePageOptions = computed(() => {
-  const pages = searchPrimeIconsTotalPages.value
-  return Array.from({ length: pages }, (_, i) => ({
-    label: `第 ${i + 1} 页`,
-    value: i + 1,
-  }))
+const searchPaginatedAntdIcons = computed(() => {
+  const start = (antdIconsPage.value - 1) * PAGE_SIZE
+  const end = start + PAGE_SIZE
+  return filteredAntdIcons.value.slice(start, end)
+})
+
+const searchAntdIconsTotalPages = computed(() => {
+  return Math.ceil(filteredAntdIcons.value.length / PAGE_SIZE) || 1
+})
+
+const searchPaginatedIoniconsIcons = computed(() => {
+  const start = (ioniconsIconsPage.value - 1) * PAGE_SIZE
+  const end = start + PAGE_SIZE
+  return filteredIoniconsIcons.value.slice(start, end)
+})
+
+const searchIoniconsIconsTotalPages = computed(() => {
+  return Math.ceil(filteredIoniconsIcons.value.length / PAGE_SIZE) || 1
 })
 
 const materialPageOptions = computed(() => {
@@ -209,16 +300,35 @@ const materialPageOptions = computed(() => {
   }))
 })
 
-// 搜索时重置页码
-watch(primeSearch, () => {
-  primeIconsPage.value = 1
+const antdPageOptions = computed(() => {
+  const pages = searchAntdIconsTotalPages.value
+  return Array.from({ length: Math.min(pages, 100) }, (_, i) => ({
+    label: `第 ${i + 1} 页`,
+    value: i + 1,
+  }))
+})
+
+const ioniconsPageOptions = computed(() => {
+  const pages = searchIoniconsIconsTotalPages.value
+  return Array.from({ length: Math.min(pages, 100) }, (_, i) => ({
+    label: `第 ${i + 1} 页`,
+    value: i + 1,
+  }))
 })
 
 watch(materialSearch, () => {
   materialIconsPage.value = 1
 })
 
-const selectIcon = (iconName: string, type: 'primeicon' | 'material') => {
+watch(antdSearch, () => {
+  antdIconsPage.value = 1
+})
+
+watch(ioniconsSearch, () => {
+  ioniconsIconsPage.value = 1
+})
+
+const selectIcon = (iconName: string, type: 'material' | 'antd' | 'ionicons5') => {
   selectedIcon.value = `${type}:${iconName}`
 }
 
@@ -238,12 +348,32 @@ const close = () => {
 watch(activeTab, (newTab) => {
   if (newTab === 'material') {
     loadMaterialIcons()
+    return
+  }
+
+  if (newTab === 'antd') {
+    loadAntdIcons()
+    return
+  }
+
+  if (newTab === 'ionicons5') {
+    loadIoniconsIcons()
   }
 })
 
 onMounted(() => {
   if (activeTab.value === 'material') {
     loadMaterialIcons()
+    return
+  }
+
+  if (activeTab.value === 'antd') {
+    loadAntdIcons()
+    return
+  }
+
+  if (activeTab.value === 'ionicons5') {
+    loadIoniconsIcons()
   }
 })
 </script>

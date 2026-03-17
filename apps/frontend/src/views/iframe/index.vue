@@ -39,7 +39,7 @@ watch(
       v-if="loading"
       class="loading-overlay absolute inset-0 flex align-items-center justify-content-center bg-white z-5"
     >
-      <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      <AppIcon icon="antd:LoadingOutlined" class="text-4xl text-primary animate-spin" />
     </div>
     <iframe v-if="url" :src="url" class="w-full h-full border-none" @load="onIframeLoad"></iframe>
     <div v-else class="flex align-items-center justify-content-center h-full">

@@ -2,6 +2,7 @@
 import { useUserStore } from '@/stores/user'
 import { useLayout } from '@/layouts/composables/useLayout'
 import { useI18n } from 'vue-i18n'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 import { NButton, NDropdown, NAvatar, NIcon, type DropdownOption } from 'naive-ui'
 
 defineOptions({
@@ -12,8 +13,8 @@ const userStore = useUserStore()
 const { toggleDarkMode, isDarkTheme } = useLayout()
 const { locale } = useI18n()
 
-const renderIcon = (iconClass: string) => () =>
-  h(NIcon, null, { default: () => h('i', { class: iconClass }) })
+const renderIcon = (icon: string) => () =>
+  h(NIcon, null, { default: () => h(DynamicIcon, { icon }) })
 
 // Language Dropdown
 const languageOptions: DropdownOption[] = [
@@ -36,13 +37,13 @@ const userOptions: DropdownOption[] = [
   {
     label: 'Profile',
     key: 'profile',
-    icon: renderIcon('pi pi-user'),
+    icon: renderIcon('antd:UserOutlined'),
   },
   { type: 'divider', key: 'd1' },
   {
     label: 'Sign Out',
     key: 'logout',
-    icon: renderIcon('pi pi-sign-out'),
+    icon: renderIcon('antd:LogoutOutlined'),
   },
 ]
 
@@ -68,7 +69,7 @@ const handleUserSelect = (key: string) => {
     <NDropdown :options="languageOptions" @select="handleLanguageSelect">
       <NButton quaternary circle>
         <template #icon>
-          <NIcon><i class="pi pi-language" /></NIcon>
+          <NIcon><AppIcon icon="antd:TranslationOutlined" /></NIcon>
         </template>
       </NButton>
     </NDropdown>
@@ -76,7 +77,7 @@ const handleUserSelect = (key: string) => {
     <NButton quaternary circle @click="toggleDarkMode">
       <template #icon>
         <NIcon>
-          <i :class="['pi', isDarkTheme ? 'pi-moon' : 'pi-sun']" />
+          <AppIcon :icon="isDarkTheme ? 'ionicons5:MoonOutline' : 'ionicons5:SunnyOutline'" />
         </NIcon>
       </template>
     </NButton>
@@ -89,7 +90,7 @@ const handleUserSelect = (key: string) => {
         <span class="username hidden md:inline-block font-medium text-gray-700 dark:text-gray-200"
           >Admin User</span
         >
-        <NIcon class="ml-2"><i class="pi pi-angle-down" /></NIcon>
+        <NIcon class="ml-2"><AppIcon icon="antd:DownOutlined" /></NIcon>
       </div>
     </NDropdown>
   </div>

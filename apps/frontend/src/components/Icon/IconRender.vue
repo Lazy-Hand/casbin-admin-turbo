@@ -1,8 +1,7 @@
 <template>
   <NIcon>
-    <i v-if="isPrimeIcon" :class="iconClass"></i>
-    <component v-else-if="materialIconComponent" :is="materialIconComponent"></component>
-    <i v-else :class="iconValue" style="font-size: 1rem"></i>
+    <component v-if="iconComponent" :is="iconComponent"></component>
+    <span v-else style="font-size: 1rem"></span>
   </NIcon>
 </template>
 
@@ -15,39 +14,41 @@ const props = defineProps<{
 }>()
 
 const iconValue = computed(() => props.iconValue || '')
-const materialIconComponent = shallowRef<unknown>(null)
+const iconComponent = shallowRef<unknown>(null)
 
-const isPrimeIcon = computed(() => {
-  return iconValue.value && iconValue.value.startsWith('primeicon:')
-})
+const iconMeta = computed(() => {
+  if (!iconValue.value) return null
 
-const iconClass = computed(() => {
-  if (isPrimeIcon.value) {
-    const iconName = iconValue.value.replace('primeicon:', '')
-    return `pi pi-${iconName}`
+  const [library, name] = iconValue.value.split(':')
+  if (!library || !name || !['material', 'antd', 'ionicons5'].includes(library))
+    return null
+
+  return {
+    library,
+    name,
   }
-  return iconValue.value
-})
-
-const materialIconName = computed(() => {
-  if (!iconValue.value || !iconValue.value.startsWith('material:')) return ''
-  return iconValue.value.replace('material:', '')
 })
 
 watch(
-  () => materialIconName.value,
-  async (iconName) => {
-    if (!iconName) {
-      materialIconComponent.value = null
+  () => iconMeta.value,
+  async (meta) => {
+    if (!meta) {
+      iconComponent.value = null
       return
     }
 
     try {
-      const MaterialIcons = await import('@vicons/material')
-      materialIconComponent.value = MaterialIcons[iconName as keyof typeof MaterialIcons] ?? null
+      const iconLibraries = {
+        material: () => import('@vicons/material'),
+        antd: () => import('@vicons/antd'),
+        ionicons5: () => import('@vicons/ionicons5'),
+      }
+
+      const iconsModule = await iconLibraries[meta.library as keyof typeof iconLibraries]()
+      iconComponent.value = iconsModule[meta.name as keyof typeof iconsModule] ?? null
     } catch (error) {
-      console.error(`Failed to load material icon: ${iconName}`, error)
-      materialIconComponent.value = null
+      console.error(`Failed to load icon: ${meta.library}:${meta.name}`, error)
+      iconComponent.value = null
     }
   },
   { immediate: true },

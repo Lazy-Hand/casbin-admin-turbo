@@ -6,7 +6,7 @@ export default [
     name: 'Dashboard',
     meta: {
       title: 'Dashboard',
-      icon: 'pi pi-fw pi-home',
+      icon: 'antd:HomeOutlined',
       type: 'menu',
     },
     redirect: '/dashboard/workbench',
@@ -17,7 +17,7 @@ export default [
         name: 'Workbench',
         meta: {
           title: 'Workbench',
-          icon: 'pi pi-fw pi-th-large',
+          icon: 'antd:AppstoreOutlined',
           type: 'page',
           cache: true,
         },
@@ -28,7 +28,7 @@ export default [
         name: 'Monitor',
         meta: {
           title: 'Monitor',
-          icon: 'pi pi-fw pi-chart-bar',
+          icon: 'antd:BarChartOutlined',
           type: 'page',
           cache: false,
         },
@@ -42,7 +42,7 @@ export default [
     component: () => import('@/views/pages/landing/index.vue'),
     meta: {
       title: 'Landing',
-      icon: 'pi pi-fw pi-external-link',
+      icon: 'antd:ExportOutlined',
       type: 'window',
       target: '_blank',
     },

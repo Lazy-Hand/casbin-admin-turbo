@@ -103,7 +103,7 @@
             <template #suffix>
               <NButton text size="small" @click="copyToClipboard">
                 <template #icon>
-                  <i class="pi pi-copy" />
+                  <AppIcon icon="antd:CopyOutlined" />
                 </template>
               </NButton>
             </template>

@@ -25,13 +25,13 @@
           <div class="flex gap-2">
             <NButton type="primary" @click="handleSearch">
               <template #icon>
-                <i class="pi pi-search" />
+                <AppIcon icon="antd:SearchOutlined" />
               </template>
               查询
             </NButton>
             <NButton @click="handleReset">
               <template #icon>
-                <i class="pi pi-refresh" />
+                <AppIcon icon="antd:ReloadOutlined" />
               </template>
               重置
             </NButton>
@@ -45,7 +45,7 @@
         <n-space>
           <NButton type="primary" size="small" @click="openDialog()" v-permission="['TIMER_ADD']">
             <template #icon>
-              <i class="pi pi-plus" />
+              <AppIcon icon="antd:PlusOutlined" />
             </template>
             新增定时任务
           </NButton>
@@ -80,6 +80,7 @@ import TimerDialog from './TimerDialog.vue'
 import TimerLogsDrawer from './TimerLogsDrawer.vue'
 import { useDialog, useMessage } from 'naive-ui'
 import { NTag, NTooltip, NButton, type DataTableColumns, type PaginationProps } from 'naive-ui'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 import { usePermission } from '@/composables/usePermission'
 
 defineOptions({
@@ -228,7 +229,7 @@ const columns: DataTableColumns<Timer> = [
                     size: 'small',
                     onClick: () => handleRun(row),
                   },
-                  { icon: () => h('i', { class: 'pi pi-play' }) },
+                  { icon: () => h(DynamicIcon, { icon: 'antd:PlayCircleOutlined' }) },
                 ),
               default: () => '执行',
             },
@@ -251,7 +252,7 @@ const columns: DataTableColumns<Timer> = [
                     size: 'small',
                     onClick: () => openLogs(row),
                   },
-                  { icon: () => h('i', { class: 'pi pi-calendar-times' }) },
+                  { icon: () => h(DynamicIcon, { icon: 'antd:UnorderedListOutlined' }) },
                 ),
               default: () => '日志',
             },
@@ -274,7 +275,7 @@ const columns: DataTableColumns<Timer> = [
                     size: 'small',
                     onClick: () => openDialog(row.id),
                   },
-                  { icon: () => h('i', { class: 'pi pi-pencil' }) },
+                  { icon: () => h(DynamicIcon, { icon: 'antd:EditOutlined' }) },
                 ),
               default: () => '编辑',
             },
@@ -297,7 +298,7 @@ const columns: DataTableColumns<Timer> = [
                     size: 'small',
                     onClick: () => confirmDelete(row),
                   },
-                  { icon: () => h('i', { class: 'pi pi-trash' }) },
+                  { icon: () => h(DynamicIcon, { icon: 'antd:DeleteOutlined' }) },
                 ),
               default: () => '删除',
             },

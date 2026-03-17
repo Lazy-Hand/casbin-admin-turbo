@@ -11,7 +11,7 @@
     >
       <div class="flex flex-col items-center mb-8">
         <!-- Logo placeholder -->
-        <i class="pi pi-verified text-5xl mb-3 text-green-600"></i>
+        <AppIcon icon="antd:CheckCircleOutlined" class="text-5xl mb-3 text-green-600" />
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">
           Garden Admin
         </h1>
@@ -27,7 +27,7 @@
             @keydown.enter="handleLogin"
           >
             <template #prefix>
-              <i class="pi pi-user text-gray-400"></i>
+              <AppIcon icon="antd:UserOutlined" class="text-gray-400" />
             </template>
           </NInput>
         </NFormItem>
@@ -42,7 +42,7 @@
             @keydown.enter="handleLogin"
           >
             <template #prefix>
-              <i class="pi pi-lock text-gray-400"></i>
+              <AppIcon icon="antd:LockOutlined" class="text-gray-400" />
             </template>
           </NInput>
         </NFormItem>

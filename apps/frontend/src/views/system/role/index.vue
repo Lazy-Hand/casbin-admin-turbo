@@ -15,13 +15,13 @@
           <div class="flex gap-2">
             <NButton type="primary" @click="handleSearch">
               <template #icon>
-                <i class="pi pi-search" />
+                <AppIcon icon="antd:SearchOutlined" />
               </template>
               查询
             </NButton>
             <NButton @click="handleReset">
               <template #icon>
-                <i class="pi pi-refresh" />
+                <AppIcon icon="antd:ReloadOutlined" />
               </template>
               重置
             </NButton>
@@ -35,7 +35,7 @@
         <NSpace>
           <NButton type="primary" size="small" @click="openDrawer()" v-permission="['ROLE_ADD']">
             <template #icon>
-              <i class="pi pi-plus" />
+              <AppIcon icon="antd:PlusOutlined" />
             </template>
             新增角色
           </NButton>
@@ -79,6 +79,7 @@ import {
 } from 'naive-ui'
 import DictSelect from '@/components/Dict/DictSelect.vue'
 import DictTag from '@/components/Dict/DictTag.vue'
+import DynamicIcon from '@/components/Icon/DynamicIcon.vue'
 import { usePermission } from '@/composables/usePermission'
 
 defineOptions({
@@ -195,7 +196,7 @@ const columns: DataTableColumns<Role> = [
               title: '分配菜单权限',
               onClick: () => openPermissionDialog(row),
             },
-            { icon: () => h('i', { class: 'pi pi-key' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:KeyOutlined' }) },
           ),
         )
       }
@@ -210,7 +211,7 @@ const columns: DataTableColumns<Role> = [
               size: 'small',
               onClick: () => openDrawer(row.id),
             },
-            { icon: () => h('i', { class: 'pi pi-pencil' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:EditOutlined' }) },
           ),
         )
       }
@@ -225,7 +226,7 @@ const columns: DataTableColumns<Role> = [
               size: 'small',
               onClick: () => confirmDelete(row),
             },
-            { icon: () => h('i', { class: 'pi pi-trash' }) },
+            { icon: () => h(DynamicIcon, { icon: 'antd:DeleteOutlined' }) },
           ),
         )
       }

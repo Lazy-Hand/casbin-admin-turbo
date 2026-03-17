@@ -3,17 +3,21 @@
     <span
       v-show="!layoutState.collapsed"
       @click="toggle"
-      class="pi pi-align-right cursor-pointer mr-4"
-    ></span>
+      class="cursor-pointer mr-4 flex items-center"
+    >
+      <AppIcon icon="antd:MenuFoldOutlined" />
+    </span>
     <span
       v-show="layoutState.collapsed"
       @click="toggle"
-      class="pi pi-align-left cursor-pointer mr-4"
-    ></span>
+      class="cursor-pointer mr-4 flex items-center"
+    >
+      <AppIcon icon="antd:MenuUnfoldOutlined" />
+    </span>
     <NBreadcrumb>
       <NBreadcrumbItem>
         <router-link to="/">
-          <NIcon><i class="pi pi-home" /></NIcon>
+          <NIcon><AppIcon icon="antd:HomeOutlined" /></NIcon>
         </router-link>
       </NBreadcrumbItem>
       <NBreadcrumbItem v-for="item in breadcrumbItems" :key="item.key">
