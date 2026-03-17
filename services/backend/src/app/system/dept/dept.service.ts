@@ -12,6 +12,7 @@ import { DataScopeService } from '@/app/library/data-scope/data-scope.service';
 import {
   Dept,
   DrizzleService,
+  joinOnWithSoftDelete,
   User,
   insertWithAudit,
   softDeleteWhere,
@@ -67,7 +68,7 @@ export class DeptService {
           },
         })
         .from(Dept)
-        .leftJoin(User, eq(Dept.leaderId, User.id))
+        .leftJoin(User, joinOnWithSoftDelete(User, eq(Dept.leaderId, User.id)))
         .where(where)
         .orderBy(asc(Dept.sort), asc(Dept.id))
         .limit(pageSize)
@@ -111,7 +112,7 @@ export class DeptService {
         },
       })
       .from(Dept)
-      .leftJoin(User, eq(Dept.leaderId, User.id))
+      .leftJoin(User, joinOnWithSoftDelete(User, eq(Dept.leaderId, User.id)))
       .where(and(withSoftDelete(Dept), eq(Dept.status, 1)))
       .orderBy(asc(Dept.sort), asc(Dept.id));
 
@@ -153,7 +154,7 @@ export class DeptService {
         },
       })
       .from(Dept)
-      .leftJoin(User, eq(Dept.leaderId, User.id))
+      .leftJoin(User, joinOnWithSoftDelete(User, eq(Dept.leaderId, User.id)))
       .where(withSoftDelete(Dept, eq(Dept.id, id)))
       .limit(1);
 

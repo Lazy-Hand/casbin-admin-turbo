@@ -12,6 +12,7 @@ import {
   User,
   UserRole,
   insertWithAudit,
+  joinOnWithSoftDelete,
   softDeleteWhere,
   updateWithAudit,
   withSoftDelete,
@@ -71,8 +72,8 @@ export class RoleService {
           },
         })
         .from(Role)
-        .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-        .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+        .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+        .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
         .where(and(withSoftDelete(Role), eq(Role.status, 1)))
         .orderBy(desc(Role.createdAt)),
       this.drizzle.db
@@ -81,6 +82,7 @@ export class RoleService {
           count: sql<number>`count(*)`,
         })
         .from(UserRole)
+        .where(withSoftDelete(UserRole))
         .groupBy(UserRole.roleId),
     ]);
 
@@ -180,10 +182,10 @@ export class RoleService {
         },
       })
       .from(Role)
-      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
-      .leftJoin(UserRole, eq(Role.id, UserRole.roleId))
-      .leftJoin(User, eq(UserRole.userId, User.id))
+      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(Role.id, UserRole.roleId)))
+      .leftJoin(User, joinOnWithSoftDelete(User, eq(UserRole.userId, User.id)))
       .where(withSoftDelete(Role, eq(Role.id, id)));
 
     if (rows.length === 0) {
@@ -338,8 +340,8 @@ export class RoleService {
         },
       })
       .from(RolePermission)
-      .innerJoin(Permission, eq(RolePermission.permissionId, Permission.id))
-      .where(eq(RolePermission.roleId, roleId));
+      .innerJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .where(and(eq(RolePermission.roleId, roleId), withSoftDelete(RolePermission)));
   }
 
   // 给角色分配单个权限
@@ -425,10 +427,10 @@ export class RoleService {
         },
       })
       .from(UserRole)
-      .innerJoin(Role, eq(UserRole.roleId, Role.id))
-      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
-      .where(and(eq(UserRole.userId, userId), withSoftDelete(Role)));
+      .innerJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
+      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .where(and(eq(UserRole.userId, userId), withSoftDelete(UserRole)));
 
     return this.groupUserRoles(rows);
   }

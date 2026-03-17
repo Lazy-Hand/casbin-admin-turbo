@@ -3,11 +3,11 @@
 ## Project Structure & Module Organization
 - This repository is a `pnpm` workspace managed with `turbo`.
 - Frontend lives in `apps/frontend` and is built with Vue 3 + Vite + TypeScript.
-- Backend lives in `services/backend` and is built with NestJS + Prisma + TypeScript.
+- Backend lives in `services/backend` and is built with NestJS + Drizzle + TypeScript.
 - Shared engineering config lives in `packages/*`. Keep reusable tooling or config packages there; avoid moving app-only runtime code unless it is truly shared.
 - Frontend source code is under `apps/frontend/src/`, with feature areas such as `views/`, `components/`, `api/`, `stores/`, `router/`, and `styles/`.
 - Backend source code is under `services/backend/src/`, with domain modules in `src/app/system/*`, shared infrastructure in `src/app/library/*`, and cross-cutting code in `src/common/*`.
-- Backend database files live in `services/backend/prisma/`. Keep Prisma schema, migrations, and seed scripts there unless multiple services start sharing the same database layer.
+- Backend database files live in `services/backend/db/` and `services/backend/src/app/library/drizzle/`. Keep Drizzle schema, SQL migrations, and seed scripts there unless multiple services start sharing the same database layer.
 
 ## Build, Test, and Development Commands
 - Install dependencies from the repository root with `pnpm install`.
@@ -17,7 +17,7 @@
 - Run app-specific commands with filters, for example:
   - `pnpm --filter @casbin-admin/frontend lint`
   - `pnpm --filter @casbin-admin/backend build`
-- Backend Prisma client generation is part of the backend install/build/type-check flow. Use `pnpm --filter @casbin-admin/backend prisma:generate` when regeneration is needed explicitly.
+- Backend database commands are provided through the backend package scripts. Use `pnpm --filter @casbin-admin/backend db:generate`, `db:migrate`, and `db:seed` as needed.
 
 ## Dependency Management
 - Prefer adding shared tooling versions to the workspace `catalog` in `pnpm-workspace.yaml`.
@@ -31,6 +31,7 @@
 - Backend formatting currently uses single quotes and semicolons.
 - Use PascalCase for Vue components and NestJS classes, camelCase for functions and variables, and kebab-case for filenames unless the framework strongly prefers another convention.
 - Keep modules focused and organized by feature rather than by technical layer when adding new business code.
+- In backend Drizzle queries, filter main tables with `withSoftDelete(...)` and filter joined soft-delete tables with `joinOnWithSoftDelete(...)`.
 
 ## Linting & Quality Gates
 - ESLint is standardized through `packages/eslint-config`; app-level `eslint.config.*` files should stay thin and only hold local overrides.
@@ -51,5 +52,5 @@
 
 ## Security & Configuration Tips
 - Never commit secrets. Keep frontend environment values in app-local `.env.*` files and backend secrets in `services/backend/.env` or deployment environment config.
-- Validate Prisma and database changes through schema/migration workflow, not ad-hoc production edits.
+- Validate Drizzle schema and database changes through the migration workflow, not ad-hoc production edits.
 - Be careful with changes to shared tooling packages, because they can affect multiple workspaces at once.

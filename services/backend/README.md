@@ -80,6 +80,17 @@ pnpm --filter @casbin-admin/backend db:seed
 - 文件名使用 `kebab-case`
 - 类、DTO、Entity 使用 `PascalCase`
 - 当前格式风格为：单引号、有分号
+- 主表软删除过滤统一使用 `withSoftDelete(Table, ...)`
+- 关联表软删除过滤统一使用 `joinOnWithSoftDelete(Table, eq(...))`
+
+示例：
+
+```ts
+.from(User)
+.leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
+.leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
+.where(withSoftDelete(User, eq(User.id, userId)))
+```
 
 ## 质量门禁
 

@@ -4,6 +4,7 @@ import { DataScopeService } from '@/app/library/data-scope/data-scope.service';
 import {
   Dept,
   DrizzleService,
+  joinOnWithSoftDelete,
   Permission,
   Role,
   RolePermission,
@@ -68,9 +69,9 @@ export class UserRepository {
           },
         })
         .from(User)
-        .leftJoin(Dept, eq(User.deptId, Dept.id))
-        .leftJoin(UserRole, eq(User.id, UserRole.userId))
-        .leftJoin(Role, eq(UserRole.roleId, Role.id))
+        .leftJoin(Dept, joinOnWithSoftDelete(Dept, eq(User.deptId, Dept.id)))
+        .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
+        .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
         .where(where)
         .orderBy(desc(User.createdAt))
         .limit(pageSize)
@@ -152,11 +153,11 @@ export class UserRepository {
         },
       })
       .from(User)
-      .leftJoin(Dept, eq(User.deptId, Dept.id))
-      .leftJoin(UserRole, eq(User.id, UserRole.userId))
-      .leftJoin(Role, eq(UserRole.roleId, Role.id))
-      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .leftJoin(Dept, joinOnWithSoftDelete(Dept, eq(User.deptId, Dept.id)))
+      .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
+      .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
+      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
       .where(
         and(
           withSoftDelete(User, eq(User.id, userId)),

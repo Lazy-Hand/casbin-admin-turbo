@@ -8,6 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import type { AppAbility, Action, Subject } from './types';
 import {
   DrizzleService,
+  joinOnWithSoftDelete,
   Permission,
   Role,
   RolePermission,
@@ -50,10 +51,10 @@ export class AbilityDynamicFactory {
         },
       })
       .from(UserRole)
-      .innerJoin(Role, eq(UserRole.roleId, Role.id))
-      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
-      .where(and(eq(UserRole.userId, userId), withSoftDelete(Role)));
+      .innerJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
+      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .where(and(eq(UserRole.userId, userId), withSoftDelete(UserRole)));
 
     // 检查是否是管理员
     const isAdmin = rows.some((row) => row.role.roleCode === 'admin');

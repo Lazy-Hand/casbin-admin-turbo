@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SearchUserDto } from './dto/search-user.dto';
@@ -9,6 +9,7 @@ import {
   Dept,
   DrizzleService,
   insertWithAudit,
+  joinOnWithSoftDelete,
   Post,
   Role,
   softDeleteWhere,
@@ -56,10 +57,10 @@ export class UserService {
         },
       })
       .from(User)
-      .leftJoin(Dept, eq(User.deptId, Dept.id))
-      .leftJoin(Post, eq(User.postId, Post.id))
-      .leftJoin(UserRole, eq(User.id, UserRole.userId))
-      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .leftJoin(Dept, joinOnWithSoftDelete(Dept, eq(User.deptId, Dept.id)))
+      .leftJoin(Post, joinOnWithSoftDelete(Post, eq(User.postId, Post.id)))
+      .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
+      .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
       .where(withSoftDelete(User))
       .orderBy(desc(User.createdAt));
 

@@ -4,6 +4,7 @@ import { RedisService } from '@/app/library/redis/redis.service';
 import {
   DrizzleService,
   Dept,
+  joinOnWithSoftDelete,
   Role,
   User,
   UserRole,
@@ -86,8 +87,8 @@ export class DataScopeService {
         },
       })
       .from(User)
-      .leftJoin(UserRole, eq(User.id, UserRole.userId))
-      .leftJoin(Role, eq(UserRole.roleId, Role.id))
+      .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
+      .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
       .where(withSoftDelete(User, eq(User.id, userId)));
 
     const user = rows[0];

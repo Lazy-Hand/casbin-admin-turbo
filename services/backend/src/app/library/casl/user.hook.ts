@@ -7,6 +7,7 @@ import type {
 } from './types';
 import {
   DrizzleService,
+  joinOnWithSoftDelete,
   Permission,
   Role,
   RolePermission,
@@ -50,10 +51,10 @@ export class UserHook {
         },
       })
       .from(User)
-      .leftJoin(UserRole, eq(User.id, UserRole.userId))
-      .leftJoin(Role, eq(UserRole.roleId, Role.id))
-      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
+      .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
+      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
       .where(and(withSoftDelete(User), eq(User.id, userId)));
 
     const first = rows[0];

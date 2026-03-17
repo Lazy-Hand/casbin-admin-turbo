@@ -71,6 +71,13 @@ export function withSoftDelete<TWhere extends SQL | undefined>(
   return where ? and(where, filter) : filter;
 }
 
+export function joinOnWithSoftDelete<TTable extends AnyPgTable>(
+  table: TTable,
+  on: SQL,
+) {
+  return withSoftDelete(table, on) as SQL;
+}
+
 export function insertWithAudit<TTable extends AnyPgTable>(
   db: AppDrizzleDb,
   table: TTable,

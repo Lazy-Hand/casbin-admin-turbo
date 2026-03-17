@@ -7,6 +7,7 @@ import type { PermissionInfo } from "../../library/casl/types"
 import { matchPath } from "../../library/casl/utils"
 import {
   DrizzleService,
+  joinOnWithSoftDelete,
   Permission,
   Role,
   RolePermission,
@@ -141,11 +142,11 @@ export class PermissionService {
         roleCode: Role.roleCode,
       })
       .from(UserRole)
-      .innerJoin(Role, eq(UserRole.roleId, Role.id))
+      .innerJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
       .where(
         and(
           eq(UserRole.userId, userId),
-          withSoftDelete(Role),
+          withSoftDelete(UserRole),
           eq(Role.roleCode, roleCode),
         ),
       )
@@ -573,15 +574,13 @@ export class PermissionService {
         },
       })
       .from(User)
-      .innerJoin(UserRole, eq(User.id, UserRole.userId))
-      .innerJoin(Role, eq(UserRole.roleId, Role.id))
-      .innerJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-      .innerJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .innerJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
+      .innerJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
+      .innerJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+      .innerJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
       .where(
         and(
           withSoftDelete(User),
-          withSoftDelete(Role),
-          withSoftDelete(Permission),
           inArray(User.id, userIds),
         ),
       )
@@ -649,8 +648,8 @@ export class PermissionService {
         },
       })
       .from(Role)
-      .leftJoin(RolePermission, eq(Role.id, RolePermission.roleId))
-      .leftJoin(Permission, eq(RolePermission.permissionId, Permission.id))
+      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
+      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
       .where(withSoftDelete(Role))
 
     const roles = new Map<number, any>()
