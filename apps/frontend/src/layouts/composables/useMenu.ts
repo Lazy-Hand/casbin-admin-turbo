@@ -12,6 +12,11 @@ export function renderIcon(iconValue: string) {
 
 export function useMenu() {
   const routeStore = useRouteStore()
+  const homeOption: MenuOption = {
+    key: 'Home',
+    icon: renderIcon('antd:HomeOutlined'),
+    label: () => h(RouterLink, { to: '/home' }, { default: () => '首页' }),
+  }
 
   const resolveFullPath = (path = '', parentPath = '') => {
     if (!path) return parentPath || '/'
@@ -72,9 +77,9 @@ export function useMenu() {
    */
   const menuOptions = computed(() => {
     if (routeStore.isLoaded && routeStore.menuTree.length > 0) {
-      return resolveMenuOptions(routeStore.menuTree)
+      return [homeOption, ...resolveMenuOptions(routeStore.menuTree)]
     }
-    return []
+    return [homeOption]
   })
 
   return {

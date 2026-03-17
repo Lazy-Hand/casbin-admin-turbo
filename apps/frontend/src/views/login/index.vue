@@ -131,7 +131,7 @@ const handleLogin = async () => {
 
         if (success) {
           const redirect = route.query.redirect as string
-          router.push(redirect || '/')
+          router.push(redirect || '/home')
         }
       } finally {
         loading.value = false

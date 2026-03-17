@@ -3,34 +3,26 @@
     <!-- Left Scroll Button -->
     <NButton v-if="isScrollable" text class="w-8 h-full shrink-0" @click="scrollLeft">
       <template #icon>
-        <NIcon size="16"><AppIcon icon="antd:LeftOutlined" /></NIcon>
+        <NIcon size="16">
+          <AppIcon icon="antd:LeftOutlined" />
+        </NIcon>
       </template>
     </NButton>
 
     <!-- Tabs Container -->
-    <div
-      ref="scrollContainer"
+    <div ref="scrollContainer"
       class="flex-1 overflow-x-auto hide-scrollbar flex items-center gap-1 mx-1 h-full select-none"
-      @wheel.prevent="handleWheel"
-    >
-      <div
-        v-for="tab in tabsStore.tabs"
-        :key="tab.fullPath"
-        :ref="(el) => setTabRef(el, tab.fullPath)"
+      @wheel.prevent="handleWheel">
+      <div v-for="tab in tabsStore.tabs" :key="tab.fullPath" :ref="(el) => setTabRef(el, tab.fullPath)"
         class="group relative flex items-center px-3 py-1.5 h-7.5 text-xs transition-all duration-300 rounded cursor-pointer border border-transparent whitespace-nowrap"
         :class="[
           tab.fullPath === route.fullPath
             ? 'active-tab'
             : 'text-gray-600 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#2d2d30] hover:text-gray-900 dark:hover:text-gray-200',
-        ]"
-        :style="
-          tab.fullPath === route.fullPath
-            ? { backgroundColor: themeVars.primaryColorSuppl, color: '#fff' }
-            : {}
-        "
-        @click="handleTabClick(tab)"
-        @contextmenu.prevent="(e) => handleContextMenu(e, tab)"
-      >
+        ]" :style="tab.fullPath === route.fullPath
+          ? { backgroundColor: themeVars.primaryColorSuppl, color: '#fff' }
+          : {}
+          " @click="handleTabClick(tab)" @contextmenu.prevent="(e) => handleContextMenu(e, tab)">
         <div class="flex items-center">
           <!-- Tab Icon (Optional) -->
           <IconRender v-if="tab.icon" :iconValue="tab.icon" class="mr-1.5" />
@@ -39,13 +31,10 @@
         </div>
 
         <!-- Close Button -->
-        <span
-          v-if="tabsStore.tabs.length > 1"
+        <span v-if="!tab.affix"
           class="text-xs! ml-2 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-200 dark:hover:bg-gray-600"
-          :class="{ 'opacity-100!': tab.fullPath === route.fullPath }"
-          @click.stop="handleCloseTab(tab.fullPath)"
-        >
-          <AppIcon icon="antd:CloseOutlined" />
+          :class="{ 'opacity-100!': tab.fullPath === route.fullPath }" @click.stop="handleCloseTab(tab.fullPath)">
+          <IconRender iconValue="antd:CloseOutlined" />
         </span>
       </div>
     </div>
@@ -53,21 +42,16 @@
     <!-- Right Scroll Button -->
     <NButton v-if="isScrollable" text class="w-8 h-full shrink-0" @click="scrollRight">
       <template #icon>
-        <NIcon size="16"><AppIcon icon="antd:RightOutlined" /></NIcon>
+        <NIcon size="16">
+          <AppIcon icon="antd:RightOutlined" />
+        </NIcon>
       </template>
     </NButton>
 
     <!-- Context Menu -->
-    <NDropdown
-      placement="bottom-start"
-      trigger="manual"
-      :x="contextMenuX"
-      :y="contextMenuY"
-      :options="contextMenuOptions"
-      :show="showContextMenu"
-      :on-clickoutside="closeContextMenu"
-      @select="handleContextMenuSelect"
-    />
+    <NDropdown placement="bottom-start" trigger="manual" :x="contextMenuX" :y="contextMenuY"
+      :options="contextMenuOptions" :show="showContextMenu" :on-clickoutside="closeContextMenu"
+      @select="handleContextMenuSelect" />
   </div>
 </template>
 
@@ -198,7 +182,13 @@ const handleCloseTab = (fullPath: string) => {
 
 // Context Menu Logic
 const contextMenuOptions = computed(() => [
-  { label: 'Close Current', key: 'close', disabled: tabsStore.tabs.length <= 1 },
+  {
+    label: 'Close Current',
+    key: 'close',
+    disabled:
+      tabsStore.tabs.length <= 1 ||
+      tabsStore.tabs.find((tab) => tab.fullPath === currentContextTab.value)?.affix === true,
+  },
   { label: 'Close Others', key: 'close-others', disabled: tabsStore.tabs.length <= 1 },
   { label: 'Close All', key: 'close-all', disabled: tabsStore.tabs.length <= 1 },
 ])

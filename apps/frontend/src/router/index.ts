@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import AppLayout from '@/layouts/index.vue'
 
 // 导入固定路由模块
 const homepageModules = import.meta.glob('./modules/**/homepage.ts', { eager: true })
@@ -9,7 +10,25 @@ const systemModules = import.meta.glob('./modules/**/system.ts', { eager: true }
 const defaultRouterList: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/dashboard',
+    redirect: '/home',
+  },
+  {
+    path: '/',
+    component: AppLayout,
+    children: [
+      {
+        path: 'home',
+        name: 'Home',
+        component: () => import('@/views/home/index.vue'),
+        meta: {
+          title: '首页',
+          icon: 'antd:HomeOutlined',
+          affix: true,
+          cache: true,
+          constant: true,
+        },
+      },
+    ],
   },
   {
     path: '/login',
@@ -30,7 +49,6 @@ const defaultRouterList: Array<RouteRecordRaw> = [
     path: '/:pathMatch(.*)*',
     component: () => import('@/views/result/404/index.vue'),
   },
-  // 不再设置默认的 / 重定向，由路由守卫处理
 ]
 
 // 固定路由模块转换为路由

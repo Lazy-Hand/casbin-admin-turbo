@@ -7,11 +7,20 @@ export interface TabItem {
   fullPath: string
   name: string
   icon?: string
+  affix?: boolean
+}
+
+const HOME_TAB: TabItem = {
+  title: '首页',
+  fullPath: '/home',
+  name: 'Home',
+  icon: 'antd:HomeOutlined',
+  affix: true,
 }
 
 export const useTabsStore = defineStore('tabs', () => {
-  const tabs = ref<TabItem[]>([])
-  const cachedViews = ref<string[]>([])
+  const tabs = ref<TabItem[]>([{ ...HOME_TAB }])
+  const cachedViews = ref<string[]>([HOME_TAB.name])
 
   const addTab = (route: RouteLocationNormalized) => {
     const { name, fullPath, meta } = route
@@ -25,6 +34,7 @@ export const useTabsStore = defineStore('tabs', () => {
         fullPath,
         name: name,
         icon: (meta.icon as string) || '',
+        affix: Boolean(meta.affix),
       })
     }
 
@@ -40,6 +50,9 @@ export const useTabsStore = defineStore('tabs', () => {
     const index = tabs.value.findIndex((tab) => tab.fullPath === fullPath)
     if (index !== -1) {
       const tab = tabs.value[index]
+      if (tab?.affix) {
+        return index
+      }
       if (tab) {
         removeCache(tab.name)
         tabs.value.splice(index, 1)
@@ -56,15 +69,15 @@ export const useTabsStore = defineStore('tabs', () => {
   }
 
   const closeAllTabs = () => {
-    tabs.value = []
-    cachedViews.value = []
+    tabs.value = [{ ...HOME_TAB }]
+    cachedViews.value = [HOME_TAB.name]
   }
 
   const closeOtherTabs = (currentFullPath: string) => {
     const currentTab = tabs.value.find((tab) => tab.fullPath === currentFullPath)
     if (currentTab) {
-      tabs.value = [currentTab]
-      cachedViews.value = [currentTab.name]
+      tabs.value = tabs.value.filter((tab) => tab.affix || tab.fullPath === currentFullPath)
+      cachedViews.value = tabs.value.map((tab) => tab.name)
     }
   }
 
