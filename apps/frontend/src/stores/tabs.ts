@@ -81,6 +81,13 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
+  const reorderTabs = (nextTabs: TabItem[]) => {
+    const affixTabs = tabs.value.filter((tab) => tab.affix)
+    const movableTabs = nextTabs.filter((tab) => !tab.affix)
+
+    tabs.value = [...affixTabs, ...movableTabs]
+  }
+
   return {
     tabs,
     cachedViews,
@@ -89,5 +96,6 @@ export const useTabsStore = defineStore('tabs', () => {
     removeCache,
     closeAllTabs,
     closeOtherTabs,
+    reorderTabs,
   }
 })

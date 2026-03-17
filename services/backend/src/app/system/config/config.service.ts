@@ -192,7 +192,7 @@ export class ConfigService {
       configValue: dto.configValue,
       description: dto.description ?? '',
       status: dto.status ?? 1,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     });
     return Array.isArray(createdConfigs) ? createdConfigs[0] ?? null : createdConfigs;
   }

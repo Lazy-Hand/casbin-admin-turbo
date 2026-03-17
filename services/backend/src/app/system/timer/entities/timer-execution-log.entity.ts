@@ -11,10 +11,10 @@ export class TimerExecutionLogEntity {
   status: number;
 
   @ApiProperty({ description: '开始时间' })
-  startAt: Date;
+  startAt: string;
 
   @ApiProperty({ description: '结束时间', required: false })
-  endAt: Date | null;
+  endAt: string | null;
 
   @ApiProperty({ description: '执行耗时(毫秒)', required: false })
   duration: number | null;

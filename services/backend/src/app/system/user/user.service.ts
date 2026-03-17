@@ -133,7 +133,7 @@ export class UserService {
           deptId,
           postId,
           isAdmin: false,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
       });
       const user = Array.isArray(createdUsers) ? createdUsers[0] : createdUsers;
 

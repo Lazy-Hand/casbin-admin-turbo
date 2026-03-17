@@ -17,8 +17,15 @@ import * as schema from './schema';
     {
       provide: DRIZZLE_DB,
       useFactory: (configService: ConfigService, logger: Logger) => {
+        const connectionString = configService.get<string>('DATABASE_URL');
+
+        if (!connectionString) {
+          throw new Error('DATABASE_URL is not configured');
+        }
+
         const pool = new Pool({
-          connectionString: process.env.DATABASE_URL,
+          connectionString,
+          options: '-c search_path=public',
         });
 
         const config = getLoggerConfig(configService);

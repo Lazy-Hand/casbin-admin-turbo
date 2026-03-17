@@ -82,6 +82,8 @@ pnpm --filter @casbin-admin/backend db:seed
 - 当前格式风格为：单引号、有分号
 - 主表软删除过滤统一使用 `withSoftDelete(Table, ...)`
 - 关联表软删除过滤统一使用 `joinOnWithSoftDelete(Table, eq(...))`
+- Drizzle 时间字段统一使用 `mode: 'string'`
+- `updatedAt` / `deletedAt` 由 `updateWithAudit` / `softDeleteWhere` 自动维护
 
 示例：
 
@@ -90,6 +92,14 @@ pnpm --filter @casbin-admin/backend db:seed
 .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
 .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
 .where(withSoftDelete(User, eq(User.id, userId)))
+```
+
+时间字段示例：
+
+```ts
+createdAt: timestamp('createdAt', { precision: 3, mode: 'string' }).notNull().defaultNow()
+updatedAt: timestamp('updatedAt', { precision: 3, mode: 'string' }).notNull()
+deletedAt: timestamp('deletedAt', { precision: 3, mode: 'string' })
 ```
 
 ## 质量门禁

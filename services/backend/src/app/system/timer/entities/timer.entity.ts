@@ -28,8 +28,8 @@ export class TimerEntity extends BaseEntity {
   status: number;
 
   @ApiProperty({ description: '上次执行时间', required: false })
-  lastRunAt: Date | null;
+  lastRunAt: string | null;
 
   @ApiProperty({ description: '下次预计执行时间', required: false })
-  nextRunAt: Date | null;
+  nextRunAt: string | null;
 }

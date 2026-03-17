@@ -10,9 +10,9 @@ export class DeptEntity {
   status: number;
   sort: number;
   remark: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
   createdBy: number | null;
   updatedBy: number | null;
   deletedBy: number | null;

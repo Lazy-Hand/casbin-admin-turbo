@@ -138,7 +138,7 @@ export class DictService {
         dictCode: dto.dictCode,
         description: dto.description ?? '',
         status: dto.status ?? 1,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
     });
     return Array.isArray(createdTypes) ? createdTypes[0] ?? null : createdTypes;
   }
@@ -230,7 +230,7 @@ export class DictService {
         colorType: dto.colorType ?? '',
         sort: dto.sort ?? 0,
         status: dto.status ?? 1,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
     });
     return Array.isArray(createdItems) ? createdItems[0] ?? null : createdItems;
   }

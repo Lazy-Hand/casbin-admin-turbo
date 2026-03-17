@@ -474,7 +474,7 @@ export class PermissionService {
       frameUrl: data.frameUrl || "",
       status: data.status ?? 1,
       parentId: data.parentId && data.parentId !== 0 ? data.parentId : null,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     })
     const permission = Array.isArray(createdPermissions) ? createdPermissions[0] : createdPermissions
 

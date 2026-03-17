@@ -148,14 +148,14 @@ export class TimerService implements OnModuleInit {
       const duration = endAt.getTime() - startAt.getTime();
 
       await updateWithAudit(this.drizzle.db, Timer, eq(Timer.id, timerId), {
-        lastRunAt: startAt,
+        lastRunAt: startAt.toISOString(),
       });
 
       await this.drizzle.db.insert(TimerExecutionLog).values({
           timerId,
           status,
-          startAt,
-          endAt,
+          startAt: startAt.toISOString(),
+          endAt: endAt.toISOString(),
           duration,
           result: result?.substring(0, 10000), // 限制长度
       });
@@ -255,7 +255,7 @@ export class TimerService implements OnModuleInit {
         target: dto.target,
         params: dto.params ?? null,
         status: dto.status ?? 1,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
     });
     const timer = Array.isArray(createdTimers) ? createdTimers[0] ?? null : createdTimers;
 

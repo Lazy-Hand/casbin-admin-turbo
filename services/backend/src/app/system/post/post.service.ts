@@ -92,7 +92,7 @@ export class PostService {
         sort: dto.sort ?? 0,
         status: dto.status ?? 1,
         remark: dto.remark ?? null,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
     });
     const created = Array.isArray(createdPosts) ? createdPosts[0] ?? null : createdPosts;
     return created;

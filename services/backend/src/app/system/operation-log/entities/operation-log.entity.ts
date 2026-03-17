@@ -48,5 +48,5 @@ export class OperationLogEntity {
   duration: number | null;
 
   @ApiProperty({ description: '创建时间' })
-  createdAt: Date;
+  createdAt: string;
 }

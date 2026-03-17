@@ -41,8 +41,8 @@ export class OperationLogService {
       module ? eq(OperationLog.module, module) : undefined,
       operation ? eq(OperationLog.operation, operation) : undefined,
       status !== undefined ? eq(OperationLog.status, status) : undefined,
-      startTime ? gte(OperationLog.createdAt, new Date(startTime)) : undefined,
-      endTime ? lte(OperationLog.createdAt, new Date(endTime)) : undefined,
+      startTime ? gte(OperationLog.createdAt, new Date(startTime).toISOString()) : undefined,
+      endTime ? lte(OperationLog.createdAt, new Date(endTime).toISOString()) : undefined,
     );
 
     const skip = (pageNo - 1) * pageSize;
@@ -127,7 +127,7 @@ export class OperationLogService {
 
       const result = await this.drizzle.db
         .delete(OperationLog)
-        .where(lte(OperationLog.createdAt, sixMonthsAgo))
+        .where(lte(OperationLog.createdAt, sixMonthsAgo.toISOString()))
         .returning({ id: OperationLog.id });
 
       this.logger.log(`Cleaned ${result.length} old operation logs`);
@@ -154,8 +154,8 @@ export class OperationLogService {
     const where = and(
       username ? ilike(LoginLog.username, `%${username}%`) : undefined,
       status !== undefined ? eq(LoginLog.status, status) : undefined,
-      startTime ? gte(LoginLog.createdAt, new Date(startTime)) : undefined,
-      endTime ? lte(LoginLog.createdAt, new Date(endTime)) : undefined,
+      startTime ? gte(LoginLog.createdAt, new Date(startTime).toISOString()) : undefined,
+      endTime ? lte(LoginLog.createdAt, new Date(endTime).toISOString()) : undefined,
     );
 
     const skip = (pageNo - 1) * pageSize;

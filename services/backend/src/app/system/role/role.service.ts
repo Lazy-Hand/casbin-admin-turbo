@@ -225,7 +225,7 @@ export class RoleService {
         dataScope:
           dataScopeNum !== undefined ? DATA_SCOPE_MAP[dataScopeNum] : 'DEPT',
         customDepts: customDepts ?? [],
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       });
       const role = Array.isArray(createdRoles) ? createdRoles[0] : createdRoles;
 
@@ -494,8 +494,8 @@ export class RoleService {
       status: number;
       dataScope: DataScopeEnum;
       customDepts: number[] | null;
-      createdAt: Date;
-      updatedAt: Date;
+      createdAt: string;
+      updatedAt: string;
       permission: {
         id: number | null;
         permName: string | null;

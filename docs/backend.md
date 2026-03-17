@@ -48,3 +48,5 @@ pnpm --filter @casbin-admin/backend test:e2e
 - 数据库 schema、SQL 迁移与 seed 暂时保留在 backend 内，不单独抽包
 - 主表软删除过滤使用 `withSoftDelete(Table, ...)`
 - join 到软删除表时，统一使用 `joinOnWithSoftDelete(Table, eq(...))`
+- Drizzle 时间字段统一使用 `mode: 'string'`
+- `updatedAt` / `deletedAt` 通过 Drizzle helper 自动维护

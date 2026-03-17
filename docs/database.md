@@ -25,6 +25,8 @@ flowchart TD
 - 使用项目内置 migration runner 执行 SQL 迁移
 - 运行时 ORM 与 schema 工具链都已统一为 Drizzle
 - 当前不单独抽数据库基础设施包，因为数据库能力仍只被 backend 使用
+- 时间字段统一使用 `mode: 'string'`，服务端以 ISO 字符串处理时间值
+- `createdAt` 依赖列默认值，`updatedAt` / `deletedAt` 由 Drizzle helper 自动维护
 
 ## 常用命令
 

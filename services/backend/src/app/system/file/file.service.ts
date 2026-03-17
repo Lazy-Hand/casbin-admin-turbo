@@ -264,7 +264,7 @@ export class FileService {
         status: 1,
         businessId: dto.businessId ?? null,
         businessType: dto.businessType ?? null,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       });
     return Array.isArray(createdFiles) ? createdFiles[0] ?? null : createdFiles;
   }

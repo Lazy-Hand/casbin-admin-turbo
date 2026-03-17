@@ -4,11 +4,11 @@ export class BaseEntity {
   @ApiProperty({ description: '数据id' })
   id: number;
   @ApiProperty({ description: '创建时间' })
-  createdAt: Date;
+  createdAt: string;
   @ApiProperty({ description: '更新时间' })
-  updatedAt: Date;
+  updatedAt: string;
   @ApiProperty({ description: '删除时间' })
-  deletedAt: Date;
+  deletedAt: string;
   @ApiProperty({ description: '创建人' })
   createdBy: number;
   @ApiProperty({ description: '更新人' })

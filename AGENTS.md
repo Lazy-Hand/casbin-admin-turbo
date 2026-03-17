@@ -32,6 +32,7 @@
 - Use PascalCase for Vue components and NestJS classes, camelCase for functions and variables, and kebab-case for filenames unless the framework strongly prefers another convention.
 - Keep modules focused and organized by feature rather than by technical layer when adding new business code.
 - In backend Drizzle queries, filter main tables with `withSoftDelete(...)` and filter joined soft-delete tables with `joinOnWithSoftDelete(...)`.
+- In backend Drizzle schema, timestamp columns should default to `mode: 'string'`; prefer helper-managed `updatedAt` / `deletedAt` over manual per-service time handling.
 
 ## Linting & Quality Gates
 - ESLint is standardized through `packages/eslint-config`; app-level `eslint.config.*` files should stay thin and only hold local overrides.

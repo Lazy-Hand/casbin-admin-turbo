@@ -28,18 +28,33 @@ function withAuditValues<T extends Record<string, unknown>>(
   mode: 'create' | 'update' | 'delete',
 ): T {
   const userId = getCurrentUserId();
-  if (!userId) {
-    return values;
+  const nextValues = { ...values } as Record<string, unknown>;
+  const now = new Date().toISOString();
+
+  if (mode === 'create' && hasColumn(table, 'createdAt') && nextValues.createdAt === undefined) {
+    nextValues.createdAt = now;
   }
 
-  const nextValues = { ...values } as Record<string, unknown>;
+  if (
+    (mode === 'create' || mode === 'update') &&
+    hasColumn(table, 'updatedAt') &&
+    nextValues.updatedAt === undefined
+  ) {
+    nextValues.updatedAt = now;
+  }
 
-  if (mode === 'create' && hasColumn(table, 'createdBy') && nextValues.createdBy === undefined) {
+  if (
+    mode === 'create' &&
+    userId !== undefined &&
+    hasColumn(table, 'createdBy') &&
+    nextValues.createdBy === undefined
+  ) {
     nextValues.createdBy = userId;
   }
 
   if (
     (mode === 'create' || mode === 'update') &&
+    userId !== undefined &&
     hasColumn(table, 'updatedBy') &&
     nextValues.updatedBy === undefined
   ) {
@@ -47,11 +62,11 @@ function withAuditValues<T extends Record<string, unknown>>(
   }
 
   if (mode === 'delete') {
-    if (hasColumn(table, 'deletedBy')) {
-      nextValues.deletedBy = userId;
+    if (hasColumn(table, 'deletedAt') && nextValues.deletedAt === undefined) {
+      nextValues.deletedAt = now;
     }
-    if (hasColumn(table, 'deletedAt')) {
-      nextValues.deletedAt = new Date();
+    if (userId !== undefined && hasColumn(table, 'deletedBy')) {
+      nextValues.deletedBy = userId;
     }
   }
 

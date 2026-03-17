@@ -103,7 +103,7 @@ export class AuthService {
       avatar: "",
       status: 1,
       isAdmin: false,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     })
     const user = Array.isArray(createdUsers) ? createdUsers[0] : createdUsers
 

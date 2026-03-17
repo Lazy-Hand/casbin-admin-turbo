@@ -32,7 +32,7 @@ export class AppService {
       avatar: '',
       status: 1,
       isAdmin: false,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     });
 
     return Array.isArray(rows) ? rows[0] ?? null : null;

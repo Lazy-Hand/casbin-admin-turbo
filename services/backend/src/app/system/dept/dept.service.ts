@@ -195,7 +195,7 @@ export class DeptService {
         status: createDeptDto.status ?? 1,
         sort: createDeptDto.sort ?? 0,
         remark: createDeptDto.remark ?? null,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
     });
     const dept = Array.isArray(createdDepts) ? createdDepts[0] : createdDepts;
 

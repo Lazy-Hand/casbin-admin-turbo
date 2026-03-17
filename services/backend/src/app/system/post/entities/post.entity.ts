@@ -20,8 +20,8 @@ export class PostEntity {
   remark?: string;
 
   @ApiProperty({ description: '创建时间' })
-  createdAt: Date;
+  createdAt: string;
 
   @ApiProperty({ description: '更新时间' })
-  updatedAt: Date;
+  updatedAt: string;
 }
