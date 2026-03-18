@@ -1,0 +1,30 @@
+{
+  "name": "@casbin-admin/vite-auto-proxy",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "pnpm exec tsc -p tsconfig.json",
+    "postinstall": "pnpm exec tsc -p tsconfig.json",
+    "type-check": "pnpm exec tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.4",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "beta"
+  }
+}

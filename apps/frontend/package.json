@@ -53,6 +53,7 @@
   "devDependencies": {
     "@casbin-admin/eslint-config": "workspace:*",
     "@casbin-admin/icons": "workspace:*",
+    "@casbin-admin/vite-auto-proxy": "workspace:*",
     "@pinia/colada-devtools": "^0.4.5",
     "@primevue/auto-import-resolver": "^4.5.4",
     "@tailwindcss/vite": "^4.2.1",

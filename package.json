@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "turbo run dev --parallel",
     "dev:frontend": "pnpm --filter @casbin-admin/frontend dev",
+    "dev:react-admin": "pnpm --filter @casbin-admin/react-admin dev",
     "dev:backend": "pnpm --filter @casbin-admin/backend dev",
     "build": "turbo run build",
     "lint": "turbo run lint",

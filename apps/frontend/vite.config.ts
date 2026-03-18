@@ -7,9 +7,9 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 import vueDevTools from "vite-plugin-vue-devtools";
 import tailwindcss from "@tailwindcss/vite";
 import AutoImport from "unplugin-auto-import/vite";
-import { autoProxyPlugin } from "./plugins/auto-proxy";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
 import { createIconsPlugin, createIconsResolver, resolveAppIconDir } from "@casbin-admin/icons/vite";
+import { autoProxyPlugin } from "@casbin-admin/vite-auto-proxy";
 
 const manualChunks = (id: string) => {
   if (!id.includes("node_modules")) {
@@ -92,9 +92,6 @@ export default defineConfig(({ mode }) => {
           },
         ],
       }),
-      // 自动代理插件
-      // 支持从 .env 读取 VITE_PROXY=[["/api","http://localhost:3000"]]
-      // 或直接传入配置: autoProxyPlugin([['/api', 'http://localhost:3000']])
       autoProxyPlugin(env.VITE_PROXY),
     ],
     server: {
