@@ -15,7 +15,14 @@ export function useChunkUpload(options: UseChunkUploadOptions = {}) {
 
   // 生成唯一 ID
   const generateUploadId = (file: File) => {
-    return `${file.name}-${file.size}-${Date.now()}`
+    const baseName = file.name.replace(/\.[^/.]+$/, '')
+    const safeName = baseName
+      .normalize('NFKD')
+      .replace(/[^A-Za-z0-9_-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '')
+
+    return `${safeName || 'file'}-${file.size}-${Date.now()}`
   }
 
   // 切片

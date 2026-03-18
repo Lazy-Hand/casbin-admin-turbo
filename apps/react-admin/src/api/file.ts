@@ -1,5 +1,6 @@
-import http, { type PageResponse } from '@/utils/request'
 import type { AxiosProgressEvent } from '@casbin-admin/http-client'
+import { request } from '@/lib/request'
+import type { PageResponse } from '@/types/common'
 
 export interface UploadFileDto {
   businessId?: number
@@ -39,52 +40,58 @@ export interface MergeChunksDto extends UploadFileDto {
   totalSize: number
 }
 
-// 单文件上传
-export const uploadSingle = (
+export interface FileSearchParams {
+  pageNo?: number
+  pageSize?: number
+  fileType?: string
+  isPublic?: boolean
+}
+
+export async function uploadSingle(
   file: File,
   data?: UploadFileDto,
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
-) => {
+) {
   const formData = new FormData()
   formData.append('file', file)
   if (data?.businessId) formData.append('businessId', String(data.businessId))
   if (data?.businessType) formData.append('businessType', data.businessType)
 
-  return http.post<FileEntity>('/api/files/upload', formData, {
+  const response = await request.post<FileEntity>('/api/files/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
     onUploadProgress,
   })
+
+  return response.data
 }
 
-// 多文件上传
-export const uploadMultiple = (
+export async function uploadMultiple(
   files: File[],
   data?: UploadFileDto,
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
-) => {
+) {
   const formData = new FormData()
-  files.forEach((file) => {
-    formData.append('files', file)
-  })
+  files.forEach((file) => formData.append('files', file))
   if (data?.businessId) formData.append('businessId', String(data.businessId))
   if (data?.businessType) formData.append('businessType', data.businessType)
 
-  return http.post<FileEntity[]>('/api/files/upload/multiple', formData, {
+  const response = await request.post<FileEntity[]>('/api/files/upload/multiple', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
     onUploadProgress,
   })
+
+  return response.data
 }
 
-// 分片上传：上传单个分片
-export const uploadChunk = (
+export async function uploadChunk(
   chunk: Blob,
   data: UploadChunkDto,
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
-) => {
+) {
   const formData = new FormData()
   formData.append('file', chunk, `chunk-${data.chunkIndex}`)
   formData.append('uploadId', data.uploadId)
@@ -93,26 +100,32 @@ export const uploadChunk = (
   if (data.businessId) formData.append('businessId', String(data.businessId))
   if (data.businessType) formData.append('businessType', data.businessType)
 
-  return http.post<{ uploadId: string; chunkIndex: number }>('/api/files/upload/chunk', formData, {
+  const response = await request.post<{ uploadId: string; chunkIndex: number }>('/api/files/upload/chunk', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
     onUploadProgress,
   })
+
+  return response.data
 }
 
-// 分片上传：合并分片
-export const mergeChunks = (data: MergeChunksDto) => {
-  return http.post<FileEntity>('/api/files/upload/chunk/merge', data)
+export async function mergeChunks(data: MergeChunksDto) {
+  const response = await request.post<FileEntity>('/api/files/upload/chunk/merge', data)
+  return response.data
 }
 
-export interface FileSearchParams {
-  pageNo?: number
-  pageSize?: number
-  fileType?: string
-  isPublic?: boolean
+export async function getFileList(params: FileSearchParams) {
+  const response = await request.get<PageResponse<FileEntity>>('/api/files/page', params)
+  return response.data
 }
 
-export const getFileList = (params: FileSearchParams) => {
-  return http.get<PageResponse<FileEntity>>('/api/files/page', params)
+export async function getFileById(id: number) {
+  const response = await request.get<FileEntity>(`/api/files/${id}`)
+  return response.data
+}
+
+export async function deleteFile(id: number) {
+  const response = await request.delete(`/api/files/${id}`)
+  return response.data
 }

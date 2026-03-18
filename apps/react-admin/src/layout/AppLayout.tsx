@@ -6,6 +6,7 @@ import { buildAppMenus } from '@/config/menu'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 import { useTabsStore } from '@/stores/tabs'
+import '@/layout/AppLayout.css'
 
 const { Header, Content, Sider } = Layout
 
@@ -29,7 +30,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Tag color="blue">{buildLabel}</Tag>
           </Space>
         </div>
-        <Menu mode="inline" selectedKeys={[pathname]} items={buildAppMenus(menuTree)} />
+        <Menu className="app-side-menu" mode="inline" selectedKeys={[pathname]} items={buildAppMenus(menuTree)} />
       </Sider>
       <Layout>
         <Header

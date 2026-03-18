@@ -6,6 +6,8 @@ import { createUser, getUser, updateUser, type UserFormData } from '@/api/user'
 import { getDeptTree, type Dept } from '@/api/dept'
 import { getPostOptions } from '@/api/post'
 import { getRoleOptions } from '@/api/role'
+import { DictSelect } from '@/components/dict/DictSelect'
+import { ImageUpload } from '@/components/upload'
 import { queryClient } from '@/lib/query-client'
 
 type UserDialogProps = {
@@ -154,6 +156,10 @@ export function UserDialog({ open, userId, onClose }: UserDialogProps) {
           avatar: '',
         }}
       >
+        <Form.Item label="头像" name="avatar">
+          <ImageUpload businessId={1} businessType="demo" maxSize={2} />
+        </Form.Item>
+
         <Form.Item
           label="用户名"
           name="username"
@@ -224,12 +230,7 @@ export function UserDialog({ open, userId, onClose }: UserDialogProps) {
         </Form.Item>
 
         <Form.Item label="状态" name="status">
-          <Select
-            options={[
-              { label: '启用', value: 1 },
-              { label: '禁用', value: 0 },
-            ]}
-          />
+          <DictSelect dictCode="BASE_STATUS" />
         </Form.Item>
       </Form>
     </Modal>

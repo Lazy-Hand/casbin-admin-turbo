@@ -1,0 +1,26 @@
+.app-side-menu {
+  border-inline-end: none !important;
+  background: transparent !important;
+}
+
+.app-side-menu .ant-menu-item-group {
+  margin-top: 10px;
+}
+
+.app-side-menu .ant-menu-item-group-title {
+  padding: 10px 16px 6px !important;
+  color: #2563eb !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.app-side-menu .ant-menu-item-group-list {
+  margin: 0 !important;
+}
+
+.app-side-menu .ant-menu-item-divider {
+  margin: 10px 16px !important;
+  border-block-start-color: #dbe6f3 !important;
+}
