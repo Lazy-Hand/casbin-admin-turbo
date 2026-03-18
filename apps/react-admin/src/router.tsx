@@ -1,4 +1,5 @@
 import { createRootRoute, createRoute, createRouter, Outlet, redirect } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { localRoutes } from '@/config/routes'
 import { AppShell } from '@/layout/AppShell'
 import { DashboardPage } from '@/pages/dashboard'
@@ -19,7 +20,12 @@ import { UserPage } from '@/pages/system/user'
 import { useAuthStore } from '@/stores/auth'
 
 const rootRoute = createRootRoute({
-  component: () => <Outlet />,
+  component: () => (
+    <>
+      <Outlet />
+      {import.meta.env.DEV ? <TanStackRouterDevtools position="bottom-right" /> : null}
+    </>
+  ),
 })
 
 const loginRoute = createRoute({
