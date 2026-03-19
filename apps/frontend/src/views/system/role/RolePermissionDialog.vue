@@ -77,7 +77,10 @@ const renderTreeLabel = ({ option }: { option: TreeOption }) => {
     divider: '分割线',
     group: '分组',
   }
-  const menuTypeTagTypeMap: Record<string, 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error'> = {
+  const menuTypeTagTypeMap: Record<
+    string,
+    'default' | 'primary' | 'info' | 'success' | 'warning' | 'error'
+  > = {
     menu: 'success',
     page: 'info',
     link: 'primary',
@@ -92,11 +95,7 @@ const renderTreeLabel = ({ option }: { option: TreeOption }) => {
   return h('div', { class: 'flex items-center gap-2' }, [
     h('span', null, String(option.permName || '')),
     isButton
-      ? h(
-          NTag,
-          { size: 'small', type: 'warning', bordered: false },
-          { default: () => '按钮' },
-        )
+      ? h(NTag, { size: 'small', type: 'warning', bordered: false }, { default: () => '按钮' })
       : menuTypeLabel
         ? h(
             NTag,
@@ -124,9 +123,9 @@ const open = async (id: number, name?: string) => {
     ])
 
     menuTree.value = normalizeMenuTree(permissionTreeRes.data || [])
-    checkedKeys.value = ((permissionRes.data || []).map((item) => item.permissionId) as number[]).filter(
-      (permissionId, index, list) => list.indexOf(permissionId) === index,
-    )
+    checkedKeys.value = (
+      (permissionRes.data || []).map((item) => item.permissionId) as number[]
+    ).filter((permissionId, index, list) => list.indexOf(permissionId) === index)
   } catch (error) {
     console.error(error)
     message.error('加载角色权限失败')

@@ -18,6 +18,9 @@ export interface PermissionTreeQuery {
 }
 
 export async function getMenuAndButtonPermissions(params?: PermissionTreeQuery) {
-  const response = await request.get<PermissionTreeNode[]>('/api/permissions/menus-and-buttons', params)
+  const response = await request.get<PermissionTreeNode[]>(
+    '/api/permissions/menus-and-buttons',
+    params,
+  )
   return response.data
 }

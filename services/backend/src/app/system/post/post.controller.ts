@@ -32,8 +32,7 @@ export class PostController {
     description: '成功返回岗位列表',
   })
   async findPage(@Query() searchPostDto: SearchPostDto) {
-    const { list, total, pageNo, pageSize } =
-      await this.postService.findPage(searchPostDto);
+    const { list, total, pageNo, pageSize } = await this.postService.findPage(searchPostDto);
     return createPaginationResponse(list, total, pageNo, pageSize);
   }
 

@@ -142,14 +142,7 @@ export class OperationLogService {
    * 分页查询登录日志
    */
   async findLoginLogPage(query: QueryLoginLogDto) {
-    const {
-      pageNo = 1,
-      pageSize = 10,
-      username,
-      status,
-      startTime,
-      endTime,
-    } = query;
+    const { pageNo = 1, pageSize = 10, username, status, startTime, endTime } = query;
 
     const where = and(
       username ? ilike(LoginLog.username, `%${username}%`) : undefined,

@@ -77,10 +77,18 @@ export function ConfigDialog({ open, configId, onClose }: Props) {
       destroyOnHidden
     >
       <Form form={form} layout="vertical" disabled={saveMutation.isPending || isFetching}>
-        <Form.Item label="配置键" name="configKey" rules={[{ required: true, message: '请输入配置键' }]}>
+        <Form.Item
+          label="配置键"
+          name="configKey"
+          rules={[{ required: true, message: '请输入配置键' }]}
+        >
           <Input placeholder="请输入配置键，如：site_name" />
         </Form.Item>
-        <Form.Item label="配置值" name="configValue" rules={[{ required: true, message: '请输入配置值' }]}>
+        <Form.Item
+          label="配置值"
+          name="configValue"
+          rules={[{ required: true, message: '请输入配置值' }]}
+        >
           <Input placeholder="请输入配置值" />
         </Form.Item>
         <Form.Item label="描述" name="description">

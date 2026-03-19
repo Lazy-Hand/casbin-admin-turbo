@@ -32,9 +32,7 @@ import * as schema from './schema';
 
         return drizzle(pool, {
           schema,
-          logger: config.enablePrismaLogging
-            ? new WinstonDrizzleLogger(logger)
-            : false,
+          logger: config.enablePrismaLogging ? new WinstonDrizzleLogger(logger) : false,
         });
       },
       inject: [ConfigService, WINSTON_MODULE_PROVIDER],

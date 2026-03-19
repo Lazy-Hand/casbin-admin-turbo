@@ -1,38 +1,18 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IResponse } from '../interfaces/response.interface';
-import {
-  RESPONSE_MESSAGE_KEY,
-  RESPONSE_CODE_KEY,
-} from '../decorators/response.decorator';
+import { RESPONSE_MESSAGE_KEY, RESPONSE_CODE_KEY } from '../decorators/response.decorator';
 
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<
-  T,
-  IResponse<T>
-> {
+export class TransformInterceptor<T> implements NestInterceptor<T, IResponse<T>> {
   constructor(private reflector: Reflector) {}
 
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<IResponse<T>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<IResponse<T>> {
     // 从装饰器获取自定义消息和状态码
-    const customMessage = this.reflector.get<string>(
-      RESPONSE_MESSAGE_KEY,
-      context.getHandler(),
-    );
-    const customCode = this.reflector.get<number>(
-      RESPONSE_CODE_KEY,
-      context.getHandler(),
-    );
+    const customMessage = this.reflector.get<string>(RESPONSE_MESSAGE_KEY, context.getHandler());
+    const customCode = this.reflector.get<number>(RESPONSE_CODE_KEY, context.getHandler());
 
     return next.handle().pipe(
       map((data) => {

@@ -100,12 +100,16 @@ export async function uploadChunk(
   if (data.businessId) formData.append('businessId', String(data.businessId))
   if (data.businessType) formData.append('businessType', data.businessType)
 
-  const response = await request.post<{ uploadId: string; chunkIndex: number }>('/api/files/upload/chunk', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
+  const response = await request.post<{ uploadId: string; chunkIndex: number }>(
+    '/api/files/upload/chunk',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress,
     },
-    onUploadProgress,
-  })
+  )
 
   return response.data
 }

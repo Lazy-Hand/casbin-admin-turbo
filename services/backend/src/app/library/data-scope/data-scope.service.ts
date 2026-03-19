@@ -52,10 +52,7 @@ export class DataScopeService {
    * @param resourceType 资源类型
    * @returns 数据范围配置
    */
-  async getUserDataScope(
-    userId: number,
-    resourceType: string,
-  ): Promise<DataScopeConfig> {
+  async getUserDataScope(userId: number, resourceType: string): Promise<DataScopeConfig> {
     // 尝试从缓存获取
     const cacheKey = `${DATA_SCOPE_CACHE_PREFIX}${userId}:${resourceType}`;
     const cached = await this.redis.get(cacheKey);
@@ -114,10 +111,10 @@ export class DataScopeService {
 
     // 定义权限优先级（数字越大权限越高）
     const scopePriority: Record<string, number> = {
-      'DEPT': 1,
-      'CUSTOM': 2,
-      'DEPT_AND_CHILD': 3,
-      'ALL': 4,
+      DEPT: 1,
+      CUSTOM: 2,
+      DEPT_AND_CHILD: 3,
+      ALL: 4,
     };
 
     for (const row of rows) {
@@ -150,9 +147,7 @@ export class DataScopeService {
    * @param config 数据范围配置
    * @returns 可复用的过滤条件对象
    */
-  async buildWhereClause(
-    config: DataScopeConfig,
-  ): Promise<Record<string, any>> {
+  async buildWhereClause(config: DataScopeConfig): Promise<Record<string, any>> {
     const { scope, deptId, customDepts } = config;
 
     switch (scope) {

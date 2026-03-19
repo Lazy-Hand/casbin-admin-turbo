@@ -10,11 +10,7 @@ type Props = {
   onChange?: (value?: string) => void
 }
 
-export function IconSelect({
-  value,
-  placeholder = '点击选择图标',
-  onChange,
-}: Props) {
+export function IconSelect({ value, placeholder = '点击选择图标', onChange }: Props) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -24,7 +20,7 @@ export function IconSelect({
         value={value}
         placeholder={placeholder}
         prefix={value ? <DynamicIcon icon={value} className="size-4" /> : null}
-        suffix={(
+        suffix={
           <Space size={4}>
             {value ? (
               <Button
@@ -50,7 +46,7 @@ export function IconSelect({
               }}
             />
           </Space>
-        )}
+        }
         onClick={() => setOpen(true)}
       />
       <IconPicker

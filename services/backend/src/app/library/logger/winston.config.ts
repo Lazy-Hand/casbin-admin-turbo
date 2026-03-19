@@ -5,9 +5,7 @@ import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { getLoggerConfig, LoggerConfig } from './logger.config';
 
-export function createWinstonConfig(
-  configService: ConfigService,
-): WinstonModuleOptions {
+export function createWinstonConfig(configService: ConfigService): WinstonModuleOptions {
   const config = getLoggerConfig(configService);
   const transports: winston.transport[] = [];
 
@@ -83,10 +81,7 @@ function createFileTransport(
     maxSize: config.maxFileSize,
     maxFiles: config.maxFiles,
     level: level,
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json(),
-    ),
+    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   });
 
   // 添加错误处理

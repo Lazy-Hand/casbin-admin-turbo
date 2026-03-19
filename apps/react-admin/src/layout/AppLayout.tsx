@@ -1,19 +1,18 @@
 import { LogoutOutlined } from '@ant-design/icons'
-import { Button, Layout, Menu, Space, Tag, Typography } from 'antd'
+import { Button, Layout, Menu, Space, Typography } from 'antd'
 import { useRouterState } from '@tanstack/react-router'
 import { AppTabs } from '@/layout/AppTabs'
 import { buildAppMenus } from '@/config/menu'
-import { useAppStore } from '@/stores/app'
+
 import { useAuthStore } from '@/stores/auth'
 import { useTabsStore } from '@/stores/tabs'
 import '@/layout/AppLayout.css'
+import LazyhandLogo from '@/assets/images/lazyhand-logo.png'
 
 const { Header, Content, Sider } = Layout
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
-  const appName = useAppStore((state) => state.appName)
-  const buildLabel = useAppStore((state) => state.buildLabel)
   const user = useAuthStore((state) => state.user)
   const menuTree = useAuthStore((state) => state.menuTree)
   const clearSession = useAuthStore((state) => state.clearSession)
@@ -21,16 +20,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider theme="light" width={240} style={{ borderInlineEnd: '1px solid #f0f0f0' }}>
-        <div style={{ padding: 24 }}>
-          <Space direction="vertical" size={4}>
-            <Typography.Title level={4} style={{ margin: 0 }}>
-              {appName}
-            </Typography.Title>
-            <Tag color="blue">{buildLabel}</Tag>
-          </Space>
+      <Sider theme="light" width={220} style={{ borderInlineEnd: '1px solid #f0f0f0' }}>
+        <div
+          style={{
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 16px',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src={LazyhandLogo} alt="logo" style={{ width: '12rem', transition: 'all 0.3s' }} />
+          </a>
         </div>
-        <Menu className="app-side-menu" mode="inline" selectedKeys={[pathname]} items={buildAppMenus(menuTree)} />
+        <Menu
+          className="app-side-menu"
+          mode="inline"
+          selectedKeys={[pathname]}
+          items={buildAppMenus(menuTree)}
+        />
       </Sider>
       <Layout>
         <Header

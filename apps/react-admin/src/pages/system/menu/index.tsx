@@ -2,7 +2,14 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Button, Card, Form, Input, Popconfirm, Space, Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, AppstoreOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  AppstoreOutlined,
+} from '@ant-design/icons'
 import { deleteMenu, getMenuList, type Menu } from '@/api/menu'
 import { DictSelect } from '@/components/dict/DictSelect'
 import { DictTag } from '@/components/dict/DictTag'
@@ -19,7 +26,11 @@ export function MenuPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingMenuId, setEditingMenuId] = useState<number | null>(null)
   const [parentId, setParentId] = useState<number | null>(null)
-  const [buttonDialog, setButtonDialog] = useState<{ open: boolean; id: number | null; name: string }>({
+  const [buttonDialog, setButtonDialog] = useState<{
+    open: boolean
+    id: number | null
+    name: string
+  }>({
     open: false,
     id: null,
     name: '',
@@ -51,7 +62,8 @@ export function MenuPage() {
         dataIndex: 'icon',
         key: 'icon',
         width: 80,
-        render: (value: string | undefined) => (value ? <DynamicIcon icon={value} className="size-4" /> : null),
+        render: (value: string | undefined) =>
+          value ? <DynamicIcon icon={value} className="size-4" /> : null,
       },
       { title: '权限编码', dataIndex: 'permCode', key: 'permCode', width: 180 },
       { title: '路径', dataIndex: 'path', key: 'path', width: 180 },

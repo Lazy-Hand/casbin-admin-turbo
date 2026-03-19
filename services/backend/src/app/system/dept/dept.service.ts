@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { and, asc, desc, eq, ilike, isNull, ne, sql } from 'drizzle-orm';
 import { CreateDeptDto } from './dto/create-dept.dto';
 import { UpdateDeptDto } from './dto/update-dept.dto';
@@ -190,12 +185,12 @@ export class DeptService {
     const ancestors = await this.calculateAncestors(parentId);
 
     const createdDepts = await insertWithAudit(this.drizzle.db, Dept, {
-        ...createDeptDto,
-        ancestors,
-        status: createDeptDto.status ?? 1,
-        sort: createDeptDto.sort ?? 0,
-        remark: createDeptDto.remark ?? null,
-        updatedAt: new Date().toISOString(),
+      ...createDeptDto,
+      ancestors,
+      status: createDeptDto.status ?? 1,
+      sort: createDeptDto.sort ?? 0,
+      remark: createDeptDto.remark ?? null,
+      updatedAt: new Date().toISOString(),
     });
     const dept = Array.isArray(createdDepts) ? createdDepts[0] : createdDepts;
 
@@ -242,11 +237,11 @@ export class DeptService {
 
     // 更新部门
     const updatedDepts = await updateWithAudit(this.drizzle.db, Dept, eq(Dept.id, id), {
-        ...updateDeptDto,
-        ancestors: newAncestors,
-        status: updateDeptDto.status !== undefined ? +updateDeptDto.status : undefined,
-        sort: updateDeptDto.sort !== undefined ? +updateDeptDto.sort : undefined,
-        remark: updateDeptDto.remark !== undefined ? updateDeptDto.remark : undefined,
+      ...updateDeptDto,
+      ancestors: newAncestors,
+      status: updateDeptDto.status !== undefined ? +updateDeptDto.status : undefined,
+      sort: updateDeptDto.sort !== undefined ? +updateDeptDto.sort : undefined,
+      remark: updateDeptDto.remark !== undefined ? updateDeptDto.remark : undefined,
     });
     const updated = Array.isArray(updatedDepts) ? updatedDepts[0] : updatedDepts;
 
@@ -300,11 +295,7 @@ export class DeptService {
   /**
    * 验证同级部门名称唯一性
    */
-  private async validateDuplicateName(
-    name: string,
-    parentId: number | null,
-    excludeId?: number,
-  ) {
+  private async validateDuplicateName(name: string, parentId: number | null, excludeId?: number) {
     const count = await this.drizzle.db
       .select({ total: sql<number>`count(*)` })
       .from(Dept)
@@ -349,8 +340,7 @@ export class DeptService {
    */
   private async validateCircularReference(deptId: number, newParentId: number) {
     // 检查新父部门是否是当前部门的子部门
-    const descendantIds =
-      await this.dataScopeService.getDescendantDeptIds(deptId);
+    const descendantIds = await this.dataScopeService.getDescendantDeptIds(deptId);
 
     if (descendantIds.includes(newParentId)) {
       throw new BadRequestException('不能将部门移动到其子部门下');
@@ -360,9 +350,7 @@ export class DeptService {
   /**
    * 计算 ancestors 字段
    */
-  private async calculateAncestors(
-    parentId: number | null | undefined,
-  ): Promise<string> {
+  private async calculateAncestors(parentId: number | null | undefined): Promise<string> {
     if (!parentId) {
       return '0';
     }
@@ -379,10 +367,7 @@ export class DeptService {
   /**
    * 更新子部门的 ancestors
    */
-  private async updateChildrenAncestors(
-    parentId: number,
-    parentAncestors: string,
-  ) {
+  private async updateChildrenAncestors(parentId: number, parentAncestors: string) {
     // 获取所有子部门
     const children = await this.drizzle.db
       .select({ id: Dept.id })

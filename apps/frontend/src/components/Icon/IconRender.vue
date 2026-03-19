@@ -20,8 +20,7 @@ const iconMeta = computed(() => {
   if (!iconValue.value) return null
 
   const [library, name] = iconValue.value.split(':')
-  if (!library || !name || !['material', 'antd', 'ionicons5'].includes(library))
-    return null
+  if (!library || !name || !['material', 'antd', 'ionicons5'].includes(library)) return null
 
   return {
     library,

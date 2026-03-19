@@ -15,13 +15,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiBearerAuth,
-  ApiConsumes,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { FileService } from './file.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
@@ -33,10 +27,7 @@ import {
 } from './dto/file.dto';
 import { ApiSuccessResponse, ApiPaginatedResponse } from '@/common/decorators';
 import { FileEntity } from './entities/file.entity';
-import {
-  PaginationDto,
-  createPaginationResponse,
-} from '@/common/dto/pagination.dto';
+import { PaginationDto, createPaginationResponse } from '@/common/dto/pagination.dto';
 import { FileType } from './entities/file.entity';
 import { Can } from '@/app/library/casl';
 import { diskStorage, memoryStorage } from 'multer';
@@ -198,10 +189,7 @@ export class FileController {
   @ApiSuccessResponse(Object, {
     description: '分片上传成功',
   })
-  async uploadChunk(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() dto: UploadChunkDto,
-  ) {
+  async uploadChunk(@UploadedFile() file: Express.Multer.File, @Body() dto: UploadChunkDto) {
     if (!file) throw new BadRequestException('请选择要上传的分片');
     await this.fileService.saveChunk(file, dto.uploadId, dto.chunkIndex);
     return { uploadId: dto.uploadId, chunkIndex: dto.chunkIndex };

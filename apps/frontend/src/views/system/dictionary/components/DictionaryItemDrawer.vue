@@ -135,12 +135,7 @@ defineExpose({
       <template #header>
         <div class="flex justify-between items-center w-full">
           <NSpace>
-            <NButton
-              v-if="hasPermission('DICT_ADD')"
-              type="primary"
-              size="small"
-              @click="openNew"
-            >
+            <NButton v-if="hasPermission('DICT_ADD')" type="primary" size="small" @click="openNew">
               <template #icon>
                 <AppIcon icon="antd:PlusOutlined" />
               </template>

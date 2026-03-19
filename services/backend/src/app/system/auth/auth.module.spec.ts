@@ -11,9 +11,7 @@ describe('resolveJwtModuleOptions', () => {
       }),
     } as unknown as ConfigService;
 
-    expect(() => resolveJwtModuleOptions(configService)).toThrow(
-      'jwt.secret is required',
-    );
+    expect(() => resolveJwtModuleOptions(configService)).toThrow('jwt.secret is required');
   });
 
   it('builds options from config values', () => {

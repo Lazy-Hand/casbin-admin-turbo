@@ -38,10 +38,7 @@ export class AbilityGuard implements CanActivate {
     private userHook: UserHook,
     private configService: ConfigService,
   ) {
-    this.logPermissions = this.configService.get<boolean>(
-      'casl.logging.logPermissions',
-      false,
-    );
+    this.logPermissions = this.configService.get<boolean>('casl.logging.logPermissions', false);
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -56,21 +53,18 @@ export class AbilityGuard implements CanActivate {
     }
 
     // 2. 获取权限要求
-    const rules = this.reflector.getAllAndOverride<RequiredRule[]>(
-      CHECK_ABILITY_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const rules = this.reflector.getAllAndOverride<RequiredRule[]>(CHECK_ABILITY_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
-    const policies = this.reflector.getAllAndOverride<PolicyHandler[]>(
-      CHECK_POLICIES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const policies = this.reflector.getAllAndOverride<PolicyHandler[]>(CHECK_POLICIES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // 没有权限要求，允许访问
-    if (
-      (!rules || rules.length === 0) &&
-      (!policies || policies.length === 0)
-    ) {
+    if ((!rules || rules.length === 0) && (!policies || policies.length === 0)) {
       return true;
     }
 
@@ -127,9 +121,7 @@ export class AbilityGuard implements CanActivate {
     if (policies && policies.length > 0) {
       for (const policy of policies) {
         if (!policy.handle(ability)) {
-          this.logger.warn(
-            `策略检查失败: userId=${userId}, policy=${policy.constructor.name}`,
-          );
+          this.logger.warn(`策略检查失败: userId=${userId}, policy=${policy.constructor.name}`);
           throw new PermissionDeniedException('custom', 'policy', userId, {
             policyName: policy.constructor.name,
           });
@@ -159,10 +151,6 @@ export class AbilityGuard implements CanActivate {
     }
 
     // 从路径参数、查询参数或请求体中提取资源
-    return (
-      request.params[paramName] ||
-      request.query[paramName] ||
-      request.body[paramName]
-    );
+    return request.params[paramName] || request.query[paramName] || request.body[paramName];
   }
 }

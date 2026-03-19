@@ -81,54 +81,66 @@ export function useIconLoader() {
   const [iconsMap, setIconsMap] = useState<Partial<Record<IconLibraryKey, IconItem[]>>>({})
   const [loadingMap, setLoadingMap] = useState<Partial<Record<IconLibraryKey, boolean>>>({})
 
-  const loadIcons = useCallback(async (library: IconLibraryKey) => {
-    if (iconsMap[library]?.length) {
-      return iconsMap[library]!
-    }
+  const loadIcons = useCallback(
+    async (library: IconLibraryKey) => {
+      if (iconsMap[library]?.length) {
+        return iconsMap[library]!
+      }
 
-    setLoadingMap((current) => ({
-      ...current,
-      [library]: true,
-    }))
-
-    try {
-      const icons = await loadIconLibrary(library)
-      setIconsMap((current) => ({
-        ...current,
-        [library]: icons,
-      }))
-      return icons
-    } finally {
       setLoadingMap((current) => ({
         ...current,
-        [library]: false,
+        [library]: true,
       }))
-    }
-  }, [iconsMap])
 
-  const getIcons = useCallback((library: IconLibraryKey, keyword: string, page: number) => {
-    const source = iconsMap[library] || []
-    const filtered = keyword
-      ? source.filter((item) => {
-          const needle = keyword.toLowerCase()
-          return item.name.toLowerCase().includes(needle) || item.displayName.toLowerCase().includes(needle)
-        })
-      : source
+      try {
+        const icons = await loadIconLibrary(library)
+        setIconsMap((current) => ({
+          ...current,
+          [library]: icons,
+        }))
+        return icons
+      } finally {
+        setLoadingMap((current) => ({
+          ...current,
+          [library]: false,
+        }))
+      }
+    },
+    [iconsMap],
+  )
 
-    const total = filtered.length
-    const start = (page - 1) * PAGE_SIZE
+  const getIcons = useCallback(
+    (library: IconLibraryKey, keyword: string, page: number) => {
+      const source = iconsMap[library] || []
+      const filtered = keyword
+        ? source.filter((item) => {
+            const needle = keyword.toLowerCase()
+            return (
+              item.name.toLowerCase().includes(needle) ||
+              item.displayName.toLowerCase().includes(needle)
+            )
+          })
+        : source
 
-    return {
-      items: filtered.slice(start, start + PAGE_SIZE),
-      total,
+      const total = filtered.length
+      const start = (page - 1) * PAGE_SIZE
+
+      return {
+        items: filtered.slice(start, start + PAGE_SIZE),
+        total,
+        pageSize: PAGE_SIZE,
+      }
+    },
+    [iconsMap],
+  )
+
+  return useMemo(
+    () => ({
+      loadingMap,
+      loadIcons,
+      getIcons,
       pageSize: PAGE_SIZE,
-    }
-  }, [iconsMap])
-
-  return useMemo(() => ({
-    loadingMap,
-    loadIcons,
-    getIcons,
-    pageSize: PAGE_SIZE,
-  }), [getIcons, loadIcons, loadingMap])
+    }),
+    [getIcons, loadIcons, loadingMap],
+  )
 }

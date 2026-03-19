@@ -110,7 +110,9 @@ function convertNodeToRoute(node: TreeNode, parentPath = ''): RouteRecordRaw {
  */
 export function convertToRouteRecords(nodes: RoutePermissionNode[]): RouteRecordRaw[] {
   // 1. 过滤掉 divider 类型，保留没有 path 的 group 节点用于构建树结构
-  const menuNodes = nodes.filter((n) => n.menuType !== 'divider' && (!!n.path || n.menuType === 'group'))
+  const menuNodes = nodes.filter(
+    (n) => n.menuType !== 'divider' && (!!n.path || n.menuType === 'group'),
+  )
 
   // 2. 先构建完整的树（包含 group），这样 group 下的子节点才能正确组织
   const fullTree = buildTree(menuNodes)

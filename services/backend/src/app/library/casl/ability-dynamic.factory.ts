@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  AbilityBuilder,
-  createMongoAbility,
-  ExtractSubjectType,
-} from '@casl/ability';
+import { AbilityBuilder, createMongoAbility, ExtractSubjectType } from '@casl/ability';
 import { and, eq } from 'drizzle-orm';
 import type { AppAbility, Action, Subject } from './types';
 import {
@@ -52,8 +48,14 @@ export class AbilityDynamicFactory {
       })
       .from(UserRole)
       .innerJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
-      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
-      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .leftJoin(
+        RolePermission,
+        joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)),
+      )
+      .leftJoin(
+        Permission,
+        joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)),
+      )
       .where(and(eq(UserRole.userId, userId), withSoftDelete(UserRole)));
 
     // 检查是否是管理员
@@ -84,11 +86,7 @@ export class AbilityDynamicFactory {
 
       if (action && subject) {
         // 检查是否需要条件权限
-        const conditions = this.getConditions(
-          permission.permCode,
-          permission.resourceType,
-          userId,
-        );
+        const conditions = this.getConditions(permission.permCode, permission.resourceType, userId);
 
         if (conditions) {
           can(action, subject, conditions);
@@ -144,10 +142,8 @@ export class AbilityDynamicFactory {
       // 或者根据 method 判断
       const lowerMethod = method.toLowerCase();
       if (lowerMethod.includes('delete')) return 'delete';
-      if (lowerMethod.includes('update') || lowerMethod.includes('edit'))
-        return 'update';
-      if (lowerMethod.includes('create') || lowerMethod.includes('add'))
-        return 'create';
+      if (lowerMethod.includes('update') || lowerMethod.includes('edit')) return 'update';
+      if (lowerMethod.includes('create') || lowerMethod.includes('add')) return 'create';
       if (lowerMethod.includes('approve')) return 'approve';
       if (lowerMethod.includes('publish')) return 'publish';
 
@@ -195,11 +191,7 @@ export class AbilityDynamicFactory {
    * @param userId 用户 ID
    * @returns 条件对象或 null
    */
-  private getConditions(
-    permCode: string,
-    resourceType: string | null,
-    userId: number,
-  ): any | null {
+  private getConditions(permCode: string, resourceType: string | null, userId: number): any | null {
     // 如果权限代码包含 :own，表示只能操作自己的资源
     if (permCode.includes(':own') || permCode.endsWith(':self')) {
       // 根据资源类型返回不同的条件字段
@@ -235,11 +227,7 @@ export class AbilityDynamicFactory {
    * @param subject 资源
    * @returns 是否有权限
    */
-  async checkPermission(
-    userId: number,
-    action: string,
-    subject: string,
-  ): Promise<boolean> {
+  async checkPermission(userId: number, action: string, subject: string): Promise<boolean> {
     const ability = await this.createForUser(userId);
     return ability.can(action, subject);
   }

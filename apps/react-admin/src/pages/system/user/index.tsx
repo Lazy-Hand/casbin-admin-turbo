@@ -14,7 +14,13 @@ import {
   Typography,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
 import { deleteUser, getUserList, type User } from '@/api/user'
 import { getDeptTree, type Dept } from '@/api/dept'
 import { PermissionGate } from '@/components/PermissionGate'
@@ -61,7 +67,12 @@ export function UserPage() {
 
   const treeData = useMemo(
     () =>
-      deptOptions.map(function mapDept(node: Dept): { title: string; value: number; key: number; children?: ReturnType<typeof mapDept>[] } {
+      deptOptions.map(function mapDept(node: Dept): {
+        title: string
+        value: number
+        key: number
+        children?: ReturnType<typeof mapDept>[]
+      } {
         return {
           title: node.name,
           value: node.id,
@@ -89,17 +100,27 @@ export function UserPage() {
         width: 140,
         render: (_, record) => record.post?.postName || '-',
       },
-      { title: '邮箱', dataIndex: 'email', key: 'email', width: 180, render: (value: string | undefined) => value || '-' },
-      { title: '手机号', dataIndex: 'mobile', key: 'mobile', width: 140, render: (value: string | undefined) => value || '-' },
+      {
+        title: '邮箱',
+        dataIndex: 'email',
+        key: 'email',
+        width: 180,
+        render: (value: string | undefined) => value || '-',
+      },
+      {
+        title: '手机号',
+        dataIndex: 'mobile',
+        key: 'mobile',
+        width: 140,
+        render: (value: string | undefined) => value || '-',
+      },
       {
         title: '状态',
         dataIndex: 'status',
         key: 'status',
         width: 100,
         render: (value: number) => (
-          <Tag color={value === 1 ? 'green' : 'default'}>
-            {value === 1 ? '启用' : '禁用'}
-          </Tag>
+          <Tag color={value === 1 ? 'green' : 'default'}>{value === 1 ? '启用' : '禁用'}</Tag>
         ),
       },
       {
@@ -137,18 +158,18 @@ export function UserPage() {
         render: (_, record) => (
           <Space size={4}>
             <PermissionGate permCode="USER_EDIT">
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<EditOutlined />}
-                    onClick={() => {
-                      setEditingUserId(record.id)
-                      setDialogOpen(true)
-                    }}
-                  />
-                </PermissionGate>
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEditingUserId(record.id)
+                  setDialogOpen(true)
+                }}
+              />
+            </PermissionGate>
             <PermissionGate permCode="USER_DELETE">
-                  <Popconfirm
+              <Popconfirm
                 title="确认删除用户"
                 description={`确定删除用户“${record.username}”吗？`}
                 okText="删除"

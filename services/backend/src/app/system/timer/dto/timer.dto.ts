@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsEnum,
-  IsObject,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsObject } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export enum TaskTypeEnum {

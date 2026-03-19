@@ -42,9 +42,10 @@ function sanitizeSvgNode(node: ReactNode): ReactNode {
     nextProps.key = node.key
   }
 
-  const children = props.children === undefined
-    ? undefined
-    : Children.toArray(props.children as ReactNode).map((child) => sanitizeSvgNode(child))
+  const children =
+    props.children === undefined
+      ? undefined
+      : Children.toArray(props.children as ReactNode).map((child) => sanitizeSvgNode(child))
 
   return children
     ? createElement(node.type, nextProps, ...children)
@@ -89,13 +90,7 @@ function loadIconModule(prefix: string) {
   return promise
 }
 
-export function DynamicIcon({
-  icon,
-  className,
-}: {
-  icon?: string | null
-  className?: string
-}) {
+export function DynamicIcon({ icon, className }: { icon?: string | null; className?: string }) {
   const [IconComponent, setIconComponent] = useState<IconComponent | null>(null)
 
   useEffect(() => {

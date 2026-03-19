@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { and, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 import { RedisService } from '@/app/library/redis/redis.service';
 import { CreateConfigDto, UpdateConfigDto, ConfigQueryDto } from './dto/config.dto';
@@ -95,10 +90,7 @@ export class ConfigService {
     // 2. 从数据库获取
     const config = await this.drizzle.findFirst(
       SysConfig,
-      and(
-        eq(SysConfig.configKey, key),
-        eq(SysConfig.status, 1),
-      ),
+      and(eq(SysConfig.configKey, key), eq(SysConfig.status, 1)),
     );
 
     if (!config) {
@@ -118,7 +110,7 @@ export class ConfigService {
   /** 批量获取配置值 (使用 mget) */
   async getByKeys(keys: string[]): Promise<Record<string, string>> {
     const result: Record<string, string> = {};
-    const cacheKeys = keys.map(k => this.getCacheKey(k));
+    const cacheKeys = keys.map((k) => this.getCacheKey(k));
 
     // 1. 批量从缓存获取
     let cachedValues: (string | null)[] = [];
@@ -153,7 +145,7 @@ export class ConfigService {
         );
 
       // 4. 使用 pipeline 批量写入缓存
-      const cacheEntries = filteredConfigs.map(config => ({
+      const cacheEntries = filteredConfigs.map((config) => ({
         key: this.getCacheKey(config.configKey),
         value: config.configValue,
       }));
@@ -172,7 +164,7 @@ export class ConfigService {
       }
 
       // 5. 合并结果
-      filteredConfigs.forEach(config => {
+      filteredConfigs.forEach((config) => {
         result[config.configKey] = config.configValue;
       });
     }
@@ -182,7 +174,10 @@ export class ConfigService {
 
   /** 创建配置 */
   async create(dto: CreateConfigDto) {
-    const existing = await this.drizzle.findFirst(SysConfig, eq(SysConfig.configKey, dto.configKey));
+    const existing = await this.drizzle.findFirst(
+      SysConfig,
+      eq(SysConfig.configKey, dto.configKey),
+    );
     if (existing) {
       throw new ConflictException(`配置键 '${dto.configKey}' 已存在`);
     }
@@ -194,7 +189,7 @@ export class ConfigService {
       status: dto.status ?? 1,
       updatedAt: new Date().toISOString(),
     });
-    return Array.isArray(createdConfigs) ? createdConfigs[0] ?? null : createdConfigs;
+    return Array.isArray(createdConfigs) ? (createdConfigs[0] ?? null) : createdConfigs;
   }
 
   /** 更新配置 */
@@ -206,7 +201,10 @@ export class ConfigService {
 
     // 如果修改了 key，检查唯一性
     if (dto.configKey && dto.configKey !== existing.configKey) {
-      const keyExists = await this.drizzle.findFirst(SysConfig, eq(SysConfig.configKey, dto.configKey));
+      const keyExists = await this.drizzle.findFirst(
+        SysConfig,
+        eq(SysConfig.configKey, dto.configKey),
+      );
       if (keyExists) {
         throw new ConflictException(`配置键 '${dto.configKey}' 已存在`);
       }
@@ -216,7 +214,7 @@ export class ConfigService {
       ...dto,
       status: dto.status !== undefined ? +dto.status : undefined,
     });
-    const updated = Array.isArray(updatedConfigs) ? updatedConfigs[0] ?? null : updatedConfigs;
+    const updated = Array.isArray(updatedConfigs) ? (updatedConfigs[0] ?? null) : updatedConfigs;
 
     // 删除缓存
     await this.clearCache(existing.configKey);
@@ -238,7 +236,7 @@ export class ConfigService {
     await this.clearCache(existing.configKey);
 
     const deletedConfigs = await softDeleteWhere(this.drizzle.db, SysConfig, eq(SysConfig.id, id));
-    return Array.isArray(deletedConfigs) ? deletedConfigs[0] ?? null : deletedConfigs;
+    return Array.isArray(deletedConfigs) ? (deletedConfigs[0] ?? null) : deletedConfigs;
   }
 
   /** 清除缓存 */

@@ -18,13 +18,7 @@ describe('RedisService.delByPattern', () => {
 
     const deleted = await service.delByPattern('user:*');
 
-    expect(scan).toHaveBeenCalledWith(
-      '0',
-      'MATCH',
-      'user:*',
-      'COUNT',
-      100,
-    );
+    expect(scan).toHaveBeenCalledWith('0', 'MATCH', 'user:*', 'COUNT', 100);
     expect(del).toHaveBeenCalledWith('app:user:1', 'app:user:2');
     expect(deleted).toBe(2);
   });

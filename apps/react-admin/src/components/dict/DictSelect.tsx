@@ -25,13 +25,5 @@ export function DictSelect({
     [items],
   )
 
-  return (
-    <Select
-      allowClear
-      placeholder="请选择"
-      loading={loading}
-      options={options}
-      {...props}
-    />
-  )
+  return <Select allowClear placeholder="请选择" loading={loading} options={options} {...props} />
 }

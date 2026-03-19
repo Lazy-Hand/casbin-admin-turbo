@@ -73,10 +73,7 @@ function withAuditValues<T extends Record<string, unknown>>(
   return nextValues as T;
 }
 
-export function withSoftDelete<TWhere extends SQL | undefined>(
-  table: AnyPgTable,
-  where?: TWhere,
-) {
+export function withSoftDelete<TWhere extends SQL | undefined>(table: AnyPgTable, where?: TWhere) {
   if (!hasColumn(table, 'deletedAt')) {
     return where;
   }
@@ -86,10 +83,7 @@ export function withSoftDelete<TWhere extends SQL | undefined>(
   return where ? and(where, filter) : filter;
 }
 
-export function joinOnWithSoftDelete<TTable extends AnyPgTable>(
-  table: TTable,
-  on: SQL,
-) {
+export function joinOnWithSoftDelete<TTable extends AnyPgTable>(table: TTable, on: SQL) {
   return withSoftDelete(table, on) as SQL;
 }
 
@@ -112,7 +106,11 @@ export function updateWithAudit<TTable extends AnyPgTable>(
     string,
     SQL | SQLWrapper | unknown
   >;
-  return db.update(table).set(payload as any).where(where).returning();
+  return db
+    .update(table)
+    .set(payload as any)
+    .where(where)
+    .returning();
 }
 
 export function softDeleteWhere<TTable extends AnyPgTable>(
@@ -124,5 +122,9 @@ export function softDeleteWhere<TTable extends AnyPgTable>(
     string,
     SQL | SQLWrapper | unknown
   >;
-  return db.update(table).set(payload as any).where(where).returning();
+  return db
+    .update(table)
+    .set(payload as any)
+    .where(where)
+    .returning();
 }

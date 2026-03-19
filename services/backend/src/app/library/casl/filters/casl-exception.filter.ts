@@ -1,10 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { PermissionDeniedException } from '../exceptions';
@@ -28,8 +22,7 @@ export class CaslExceptionFilter implements ExceptionFilter {
     const status = HttpStatus.FORBIDDEN;
 
     // 判断是否为生产环境
-    const isProduction =
-      this.configService.get<string>('nodeEnv') === 'production';
+    const isProduction = this.configService.get<string>('nodeEnv') === 'production';
 
     // 构建统一格式的错误响应
     const errorResponse: IResponse = {

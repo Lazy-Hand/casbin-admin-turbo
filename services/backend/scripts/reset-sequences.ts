@@ -40,15 +40,11 @@ async function resetSequences() {
       const sequenceName = `${table}_id_seq`;
 
       // Check max ID in table
-      const maxIdResult = await pool.query(
-        `SELECT MAX(id) as max_id FROM ${table}`,
-      );
+      const maxIdResult = await pool.query(`SELECT MAX(id) as max_id FROM ${table}`);
       const maxId = Number(maxIdResult.rows[0].max_id || 0);
 
       // Check current sequence value
-      const seqResult = await pool.query(
-        `SELECT last_value FROM ${sequenceName}`,
-      );
+      const seqResult = await pool.query(`SELECT last_value FROM ${sequenceName}`);
       const seqValue = Number(seqResult.rows[0].last_value || 0);
 
       console.log(`📊 ${table}:`);
@@ -59,9 +55,7 @@ async function resetSequences() {
         const newValue = maxId + 1;
         console.log(`   ⚠️  OUT OF SYNC - resetting to ${newValue}`);
 
-        await pool.query(
-          `SELECT setval('${sequenceName}', ${newValue}, false)`,
-        );
+        await pool.query(`SELECT setval('${sequenceName}', ${newValue}, false)`);
 
         console.log(`   ✅ Reset complete`);
         totalReset++;

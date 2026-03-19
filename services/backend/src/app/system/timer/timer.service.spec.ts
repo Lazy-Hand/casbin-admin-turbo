@@ -25,10 +25,7 @@ describe('TimerService guards dangerous targets', () => {
   });
 
   it('rejects script tasks before persisting them', async () => {
-    const service = new TimerService(
-      prismaMock as never,
-      schedulerRegistryMock as never,
-    );
+    const service = new TimerService(prismaMock as never, schedulerRegistryMock as never);
 
     await expect(
       service.create({
@@ -42,10 +39,7 @@ describe('TimerService guards dangerous targets', () => {
   });
 
   it('rejects private network http targets', async () => {
-    const service = new TimerService(
-      prismaMock as never,
-      schedulerRegistryMock as never,
-    );
+    const service = new TimerService(prismaMock as never, schedulerRegistryMock as never);
 
     await expect(
       service.create({
@@ -61,10 +55,7 @@ describe('TimerService guards dangerous targets', () => {
   it('rejects hostnames that resolve to private addresses', async () => {
     lookupMock.mockResolvedValue([{ address: '10.0.0.8', family: 4 }]);
 
-    const service = new TimerService(
-      prismaMock as never,
-      schedulerRegistryMock as never,
-    );
+    const service = new TimerService(prismaMock as never, schedulerRegistryMock as never);
 
     await expect(
       service.create({

@@ -11,7 +11,13 @@ import {
   SearchOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
-import { deleteTimer, getTimerList, runTimer, type Timer, type TimerSearchParams } from '@/api/timer'
+import {
+  deleteTimer,
+  getTimerList,
+  runTimer,
+  type Timer,
+  type TimerSearchParams,
+} from '@/api/timer'
 import { DictSelect } from '@/components/dict/DictSelect'
 import { DictTag } from '@/components/dict/DictTag'
 import { PermissionGate } from '@/components/PermissionGate'
@@ -195,7 +201,11 @@ export function TimerPage() {
   return (
     <Space direction="vertical" size={16} style={{ display: 'flex' }}>
       <Card>
-        <Form form={form} layout="inline" initialValues={{ name: '', taskType: undefined, status: undefined }}>
+        <Form
+          form={form}
+          layout="inline"
+          initialValues={{ name: '', taskType: undefined, status: undefined }}
+        >
           <Form.Item label="名称" name="name">
             <Input allowClear placeholder="输入任务名称" style={{ width: 180 }} />
           </Form.Item>

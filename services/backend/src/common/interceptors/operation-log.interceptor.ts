@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Request } from 'express';
@@ -19,12 +13,7 @@ import type { LogOperationValue } from '@/app/library/drizzle';
 /**
  * 需要排除的路径前缀
  */
-const EXCLUDED_PATHS = [
-  '/api/auth',
-  '/api/health',
-  '/api/operation-logs',
-  '/api/login-logs',
-];
+const EXCLUDED_PATHS = ['/api/auth', '/api/health', '/api/operation-logs', '/api/login-logs'];
 
 /**
  * 需要记录的 HTTP 方法
@@ -42,9 +31,7 @@ export class OperationLogInterceptor implements NestInterceptor {
   constructor(private readonly operationLogService: OperationLogService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context
-      .switchToHttp()
-      .getRequest<Request & { user: UserEntity }>();
+    const request = context.switchToHttp().getRequest<Request & { user: UserEntity }>();
 
     // 判断是否需要记录
     if (!this.shouldLog(request)) {
@@ -161,11 +148,7 @@ export class OperationLogInterceptor implements NestInterceptor {
       const userAgent = extractUserAgent(data.request);
       const params = this.extractParams(data.request);
       const sanitizedParams = simplifyParams(params, data.operation);
-      const description = generateDescription(
-        data.module,
-        data.operation,
-        data.response,
-      );
+      const description = generateDescription(data.module, data.operation, data.response);
 
       await this.operationLogService.pushLogQueue({
         userId: data.userId,
@@ -206,8 +189,7 @@ export class OperationLogInterceptor implements NestInterceptor {
       const userAgent = extractUserAgent(data.request);
       const params = this.extractParams(data.request);
       const sanitizedParams = simplifyParams(params, data.operation);
-      const result =
-        data.error?.message || data.error?.toString() || 'Unknown error';
+      const result = data.error?.message || data.error?.toString() || 'Unknown error';
 
       await this.operationLogService.pushLogQueue({
         userId: data.userId,

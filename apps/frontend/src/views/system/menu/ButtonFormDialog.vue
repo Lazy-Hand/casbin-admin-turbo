@@ -38,7 +38,16 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NButton, useMessage, type FormInst, type FormRules } from 'naive-ui'
+import {
+  NModal,
+  NForm,
+  NFormItem,
+  NInput,
+  NButton,
+  useMessage,
+  type FormInst,
+  type FormRules,
+} from 'naive-ui'
 import { createMenu, getMenu, updateMenu } from '@/api/menu'
 import DictRadio from '@/components/Dict/DictRadio.vue'
 

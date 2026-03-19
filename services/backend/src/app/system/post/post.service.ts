@@ -87,14 +87,14 @@ export class PostService {
     }
 
     const createdPosts = await insertWithAudit(this.drizzle.db, Post, {
-        postName: dto.postName,
-        postCode: dto.postCode,
-        sort: dto.sort ?? 0,
-        status: dto.status ?? 1,
-        remark: dto.remark ?? null,
-        updatedAt: new Date().toISOString(),
+      postName: dto.postName,
+      postCode: dto.postCode,
+      sort: dto.sort ?? 0,
+      status: dto.status ?? 1,
+      remark: dto.remark ?? null,
+      updatedAt: new Date().toISOString(),
     });
-    const created = Array.isArray(createdPosts) ? createdPosts[0] ?? null : createdPosts;
+    const created = Array.isArray(createdPosts) ? (createdPosts[0] ?? null) : createdPosts;
     return created;
   }
 
@@ -103,13 +103,7 @@ export class PostService {
       const rows = await this.drizzle.db
         .select({ id: Post.id })
         .from(Post)
-        .where(
-          and(
-            withSoftDelete(Post),
-            eq(Post.postCode, dto.postCode),
-            ne(Post.id, id),
-          ),
-        )
+        .where(and(withSoftDelete(Post), eq(Post.postCode, dto.postCode), ne(Post.id, id)))
         .limit(1);
       const existPost = rows[0];
 
@@ -119,13 +113,13 @@ export class PostService {
     }
 
     const updatedPosts = await updateWithAudit(this.drizzle.db, Post, eq(Post.id, id), {
-        postName: dto.postName,
-        postCode: dto.postCode,
-        sort: dto.sort,
-        status: dto.status,
-        remark: dto.remark,
+      postName: dto.postName,
+      postCode: dto.postCode,
+      sort: dto.sort,
+      status: dto.status,
+      remark: dto.remark,
     });
-    return Array.isArray(updatedPosts) ? updatedPosts[0] ?? null : updatedPosts;
+    return Array.isArray(updatedPosts) ? (updatedPosts[0] ?? null) : updatedPosts;
   }
 
   async remove(id: number) {
@@ -139,7 +133,7 @@ export class PostService {
     }
 
     const deletedPosts = await softDeleteWhere(this.drizzle.db, Post, eq(Post.id, id));
-    const deleted = Array.isArray(deletedPosts) ? deletedPosts[0] ?? null : deletedPosts;
+    const deleted = Array.isArray(deletedPosts) ? (deletedPosts[0] ?? null) : deletedPosts;
 
     if (!deleted) {
       return null;

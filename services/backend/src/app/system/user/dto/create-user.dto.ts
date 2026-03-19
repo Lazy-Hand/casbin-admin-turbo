@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsInt,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateUserDto {

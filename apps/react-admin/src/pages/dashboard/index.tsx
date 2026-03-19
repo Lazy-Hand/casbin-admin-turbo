@@ -16,7 +16,8 @@ export function DashboardPage() {
           这是一个基础项目骨架，已经接好路由、状态管理和 Ant Design 布局。
         </Typography.Paragraph>
         <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
-          当前登录、用户信息和路由权限已经接入真实接口；首页统计卡片先保留为固定骨架，后面直接替换成真实 dashboard 接口即可。
+          当前登录、用户信息和路由权限已经接入真实接口；首页统计卡片先保留为固定骨架，后面直接替换成真实
+          dashboard 接口即可。
         </Typography.Paragraph>
         <div className="mt-6 flex items-center gap-3">
           <Button asChild>

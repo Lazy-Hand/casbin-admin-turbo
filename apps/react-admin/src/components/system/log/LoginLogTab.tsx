@@ -68,7 +68,9 @@ export function LoginLogTab() {
         dataIndex: 'status',
         key: 'status',
         width: 80,
-        render: (value: number) => <Tag color={value === 1 ? 'success' : 'error'}>{value === 1 ? '成功' : '失败'}</Tag>,
+        render: (value: number) => (
+          <Tag color={value === 1 ? 'success' : 'error'}>{value === 1 ? '成功' : '失败'}</Tag>
+        ),
       },
       {
         title: '消息',
@@ -76,7 +78,8 @@ export function LoginLogTab() {
         key: 'message',
         width: 150,
         ellipsis: true,
-        render: (value: string | null, record) => value || (record.status === 1 ? '登录成功' : '登录失败'),
+        render: (value: string | null, record) =>
+          value || (record.status === 1 ? '登录成功' : '登录失败'),
       },
       {
         title: '终端',
@@ -112,7 +115,10 @@ export function LoginLogTab() {
             style={{ width: 320 }}
             onChange={(_, dateStrings) => {
               if (dateStrings[0] && dateStrings[1]) {
-                setDateRange([new Date(dateStrings[0]).toISOString(), new Date(dateStrings[1]).toISOString()])
+                setDateRange([
+                  new Date(dateStrings[0]).toISOString(),
+                  new Date(dateStrings[1]).toISOString(),
+                ])
                 return
               }
               setDateRange(null)

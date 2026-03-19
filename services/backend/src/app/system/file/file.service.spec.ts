@@ -26,10 +26,7 @@ describe('FileService upload path validation', () => {
   });
 
   it('rejects upload ids containing path separators', async () => {
-    const service = new FileService(
-      prismaMock as never,
-      configServiceMock as never,
-    );
+    const service = new FileService(prismaMock as never, configServiceMock as never);
 
     await expect(
       service.saveChunk(

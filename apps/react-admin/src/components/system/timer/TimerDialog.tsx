@@ -131,23 +131,41 @@ export function TimerDialog({ open, timerId, onClose }: Props) {
           status: 1,
         }}
       >
-        <Form.Item label="定时任务名称" name="name" rules={[{ required: true, message: '请输入定时任务名称' }]}>
+        <Form.Item
+          label="定时任务名称"
+          name="name"
+          rules={[{ required: true, message: '请输入定时任务名称' }]}
+        >
           <Input placeholder="请输入定时任务名称" />
         </Form.Item>
         <Form.Item label="描述" name="description">
           <Input.TextArea rows={2} placeholder="请输入描述" />
         </Form.Item>
-        <Form.Item label="Cron 表达式" name="cron" rules={[{ required: true, message: '请输入 Cron 表达式' }]}>
+        <Form.Item
+          label="Cron 表达式"
+          name="cron"
+          rules={[{ required: true, message: '请输入 Cron 表达式' }]}
+        >
           <Input
             placeholder="如：0 0 * * * * 表示每小时整点"
             suffix={<CronGeneratorTriggerButton onClick={() => setCronGeneratorOpen(true)} />}
           />
         </Form.Item>
-        <Form.Item label="任务类型" name="taskType" rules={[{ required: true, message: '请选择任务类型' }]}>
+        <Form.Item
+          label="任务类型"
+          name="taskType"
+          rules={[{ required: true, message: '请选择任务类型' }]}
+        >
           <DictSelect dictCode="TASK_TYPE" />
         </Form.Item>
-        <Form.Item label="目标地址" name="target" rules={[{ required: true, message: '请输入目标地址' }]}>
-          <Input placeholder={currentTaskType === TaskType.HTTP ? '请输入 URL' : '请输入脚本路径'} />
+        <Form.Item
+          label="目标地址"
+          name="target"
+          rules={[{ required: true, message: '请输入目标地址' }]}
+        >
+          <Input
+            placeholder={currentTaskType === TaskType.HTTP ? '请输入 URL' : '请输入脚本路径'}
+          />
         </Form.Item>
         <Form.Item label="额外参数" name="paramsJson">
           <Input.TextArea rows={4} placeholder='{"method": "POST", "headers": {}}' />

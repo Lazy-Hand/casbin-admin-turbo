@@ -38,7 +38,11 @@ function formatDuration(ms?: number) {
 export function TimerLogsDrawer({ open, timerId, timerName, onClose }: Props) {
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined)
 
-  const { data = [], isFetching, refetch } = useQuery({
+  const {
+    data = [],
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ['timer-logs', timerId],
     queryFn: () => getTimerLogs(timerId!, 100),
     enabled: open && Boolean(timerId),
@@ -106,7 +110,9 @@ export function TimerLogsDrawer({ open, timerId, timerName, onClose }: Props) {
                       {log.status === 1 ? '成功' : '失败'}
                     </Tag>
                     <span className="text-sm text-slate-600">{formatDateTime(log.startAt)}</span>
-                    <span className="text-xs text-slate-500">耗时: {formatDuration(log.duration)}</span>
+                    <span className="text-xs text-slate-500">
+                      耗时: {formatDuration(log.duration)}
+                    </span>
                   </div>
                   {log.result ? (
                     <pre className="overflow-x-auto rounded bg-slate-950 p-3 text-xs text-slate-100">

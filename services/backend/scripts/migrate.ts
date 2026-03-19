@@ -49,9 +49,7 @@ async function hasLegacyPrismaMigrations(pool: Pool) {
 }
 
 async function bootstrapLegacyHistory(pool: Pool) {
-  const current = await pool.query<{ count: string }>(
-    `select count(*) from ${MIGRATIONS_TABLE}`,
-  );
+  const current = await pool.query<{ count: string }>(`select count(*) from ${MIGRATIONS_TABLE}`);
 
   if (Number(current.rows[0]?.count ?? 0) > 0) {
     return;
@@ -90,9 +88,7 @@ async function getAppliedMigrations(pool: Pool) {
     `select name, checksum, applied_at from ${MIGRATIONS_TABLE} order by applied_at asc`,
   );
 
-  return new Map<string, MigrationRecord>(
-    result.rows.map((row) => [row.name, row]),
-  );
+  return new Map<string, MigrationRecord>(result.rows.map((row) => [row.name, row]));
 }
 
 async function applyMigrations(pool: Pool) {

@@ -16,9 +16,7 @@ describe('RoleService status handling', () => {
     dept: {
       count: jest.fn().mockResolvedValue(0),
     },
-    $transaction: jest.fn(async (callback: (tx: typeof txMock) => unknown) =>
-      callback(txMock),
-    ),
+    $transaction: jest.fn(async (callback: (tx: typeof txMock) => unknown) => callback(txMock)),
   };
 
   const dataScopeServiceMock = {
@@ -32,10 +30,7 @@ describe('RoleService status handling', () => {
   });
 
   it('preserves status=0 on create', async () => {
-    const service = new RoleService(
-      prismaMock as never,
-      dataScopeServiceMock as never,
-    );
+    const service = new RoleService(prismaMock as never, dataScopeServiceMock as never);
 
     await service.create({
       roleName: 'guest',
@@ -53,10 +48,7 @@ describe('RoleService status handling', () => {
   });
 
   it('preserves status=0 on update', async () => {
-    const service = new RoleService(
-      prismaMock as never,
-      dataScopeServiceMock as never,
-    );
+    const service = new RoleService(prismaMock as never, dataScopeServiceMock as never);
 
     await service.update(5, {
       status: 0,

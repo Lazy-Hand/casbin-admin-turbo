@@ -92,10 +92,18 @@ export function ButtonFormDialog({ open, menuId, buttonId, onClose }: Props) {
       destroyOnHidden
     >
       <Form form={form} layout="vertical" disabled={saveMutation.isPending || isFetching}>
-        <Form.Item label="按钮名称" name="permName" rules={[{ required: true, message: '请输入按钮名称' }]}>
+        <Form.Item
+          label="按钮名称"
+          name="permName"
+          rules={[{ required: true, message: '请输入按钮名称' }]}
+        >
           <Input placeholder="输入按钮名称" />
         </Form.Item>
-        <Form.Item label="按钮编码" name="permCode" rules={[{ required: true, message: '请输入按钮编码' }]}>
+        <Form.Item
+          label="按钮编码"
+          name="permCode"
+          rules={[{ required: true, message: '请输入按钮编码' }]}
+        >
           <Input placeholder="输入按钮编码" />
         </Form.Item>
         <Form.Item label="状态" name="status">

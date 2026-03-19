@@ -156,14 +156,15 @@ export class UserRepository {
       .leftJoin(Dept, joinOnWithSoftDelete(Dept, eq(User.deptId, Dept.id)))
       .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
       .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
-      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
-      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
-      .where(
-        and(
-          withSoftDelete(User, eq(User.id, userId)),
-          scopeCondition,
-        ),
-      );
+      .leftJoin(
+        RolePermission,
+        joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)),
+      )
+      .leftJoin(
+        Permission,
+        joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)),
+      )
+      .where(and(withSoftDelete(User, eq(User.id, userId)), scopeCondition));
 
     if (rows.length === 0) {
       return null;
@@ -204,23 +205,21 @@ export class UserRepository {
     const users = new Map<number, any>();
 
     for (const row of rows) {
-      const current =
-        users.get(row.id) ??
-        {
-          id: row.id,
-          username: row.username,
-          nickname: row.nickname,
-          gender: row.gender,
-          avatar: row.avatar,
-          email: row.email,
-          mobile: row.mobile,
-          status: row.status,
-          deptId: row.deptId,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-          dept: row.dept?.id ? row.dept : null,
-          roles: [],
-        };
+      const current = users.get(row.id) ?? {
+        id: row.id,
+        username: row.username,
+        nickname: row.nickname,
+        gender: row.gender,
+        avatar: row.avatar,
+        email: row.email,
+        mobile: row.mobile,
+        status: row.status,
+        deptId: row.deptId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        dept: row.dept?.id ? row.dept : null,
+        roles: [],
+      };
 
       if (row.role?.id && !current.roles.some((role: any) => role.id === row.role.id)) {
         current.roles.push(row.role);
@@ -241,12 +240,10 @@ export class UserRepository {
         continue;
       }
 
-      const currentRole =
-        roles.get(row.role.id) ??
-        {
-          ...row.role,
-          permissions: [],
-        };
+      const currentRole = roles.get(row.role.id) ?? {
+        ...row.role,
+        permissions: [],
+      };
 
       if (
         row.permission?.id &&

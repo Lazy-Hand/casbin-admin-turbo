@@ -72,8 +72,14 @@ export class RoleService {
           },
         })
         .from(Role)
-        .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
-        .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+        .leftJoin(
+          RolePermission,
+          joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)),
+        )
+        .leftJoin(
+          Permission,
+          joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)),
+        )
         .where(and(withSoftDelete(Role), eq(Role.status, 1)))
         .orderBy(desc(Role.createdAt)),
       this.drizzle.db
@@ -182,8 +188,14 @@ export class RoleService {
         },
       })
       .from(Role)
-      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
-      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .leftJoin(
+        RolePermission,
+        joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)),
+      )
+      .leftJoin(
+        Permission,
+        joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)),
+      )
       .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(Role.id, UserRole.roleId)))
       .leftJoin(User, joinOnWithSoftDelete(User, eq(UserRole.userId, User.id)))
       .where(withSoftDelete(Role, eq(Role.id, id)));
@@ -197,12 +209,7 @@ export class RoleService {
 
   // 创建角色
   async create(dto: CreateRoleDto) {
-    const {
-      permissions,
-      dataScope: dataScopeNum,
-      customDepts,
-      ...roleData
-    } = dto;
+    const { permissions, dataScope: dataScopeNum, customDepts, ...roleData } = dto;
 
     // 验证：当 dataScope = 2 (CUSTOM) 时，customDepts 必须指定
     if (dataScopeNum === 2 && (!customDepts || customDepts.length === 0)) {
@@ -222,8 +229,7 @@ export class RoleService {
         ...roleData,
         description: roleData.description ?? '',
         status: roleData.status !== undefined ? +roleData.status : 1,
-        dataScope:
-          dataScopeNum !== undefined ? DATA_SCOPE_MAP[dataScopeNum] : 'DEPT',
+        dataScope: dataScopeNum !== undefined ? DATA_SCOPE_MAP[dataScopeNum] : 'DEPT',
         customDepts: customDepts ?? [],
         updatedAt: new Date().toISOString(),
       });
@@ -246,12 +252,7 @@ export class RoleService {
 
   // 更新角色
   async update(id: number, dto: UpdateRoleDto) {
-    const {
-      permissions,
-      dataScope: dataScopeNum,
-      customDepts,
-      ...roleData
-    } = dto;
+    const { permissions, dataScope: dataScopeNum, customDepts, ...roleData } = dto;
 
     // 验证：当 dataScope = 2 (CUSTOM) 时，customDepts 必须指定
     if (dataScopeNum === 2 && (!customDepts || customDepts.length === 0)) {
@@ -268,12 +269,12 @@ export class RoleService {
 
     const result = await this.drizzle.db.transaction(async (tx: any) => {
       const updatedRoles = await updateWithAudit(tx, Role, eq(Role.id, id), {
-          ...roleData,
-          status: roleData.status !== undefined ? +roleData.status : undefined,
-          ...(dataScopeNum !== undefined && {
-            dataScope: DATA_SCOPE_MAP[dataScopeNum],
-          }),
-          ...(customDepts !== undefined && { customDepts }),
+        ...roleData,
+        status: roleData.status !== undefined ? +roleData.status : undefined,
+        ...(dataScopeNum !== undefined && {
+          dataScope: DATA_SCOPE_MAP[dataScopeNum],
+        }),
+        ...(customDepts !== undefined && { customDepts }),
       });
       const role = Array.isArray(updatedRoles) ? updatedRoles[0] : updatedRoles;
 
@@ -307,7 +308,7 @@ export class RoleService {
       await tx.delete(RolePermission).where(eq(RolePermission.roleId, id));
       await tx.delete(UserRole).where(eq(UserRole.roleId, id));
       const deletedRoles = await softDeleteWhere(tx, Role, eq(Role.id, id));
-      return Array.isArray(deletedRoles) ? deletedRoles[0] ?? null : null;
+      return Array.isArray(deletedRoles) ? (deletedRoles[0] ?? null) : null;
     });
   }
 
@@ -340,7 +341,10 @@ export class RoleService {
         },
       })
       .from(RolePermission)
-      .innerJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .innerJoin(
+        Permission,
+        joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)),
+      )
       .where(and(eq(RolePermission.roleId, roleId), withSoftDelete(RolePermission)));
   }
 
@@ -376,12 +380,7 @@ export class RoleService {
   async removePermission(roleId: number, permissionId: number) {
     const result = await this.drizzle.db
       .delete(RolePermission)
-      .where(
-        and(
-          eq(RolePermission.roleId, roleId),
-          eq(RolePermission.permissionId, permissionId),
-        ),
-      )
+      .where(and(eq(RolePermission.roleId, roleId), eq(RolePermission.permissionId, permissionId)))
       .returning();
 
     return result[0] ?? null;
@@ -428,8 +427,14 @@ export class RoleService {
       })
       .from(UserRole)
       .innerJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
-      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
-      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .leftJoin(
+        RolePermission,
+        joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)),
+      )
+      .leftJoin(
+        Permission,
+        joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)),
+      )
       .where(and(eq(UserRole.userId, userId), withSoftDelete(UserRole)));
 
     return this.groupUserRoles(rows);
@@ -508,23 +513,21 @@ export class RoleService {
     const roles = new Map<number, any>();
 
     for (const row of rows) {
-      const current =
-        roles.get(row.id) ??
-        {
-          id: row.id,
-          roleName: row.roleName,
-          roleCode: row.roleCode,
-          description: row.description,
-          status: row.status,
-          dataScope: row.dataScope,
-          customDepts: row.customDepts,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-          permissions: [],
-          _count: {
-            users: countMap.get(row.id) ?? 0,
-          },
-        };
+      const current = roles.get(row.id) ?? {
+        id: row.id,
+        roleName: row.roleName,
+        roleCode: row.roleCode,
+        description: row.description,
+        status: row.status,
+        dataScope: row.dataScope,
+        customDepts: row.customDepts,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        permissions: [],
+        _count: {
+          users: countMap.get(row.id) ?? 0,
+        },
+      };
 
       if (row.permission?.id) {
         current.permissions.push({
@@ -580,16 +583,14 @@ export class RoleService {
         continue;
       }
 
-      const current =
-        roles.get(row.role.id) ??
-        {
-          roleId: row.roleId,
-          userId: row.userId,
-          role: {
-            ...row.role,
-            permissions: [],
-          },
-        };
+      const current = roles.get(row.role.id) ?? {
+        roleId: row.roleId,
+        userId: row.userId,
+        role: {
+          ...row.role,
+          permissions: [],
+        },
+      };
 
       if (
         row.permission?.id &&

@@ -45,9 +45,7 @@ export const useRouteStore = defineStore('route', (): RouteStore => {
   const hydratePermissions = (data: RoutePermissionNode[]) => {
     flatPermissions.value = data
     buttonPermissions.value = Array.from(
-      new Set(
-        data.flatMap((item) => item.buttons || []).filter((code) => !!code),
-      ),
+      new Set(data.flatMap((item) => item.buttons || []).filter((code) => !!code)),
     )
     menuTree.value = buildMenuTree(data)
     dynamicRoutes.value = convertToRouteRecords(data)
@@ -134,7 +132,9 @@ export const useRouteStore = defineStore('route', (): RouteStore => {
    * 检查是否有某个权限
    */
   const hasPermission = (permCode: string) => {
-    return flatPermissions.value.some((p) => p.permCode === permCode) || hasButtonPermission(permCode)
+    return (
+      flatPermissions.value.some((p) => p.permCode === permCode) || hasButtonPermission(permCode)
+    )
   }
 
   return {

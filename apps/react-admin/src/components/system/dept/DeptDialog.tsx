@@ -2,7 +2,14 @@ import { useEffect } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Form, Input, InputNumber, Modal, Select, TreeSelect } from 'antd'
 import type { TreeSelectProps } from 'antd'
-import { createDept, getDeptDetail, getDeptTree, updateDept, type Dept, type DeptFormData } from '@/api/dept'
+import {
+  createDept,
+  getDeptDetail,
+  getDeptTree,
+  updateDept,
+  type Dept,
+  type DeptFormData,
+} from '@/api/dept'
 import { getAllUsers } from '@/api/user'
 import { DictSelect } from '@/components/dict/DictSelect'
 import { queryClient } from '@/lib/query-client'
@@ -119,7 +126,11 @@ export function DeptDialog({ open, deptId, parentId, onClose }: Props) {
             treeData={mapDeptTree(deptTree) ?? []}
           />
         </Form.Item>
-        <Form.Item label="部门名称" name="name" rules={[{ required: true, message: '请输入部门名称' }]}>
+        <Form.Item
+          label="部门名称"
+          name="name"
+          rules={[{ required: true, message: '请输入部门名称' }]}
+        >
           <Input placeholder="输入部门名称" />
         </Form.Item>
         <Form.Item label="负责人" name="leaderId">

@@ -38,10 +38,7 @@ async function dispatchHttpGet(
   path: string,
 ): Promise<{ statusCode: number; body: string }> {
   const adapter = app.getHttpAdapter();
-  const handler = adapter.getInstance() as (
-    req: IncomingMessage,
-    res: ServerResponse,
-  ) => void;
+  const handler = adapter.getInstance() as (req: IncomingMessage, res: ServerResponse) => void;
 
   const socket = new MockSocket();
   const req = new IncomingMessage(socket);

@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { App, Modal, Spin, Tag, Tree } from "antd"
-import type { TreeDataNode } from "antd"
-import { assignRolePermissions, getRolePermissions } from "@/api/role"
-import { getMenuAndButtonPermissions, type PermissionTreeNode } from "@/api/permission"
-import { queryClient } from "@/lib/query-client"
+import { useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { App, Modal, Spin, Tag, Tree } from 'antd'
+import type { TreeDataNode } from 'antd'
+import { assignRolePermissions, getRolePermissions } from '@/api/role'
+import { getMenuAndButtonPermissions, type PermissionTreeNode } from '@/api/permission'
+import { queryClient } from '@/lib/query-client'
 
 type Props = {
   open: boolean
@@ -14,21 +14,21 @@ type Props = {
 }
 
 type PermissionTreeDataNode = TreeDataNode & {
-  resourceType?: PermissionTreeNode["resourceType"]
-  menuType?: PermissionTreeNode["menuType"]
+  resourceType?: PermissionTreeNode['resourceType']
+  menuType?: PermissionTreeNode['menuType']
 }
 
-function getMenuTypeLabel(menuType?: PermissionTreeNode["menuType"]) {
+function getMenuTypeLabel(menuType?: PermissionTreeNode['menuType']) {
   const labelMap: Record<string, string> = {
-    menu: "菜单夹",
-    page: "页面",
-    link: "外链",
-    iframe: "内嵌",
-    window: "新窗口",
-    divider: "分割线",
-    group: "分组",
+    menu: '菜单夹',
+    page: '页面',
+    link: '外链',
+    iframe: '内嵌',
+    window: '新窗口',
+    divider: '分割线',
+    group: '分组',
   }
-  return menuType ? labelMap[menuType] || menuType : ""
+  return menuType ? labelMap[menuType] || menuType : ''
 }
 
 function normalizeTree(nodes: PermissionTreeNode[] = []): PermissionTreeDataNode[] {
@@ -46,9 +46,12 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose }: Props)
   const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([])
 
   const { data, isFetching } = useQuery({
-    queryKey: ["role-permission-dialog", roleId],
+    queryKey: ['role-permission-dialog', roleId],
     queryFn: async () => {
-      const [tree, relations] = await Promise.all([getMenuAndButtonPermissions({}), getRolePermissions(roleId!)])
+      const [tree, relations] = await Promise.all([
+        getMenuAndButtonPermissions({}),
+        getRolePermissions(roleId!),
+      ])
 
       return {
         tree,
@@ -76,9 +79,9 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose }: Props)
         checkedKeys.map((key) => Number(key)),
       ),
     onSuccess: async () => {
-      message.success("菜单权限分配成功")
-      await queryClient.invalidateQueries({ queryKey: ["roles"] })
-      await queryClient.invalidateQueries({ queryKey: ["auth-bootstrap"] })
+      message.success('菜单权限分配成功')
+      await queryClient.invalidateQueries({ queryKey: ['roles'] })
+      await queryClient.invalidateQueries({ queryKey: ['auth-bootstrap'] })
       onClose()
     },
   })
@@ -88,7 +91,7 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose }: Props)
   return (
     <Modal
       open={open}
-      title={roleName ? `分配菜单权限 - ${roleName}` : "分配菜单权限"}
+      title={roleName ? `分配菜单权限 - ${roleName}` : '分配菜单权限'}
       width={760}
       okText="保存"
       cancelText="取消"
@@ -96,7 +99,7 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose }: Props)
       onCancel={onClose}
       onOk={() => {
         if (!checkedKeys.length) {
-          message.warning("请至少选择一个菜单权限")
+          message.warning('请至少选择一个菜单权限')
           return
         }
 
@@ -122,7 +125,11 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose }: Props)
               return (
                 <div className="flex items-center gap-2">
                   <span>{String(node.title)}</span>
-                  {permissionNode.resourceType === "button" ? <Tag color="orange">按钮</Tag> : menuTypeLabel ? <Tag color="blue">{menuTypeLabel}</Tag> : null}
+                  {permissionNode.resourceType === 'button' ? (
+                    <Tag color="orange">按钮</Tag>
+                  ) : menuTypeLabel ? (
+                    <Tag color="blue">{menuTypeLabel}</Tag>
+                  ) : null}
                 </div>
               )
             }}

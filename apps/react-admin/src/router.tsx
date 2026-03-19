@@ -1,4 +1,10 @@
-import { createRootRoute, createRoute, createRouter, Outlet, redirect } from '@tanstack/react-router'
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  redirect,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { localRoutes } from '@/config/routes'
 import { AppShell } from '@/layout/AppShell'

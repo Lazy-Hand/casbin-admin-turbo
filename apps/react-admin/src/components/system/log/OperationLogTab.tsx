@@ -1,9 +1,25 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Button, DatePicker, Descriptions, Drawer, Form, Input, Select, Space, Table, Tag } from 'antd'
+import {
+  Button,
+  DatePicker,
+  Descriptions,
+  Drawer,
+  Form,
+  Input,
+  Select,
+  Space,
+  Table,
+  Tag,
+} from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
-import { getOperationLogList, type LogOperation, type OperationLog, type OperationLogSearchParams } from '@/api/log'
+import {
+  getOperationLogList,
+  type LogOperation,
+  type OperationLog,
+  type OperationLogSearchParams,
+} from '@/api/log'
 
 const moduleOptions = [
   { label: '用户', value: 'user' },
@@ -126,7 +142,9 @@ export function OperationLogTab() {
         dataIndex: 'status',
         key: 'status',
         width: 80,
-        render: (value: number) => <Tag color={value === 1 ? 'success' : 'error'}>{value === 1 ? '成功' : '失败'}</Tag>,
+        render: (value: number) => (
+          <Tag color={value === 1 ? 'success' : 'error'}>{value === 1 ? '成功' : '失败'}</Tag>
+        ),
       },
       {
         title: '操作',
@@ -156,13 +174,28 @@ export function OperationLogTab() {
           <Input allowClear placeholder="输入用户名" style={{ width: 160 }} />
         </Form.Item>
         <Form.Item label="模块" name="module">
-          <Select allowClear placeholder="选择模块" options={moduleOptions} style={{ width: 160 }} />
+          <Select
+            allowClear
+            placeholder="选择模块"
+            options={moduleOptions}
+            style={{ width: 160 }}
+          />
         </Form.Item>
         <Form.Item label="操作类型" name="operation">
-          <Select allowClear placeholder="选择操作类型" options={operationOptions} style={{ width: 160 }} />
+          <Select
+            allowClear
+            placeholder="选择操作类型"
+            options={operationOptions}
+            style={{ width: 160 }}
+          />
         </Form.Item>
         <Form.Item label="状态" name="status">
-          <Select allowClear placeholder="选择状态" options={statusOptions} style={{ width: 160 }} />
+          <Select
+            allowClear
+            placeholder="选择状态"
+            options={statusOptions}
+            style={{ width: 160 }}
+          />
         </Form.Item>
         <Form.Item label="时间范围">
           <DatePicker.RangePicker
@@ -170,7 +203,10 @@ export function OperationLogTab() {
             style={{ width: 320 }}
             onChange={(_, dateStrings) => {
               if (dateStrings[0] && dateStrings[1]) {
-                setDateRange([new Date(dateStrings[0]).toISOString(), new Date(dateStrings[1]).toISOString()])
+                setDateRange([
+                  new Date(dateStrings[0]).toISOString(),
+                  new Date(dateStrings[1]).toISOString(),
+                ])
                 return
               }
               setDateRange(null)
@@ -242,18 +278,31 @@ export function OperationLogTab() {
         }}
       />
 
-      <Drawer open={detailVisible} width={1200} title="日志详情" onClose={() => setDetailVisible(false)}>
+      <Drawer
+        open={detailVisible}
+        width={1200}
+        title="日志详情"
+        onClose={() => setDetailVisible(false)}
+      >
         {currentLog ? (
           <Descriptions column={2} bordered>
-            <Descriptions.Item label="时间">{formatDateTime(currentLog.createdAt)}</Descriptions.Item>
+            <Descriptions.Item label="时间">
+              {formatDateTime(currentLog.createdAt)}
+            </Descriptions.Item>
             <Descriptions.Item label="用户">{currentLog.username}</Descriptions.Item>
-            <Descriptions.Item label="模块">{moduleNameMap[currentLog.module] || currentLog.module}</Descriptions.Item>
-            <Descriptions.Item label="操作类型">{operationTypeMap[currentLog.operation]}</Descriptions.Item>
+            <Descriptions.Item label="模块">
+              {moduleNameMap[currentLog.module] || currentLog.module}
+            </Descriptions.Item>
+            <Descriptions.Item label="操作类型">
+              {operationTypeMap[currentLog.operation]}
+            </Descriptions.Item>
             <Descriptions.Item label="描述">{currentLog.description || '-'}</Descriptions.Item>
             <Descriptions.Item label="请求方法">{currentLog.method}</Descriptions.Item>
             <Descriptions.Item label="请求路径">{currentLog.path}</Descriptions.Item>
             <Descriptions.Item label="客户端IP">{currentLog.ip || '-'}</Descriptions.Item>
-            <Descriptions.Item label="耗时">{currentLog.duration ? `${currentLog.duration}ms` : '-'}</Descriptions.Item>
+            <Descriptions.Item label="耗时">
+              {currentLog.duration ? `${currentLog.duration}ms` : '-'}
+            </Descriptions.Item>
             <Descriptions.Item label="参数" span={2}>
               <pre className="overflow-x-auto rounded bg-slate-950 p-3 text-xs text-slate-100">
                 {JSON.stringify(currentLog.params, null, 2)}

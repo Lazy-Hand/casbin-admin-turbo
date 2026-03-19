@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PermissionService } from './permission.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -67,10 +57,7 @@ export class PermissionController {
 
   @Put(':id')
   @ApiOperation({ summary: '更新权限' })
-  async updatePermission(
-    @Param('id') id: string,
-    @Body() dto: UpdatePermissionDto,
-  ) {
+  async updatePermission(@Param('id') id: string, @Body() dto: UpdatePermissionDto) {
     return this.permissionService.updatePermission(+id, dto);
   }
 

@@ -71,7 +71,7 @@ export function DictionaryItemDrawer({ open, dictTypeId, dictName, onClose }: Pr
         title: '颜色类型',
         dataIndex: 'colorType',
         key: 'colorType',
-        render: (value: string) => value ? <Tag>{value}</Tag> : '-',
+        render: (value: string) => (value ? <Tag>{value}</Tag> : '-'),
       },
       { title: '排序', dataIndex: 'sort', key: 'sort', width: 90 },
       {
@@ -88,7 +88,12 @@ export function DictionaryItemDrawer({ open, dictTypeId, dictName, onClose }: Pr
         render: (_, record) => (
           <Space size={4}>
             <PermissionGate permCode="DICT_EDIT">
-              <Button type="text" size="small" icon={<EditOutlined />} onClick={() => setEditingItem(record)} />
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => setEditingItem(record)}
+              />
             </PermissionGate>
             <PermissionGate permCode="DICT_DELETE">
               <Popconfirm
@@ -122,13 +127,25 @@ export function DictionaryItemDrawer({ open, dictTypeId, dictName, onClose }: Pr
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography.Text type="secondary">管理当前字典下的所有字典项</Typography.Text>
             <PermissionGate permCode="DICT_ADD">
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditingItem({ dictTypeId: dictTypeId ?? undefined, status: 1, sort: 0 })}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() =>
+                  setEditingItem({ dictTypeId: dictTypeId ?? undefined, status: 1, sort: 0 })
+                }
+              >
                 新增字典项
               </Button>
             </PermissionGate>
           </div>
 
-          <Table<DictionaryItem> rowKey="id" loading={isLoading} columns={columns} dataSource={data} pagination={false} />
+          <Table<DictionaryItem>
+            rowKey="id"
+            loading={isLoading}
+            columns={columns}
+            dataSource={data}
+            pagination={false}
+          />
         </Space>
       </Drawer>
       <DictionaryItemDialog

@@ -43,18 +43,12 @@ export class FileService {
 
   // 获取上传目录
   getUploadDir(): string {
-    return join(
-      process.cwd(),
-      this.configService.get('upload.dir') || 'uploads',
-    );
+    return join(process.cwd(), this.configService.get('upload.dir') || 'uploads');
   }
 
   // 获取分片临时目录
   getChunkDir(): string {
-    return join(
-      process.cwd(),
-      this.configService.get('upload.chunkDir') || 'uploads/chunks',
-    );
+    return join(process.cwd(), this.configService.get('upload.chunkDir') || 'uploads/chunks');
   }
 
   private resolveChunkDir(uploadId: string): string {
@@ -72,8 +66,7 @@ export class FileService {
 
   // 获取完整的文件访问URL
   getFileUrl(filename: string): string {
-    const serverUrl: string =
-      this.configService.get('server.url') || 'http://localhost:8080';
+    const serverUrl: string = this.configService.get('server.url') || 'http://localhost:8080';
     const prefix = this.getUploadPrefix();
     return `${serverUrl}${prefix}/${filename}`;
   }
@@ -254,19 +247,18 @@ export class FileService {
   // 创建文件记录
   async create(dto: CreateFileDto) {
     // 根据文件扩展名确定文件类型
-    const fileType =
-      dto.fileType || this.getFileType(dto.extension, dto.mimetype);
+    const fileType = dto.fileType || this.getFileType(dto.extension, dto.mimetype);
 
     const createdFiles = await insertWithAudit(this.drizzle.db, SysFile, {
-        ...dto,
-        fileType,
-        isPublic: dto.isPublic ?? false,
-        status: 1,
-        businessId: dto.businessId ?? null,
-        businessType: dto.businessType ?? null,
-        updatedAt: new Date().toISOString(),
-      });
-    return Array.isArray(createdFiles) ? createdFiles[0] ?? null : createdFiles;
+      ...dto,
+      fileType,
+      isPublic: dto.isPublic ?? false,
+      status: 1,
+      businessId: dto.businessId ?? null,
+      businessType: dto.businessType ?? null,
+      updatedAt: new Date().toISOString(),
+    });
+    return Array.isArray(createdFiles) ? (createdFiles[0] ?? null) : createdFiles;
   }
 
   // 更新文件记录
@@ -276,19 +268,17 @@ export class FileService {
       businessId: dto.businessId !== undefined ? dto.businessId : undefined,
       businessType: dto.businessType !== undefined ? dto.businessType : undefined,
     });
-    return Array.isArray(updatedFiles) ? updatedFiles[0] ?? null : updatedFiles;
+    return Array.isArray(updatedFiles) ? (updatedFiles[0] ?? null) : updatedFiles;
   }
 
   // 删除文件记录
   async delete(id: number) {
     const deletedFiles = await softDeleteWhere(this.drizzle.db, SysFile, eq(SysFile.id, id));
-    return Array.isArray(deletedFiles) ? deletedFiles[0] ?? null : deletedFiles;
+    return Array.isArray(deletedFiles) ? (deletedFiles[0] ?? null) : deletedFiles;
   }
 
   // 分页查询文件
-  async findPage(
-    dto: PaginationDto & { fileType?: FileType; isPublic?: boolean },
-  ) {
+  async findPage(dto: PaginationDto & { fileType?: FileType; isPublic?: boolean }) {
     const { pageNo = 1, pageSize = 10, fileType, isPublic } = dto;
     const skip = (pageNo - 1) * pageSize;
     const where = and(
@@ -324,9 +314,7 @@ export class FileService {
     if (!name) return name;
     try {
       // 检查是否包含高于255的字符（也就是正常的UTF-8非拉丁字符，如中文字符）
-      const hasHighByte = Array.from(name).some(
-        (char) => char.charCodeAt(0) > 255,
-      );
+      const hasHighByte = Array.from(name).some((char) => char.charCodeAt(0) > 255);
       // 如果没有高于255的字符，说明可能被当成 latin1 解析了（multer 默认行为）
       if (!hasHighByte) {
         const decoded = Buffer.from(name, 'latin1').toString('utf8');
@@ -349,16 +337,7 @@ export class FileService {
     // 图片
     if (
       mime.startsWith('image/') ||
-      [
-        '.jpg',
-        '.jpeg',
-        '.png',
-        '.gif',
-        '.bmp',
-        '.webp',
-        '.svg',
-        '.ico',
-      ].includes(ext)
+      ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.ico'].includes(ext)
     ) {
       return FileType.IMAGE;
     }
@@ -381,18 +360,9 @@ export class FileService {
 
     // 文档
     if (
-      [
-        '.doc',
-        '.docx',
-        '.pdf',
-        '.txt',
-        '.xls',
-        '.xlsx',
-        '.ppt',
-        '.pptx',
-        '.odt',
-        '.ods',
-      ].includes(ext)
+      ['.doc', '.docx', '.pdf', '.txt', '.xls', '.xlsx', '.ppt', '.pptx', '.odt', '.ods'].includes(
+        ext,
+      )
     ) {
       return FileType.DOCUMENT;
     }

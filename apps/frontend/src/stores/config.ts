@@ -1,8 +1,8 @@
-import { defineStore } from "pinia"
-import { ref } from "vue"
-import { getConfigByKey, getConfigsByKeys, getAllConfigs, type Config } from "@/api/config"
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { getConfigByKey, getConfigsByKeys, getAllConfigs, type Config } from '@/api/config'
 
-export const useConfigStore = defineStore("config", () => {
+export const useConfigStore = defineStore('config', () => {
   const configMap = ref<Record<string, string>>({})
   const pendingRequests = ref<Record<string, Promise<void> | undefined>>({})
 
@@ -16,17 +16,17 @@ export const useConfigStore = defineStore("config", () => {
     // 防止重复请求
     if (pendingRequests.value[key]) {
       await pendingRequests.value[key]
-      return configMap.value[key] ?? ""
+      return configMap.value[key] ?? ''
     }
 
     // 发起请求
     const request = (async () => {
       try {
         const res = await getConfigByKey(key)
-        configMap.value[key] = res.data ?? ""
+        configMap.value[key] = res.data ?? ''
       } catch (error) {
         console.error(`Failed to load config: ${key}`, error)
-        configMap.value[key] = ""
+        configMap.value[key] = ''
       } finally {
         delete pendingRequests.value[key]
       }
@@ -34,7 +34,7 @@ export const useConfigStore = defineStore("config", () => {
 
     pendingRequests.value[key] = request
     await request
-    return configMap.value[key] ?? ""
+    return configMap.value[key] ?? ''
   }
 
   // 批量获取配置值
@@ -62,15 +62,15 @@ export const useConfigStore = defineStore("config", () => {
         // 对于未返回的 key，设置为空字符串
         uncachedKeys.forEach((key) => {
           if (result[key] === undefined) {
-            configMap.value[key] = ""
-            result[key] = ""
+            configMap.value[key] = ''
+            result[key] = ''
           }
         })
       } catch (error) {
-        console.error("Failed to load configs:", error)
+        console.error('Failed to load configs:', error)
         uncachedKeys.forEach((key) => {
-          configMap.value[key] = ""
-          result[key] = ""
+          configMap.value[key] = ''
+          result[key] = ''
         })
       }
     }
@@ -88,7 +88,7 @@ export const useConfigStore = defineStore("config", () => {
       })
       return res.data
     } catch (error) {
-      console.error("Failed to load all configs:", error)
+      console.error('Failed to load all configs:', error)
       return []
     }
   }

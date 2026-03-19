@@ -13,9 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
-  app.useStaticAssets(
-    join(process.cwd(), configService.get<string>('upload.dir', 'uploads')),
-  );
+  app.useStaticAssets(join(process.cwd(), configService.get<string>('upload.dir', 'uploads')));
 
   app.setGlobalPrefix(configService.get<string>('globalPrefix', '/api'));
 

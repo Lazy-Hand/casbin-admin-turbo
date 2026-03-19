@@ -1,8 +1,5 @@
 import { CHECK_ABILITY_KEY } from '../../library/casl/decorators/ability.decorator';
-import {
-  LoginLogController,
-  OperationLogController,
-} from './operation-log.controller';
+import { LoginLogController, OperationLogController } from './operation-log.controller';
 
 describe('OperationLogController ability metadata', () => {
   it('matches operation log permissions with ability subjects', () => {
@@ -20,10 +17,7 @@ describe('OperationLogController ability metadata', () => {
   });
 
   it('matches login log permissions with ability subjects', () => {
-    const pageRules = Reflect.getMetadata(
-      CHECK_ABILITY_KEY,
-      LoginLogController.prototype.findPage,
-    );
+    const pageRules = Reflect.getMetadata(CHECK_ABILITY_KEY, LoginLogController.prototype.findPage);
 
     expect(pageRules).toEqual([{ action: 'read', subject: 'LoginLog' }]);
   });

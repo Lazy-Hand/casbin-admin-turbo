@@ -55,10 +55,10 @@ function parseYamlFile(path: string): JsonLike {
   return parsed;
 }
 
-export function resolveConfigPaths({
-  configDir,
-  nodeEnv,
-}: ResolvePathsOptions): { defaultPath: string; overridePath: string } {
+export function resolveConfigPaths({ configDir, nodeEnv }: ResolvePathsOptions): {
+  defaultPath: string;
+  overridePath: string;
+} {
   return {
     defaultPath: join(configDir, 'default.yaml'),
     overridePath: join(configDir, `${nodeEnv}.yaml`),

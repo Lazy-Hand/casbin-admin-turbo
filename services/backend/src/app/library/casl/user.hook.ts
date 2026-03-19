@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
-import type {
-  UserWithPermissions,
-  RoleWithPermissions,
-  PermissionInfo,
-} from './types';
+import type { UserWithPermissions, RoleWithPermissions, PermissionInfo } from './types';
 import {
   DrizzleService,
   joinOnWithSoftDelete,
@@ -53,8 +49,14 @@ export class UserHook {
       .from(User)
       .leftJoin(UserRole, joinOnWithSoftDelete(UserRole, eq(User.id, UserRole.userId)))
       .leftJoin(Role, joinOnWithSoftDelete(Role, eq(UserRole.roleId, Role.id)))
-      .leftJoin(RolePermission, joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)))
-      .leftJoin(Permission, joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)))
+      .leftJoin(
+        RolePermission,
+        joinOnWithSoftDelete(RolePermission, eq(Role.id, RolePermission.roleId)),
+      )
+      .leftJoin(
+        Permission,
+        joinOnWithSoftDelete(Permission, eq(RolePermission.permissionId, Permission.id)),
+      )
       .where(and(withSoftDelete(User), eq(User.id, userId)));
 
     const first = rows[0];
@@ -69,14 +71,12 @@ export class UserHook {
         continue;
       }
 
-      const currentRole =
-        roles.get(row.role.id) ??
-        {
-          id: row.role.id,
-          roleCode: row.role.roleCode ?? '',
-          roleName: row.role.roleName ?? '',
-          permissions: [],
-        };
+      const currentRole = roles.get(row.role.id) ?? {
+        id: row.role.id,
+        roleCode: row.role.roleCode ?? '',
+        roleName: row.role.roleName ?? '',
+        permissions: [],
+      };
 
       if (
         row.permission?.id &&

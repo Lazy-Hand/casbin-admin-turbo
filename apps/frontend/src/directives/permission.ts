@@ -10,7 +10,10 @@ type PermissionBindingValue =
       mode?: 'any' | 'all'
     }
 
-const evaluatePermission = (value: PermissionBindingValue, hasPermission: (code: string) => boolean) => {
+const evaluatePermission = (
+  value: PermissionBindingValue,
+  hasPermission: (code: string) => boolean,
+) => {
   if (typeof value === 'string') {
     return hasPermission(value)
   }

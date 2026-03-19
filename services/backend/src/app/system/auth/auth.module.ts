@@ -29,16 +29,12 @@ export function resolveJwtModuleOptions(configService: ConfigService) {
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) =>
-        resolveJwtModuleOptions(configService),
+      useFactory: (configService: ConfigService) => resolveJwtModuleOptions(configService),
       inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy,
-  ],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

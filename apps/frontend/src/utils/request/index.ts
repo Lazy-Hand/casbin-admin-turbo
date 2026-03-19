@@ -1,4 +1,9 @@
-import { createRequest, type PageResponse, type RequestConfig, type ResponseData } from '@casbin-admin/http-client'
+import {
+  createRequest,
+  type PageResponse,
+  type RequestConfig,
+  type ResponseData,
+} from '@casbin-admin/http-client'
 import { localCache } from '@/utils/storage'
 import router from '@/router'
 export { checkStatus } from '@casbin-admin/http-client'
@@ -44,12 +49,14 @@ let unauthorizedCallback: () => void = () => {
       content: '您的登录已过期，请重新登录',
       positiveText: '重新登录',
       onPositiveClick: () => {
-        return router.replace({
-          path: '/login',
-          query: redirect && redirect !== '/home' ? { redirect } : undefined,
-        }).finally(() => {
-          isHandlingUnauthorized = false
-        })
+        return router
+          .replace({
+            path: '/login',
+            query: redirect && redirect !== '/home' ? { redirect } : undefined,
+          })
+          .finally(() => {
+            isHandlingUnauthorized = false
+          })
       },
       onClose: () => {
         isHandlingUnauthorized = false

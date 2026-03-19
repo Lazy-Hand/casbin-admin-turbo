@@ -14,10 +14,7 @@ describe('UserController data scope wiring', () => {
 
     await controller.findPage({ pageNo: 1, pageSize: 10 }, { id: 9 } as never);
 
-    expect(userService.findPage).toHaveBeenCalledWith(
-      { pageNo: 1, pageSize: 10 },
-      9,
-    );
+    expect(userService.findPage).toHaveBeenCalledWith({ pageNo: 1, pageSize: 10 }, 9);
   });
 
   it('passes the current user id into detail queries', async () => {

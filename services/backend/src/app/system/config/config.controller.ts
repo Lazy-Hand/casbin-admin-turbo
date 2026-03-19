@@ -35,8 +35,7 @@ export class ConfigController {
     description: '成功返回配置列表',
   })
   async findPage(@Query(PaginationPipe) query: ConfigQueryDto) {
-    const { list, total, pageNo, pageSize } =
-      await this.configService.findPage(query);
+    const { list, total, pageNo, pageSize } = await this.configService.findPage(query);
     return createPaginationResponse(list, total, pageNo, pageSize);
   }
 
@@ -61,7 +60,7 @@ export class ConfigController {
     if (!keys?.trim()) {
       throw new BadRequestException('keys 参数不能为空');
     }
-    const keyList = keys.split(',').filter(k => k.trim());
+    const keyList = keys.split(',').filter((k) => k.trim());
     if (keyList.length === 0) {
       return {};
     }

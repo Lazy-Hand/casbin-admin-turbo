@@ -188,13 +188,7 @@ export class RedisService implements OnModuleDestroy {
     let deleted = 0;
 
     do {
-      const [nextCursor, keys] = await this.client.scan(
-        cursor,
-        'MATCH',
-        pattern,
-        'COUNT',
-        100,
-      );
+      const [nextCursor, keys] = await this.client.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
       cursor = nextCursor;
 
       if (keys.length > 0) {
@@ -304,11 +298,7 @@ export class RedisService implements OnModuleDestroy {
    * @param start 起始索引
    * @param stop 结束索引
    */
-  async lrange<T = any>(
-    key: string,
-    start: number,
-    stop: number,
-  ): Promise<T[]> {
+  async lrange<T = any>(key: string, start: number, stop: number): Promise<T[]> {
     const values = await this.client.lrange(key, start, stop);
     return values.map((value) => {
       try {
@@ -410,10 +400,7 @@ export class RedisService implements OnModuleDestroy {
    * @param channel 频道
    * @param callback 回调函数
    */
-  async subscribe(
-    channel: string,
-    callback: (message: any) => void,
-  ): Promise<void> {
+  async subscribe(channel: string, callback: (message: any) => void): Promise<void> {
     if (!this.subscriber) {
       throw new Error('Redis Pub/Sub 未启用');
     }

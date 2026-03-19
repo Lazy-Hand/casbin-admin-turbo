@@ -1,7 +1,12 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Form, Input, Modal } from 'antd'
-import { createDictionary, getDictionary, updateDictionary, type Dictionary } from '@/api/dictionary'
+import {
+  createDictionary,
+  getDictionary,
+  updateDictionary,
+  type Dictionary,
+} from '@/api/dictionary'
 import { DictRadio } from '@/components/dict/DictRadio'
 import { queryClient } from '@/lib/query-client'
 
@@ -47,7 +52,9 @@ export function DictionaryDialog({ open, dictionaryId, onClose }: Props) {
   const saveMutation = useMutation({
     mutationFn: async (values: Partial<Dictionary>) => {
       if (isEdit) {
-        return updateDictionary({ ...values, id: dictionaryId! } as Partial<Dictionary> & { id: number })
+        return updateDictionary({ ...values, id: dictionaryId! } as Partial<Dictionary> & {
+          id: number
+        })
       }
 
       return createDictionary(values)
@@ -73,10 +80,18 @@ export function DictionaryDialog({ open, dictionaryId, onClose }: Props) {
       confirmLoading={saveMutation.isPending}
     >
       <Form form={form} layout="vertical" disabled={saveMutation.isPending || isFetching}>
-        <Form.Item label="字典名称" name="dictName" rules={[{ required: true, message: '请输入字典名称' }]}>
+        <Form.Item
+          label="字典名称"
+          name="dictName"
+          rules={[{ required: true, message: '请输入字典名称' }]}
+        >
           <Input placeholder="输入字典名称" />
         </Form.Item>
-        <Form.Item label="字典编码" name="dictCode" rules={[{ required: true, message: '请输入字典编码' }]}>
+        <Form.Item
+          label="字典编码"
+          name="dictCode"
+          rules={[{ required: true, message: '请输入字典编码' }]}
+        >
           <Input placeholder="输入字典编码" disabled={isEdit} />
         </Form.Item>
         <Form.Item label="描述" name="description">

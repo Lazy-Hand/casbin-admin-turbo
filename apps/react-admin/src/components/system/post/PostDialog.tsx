@@ -77,7 +77,11 @@ export function PostDialog({ open, postId, onClose }: Props) {
       destroyOnHidden
     >
       <Form form={form} layout="vertical" disabled={saveMutation.isPending || isFetching}>
-        <Form.Item label="岗位名称" name="postName" rules={[{ required: true, message: '请输入岗位名称' }]}>
+        <Form.Item
+          label="岗位名称"
+          name="postName"
+          rules={[{ required: true, message: '请输入岗位名称' }]}
+        >
           <Input placeholder="输入岗位名称" />
         </Form.Item>
         <Form.Item

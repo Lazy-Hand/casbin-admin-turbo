@@ -20,7 +20,11 @@ export class RoutePermissionTreeNodeDto {
   @ApiProperty({ description: '图标', required: false })
   icon?: string;
 
-  @ApiProperty({ description: '菜单类型', enum: ['menu', 'page', 'link', 'iframe', 'window', 'divider', 'group'], required: false })
+  @ApiProperty({
+    description: '菜单类型',
+    enum: ['menu', 'page', 'link', 'iframe', 'window', 'divider', 'group'],
+    required: false,
+  })
   menuType?: MenuTypeValue | null;
 
   @ApiProperty({ description: '排序' })

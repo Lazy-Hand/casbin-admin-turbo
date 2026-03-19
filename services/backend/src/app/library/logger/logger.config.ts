@@ -27,27 +27,12 @@ export const DEFAULT_LOGGER_CONFIG: LoggerConfig = {
 export function getLoggerConfig(configService: ConfigService): LoggerConfig {
   return {
     level: configService.get('logging.level', DEFAULT_LOGGER_CONFIG.level),
-    enableConsole: configService.get(
-      'logging.enableConsole',
-      DEFAULT_LOGGER_CONFIG.enableConsole,
-    ),
-    enableFile: configService.get(
-      'logging.enableFile',
-      DEFAULT_LOGGER_CONFIG.enableFile,
-    ),
+    enableConsole: configService.get('logging.enableConsole', DEFAULT_LOGGER_CONFIG.enableConsole),
+    enableFile: configService.get('logging.enableFile', DEFAULT_LOGGER_CONFIG.enableFile),
     logDir: configService.get('logging.logDir', DEFAULT_LOGGER_CONFIG.logDir),
-    maxFileSize: configService.get(
-      'logging.maxFileSize',
-      DEFAULT_LOGGER_CONFIG.maxFileSize,
-    ),
-    maxFiles: configService.get(
-      'logging.maxFiles',
-      DEFAULT_LOGGER_CONFIG.maxFiles,
-    ),
-    datePattern: configService.get(
-      'logging.datePattern',
-      DEFAULT_LOGGER_CONFIG.datePattern,
-    ),
+    maxFileSize: configService.get('logging.maxFileSize', DEFAULT_LOGGER_CONFIG.maxFileSize),
+    maxFiles: configService.get('logging.maxFiles', DEFAULT_LOGGER_CONFIG.maxFiles),
+    datePattern: configService.get('logging.datePattern', DEFAULT_LOGGER_CONFIG.datePattern),
     enablePrismaLogging: configService.get(
       'logging.enablePrismaLogging',
       DEFAULT_LOGGER_CONFIG.enablePrismaLogging,

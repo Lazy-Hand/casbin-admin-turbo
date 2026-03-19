@@ -77,7 +77,9 @@ export function LoginPage() {
               <Alert
                 type="error"
                 showIcon
-                message={loginMutation.error instanceof Error ? loginMutation.error.message : '登录失败'}
+                message={
+                  loginMutation.error instanceof Error ? loginMutation.error.message : '登录失败'
+                }
               />
             ) : null}
           </Space>

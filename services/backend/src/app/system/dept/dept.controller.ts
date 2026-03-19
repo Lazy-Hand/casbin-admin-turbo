@@ -62,7 +62,11 @@ export class DeptController {
   @Put(':id')
   @Can('update', 'Dept')
   @ApiOperation({ summary: '更新部门' })
-  update(@Param('id') id: string, @Body() updateDeptDto: UpdateDeptDto, @CurrentUser() user: UserEntity) {
+  update(
+    @Param('id') id: string,
+    @Body() updateDeptDto: UpdateDeptDto,
+    @CurrentUser() user: UserEntity,
+  ) {
     return this.deptService.update(+id, updateDeptDto, user.id);
   }
 

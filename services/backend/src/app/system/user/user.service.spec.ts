@@ -27,9 +27,7 @@ describe('UserService password handling', () => {
     post: {
       findUnique: jest.fn(),
     },
-    $transaction: jest.fn(async (callback: (tx: typeof txMock) => unknown) =>
-      callback(txMock),
-    ),
+    $transaction: jest.fn(async (callback: (tx: typeof txMock) => unknown) => callback(txMock)),
   };
 
   const dataScopeServiceMock = {};

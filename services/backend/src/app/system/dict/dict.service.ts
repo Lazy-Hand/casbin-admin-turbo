@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm';
 import {
   CreateDictTypeDto,
@@ -112,11 +108,7 @@ export class DictService {
       .select()
       .from(DictItem)
       .where(
-        and(
-          withSoftDelete(DictItem),
-          eq(DictItem.dictTypeId, dictType.id),
-          eq(DictItem.status, 1),
-        ),
+        and(withSoftDelete(DictItem), eq(DictItem.dictTypeId, dictType.id), eq(DictItem.status, 1)),
       )
       .orderBy(asc(DictItem.sort));
 
@@ -134,13 +126,13 @@ export class DictService {
     }
 
     const createdTypes = await insertWithAudit(this.drizzle.db, DictType, {
-        dictName: dto.dictName,
-        dictCode: dto.dictCode,
-        description: dto.description ?? '',
-        status: dto.status ?? 1,
-        updatedAt: new Date().toISOString(),
+      dictName: dto.dictName,
+      dictCode: dto.dictCode,
+      description: dto.description ?? '',
+      status: dto.status ?? 1,
+      updatedAt: new Date().toISOString(),
     });
-    return Array.isArray(createdTypes) ? createdTypes[0] ?? null : createdTypes;
+    return Array.isArray(createdTypes) ? (createdTypes[0] ?? null) : createdTypes;
   }
 
   /** 更新字典类型 */
@@ -151,17 +143,20 @@ export class DictService {
     }
 
     if (dto.dictCode && dto.dictCode !== existing.dictCode) {
-      const codeExists = await this.drizzle.findFirst(DictType, eq(DictType.dictCode, dto.dictCode));
+      const codeExists = await this.drizzle.findFirst(
+        DictType,
+        eq(DictType.dictCode, dto.dictCode),
+      );
       if (codeExists) {
         throw new ConflictException(`字典编码 '${dto.dictCode}' 已存在`);
       }
     }
 
     const updatedTypes = await updateWithAudit(this.drizzle.db, DictType, eq(DictType.id, id), {
-        ...dto,
-        status: dto.status !== undefined ? +dto.status : undefined,
+      ...dto,
+      status: dto.status !== undefined ? +dto.status : undefined,
     });
-    return Array.isArray(updatedTypes) ? updatedTypes[0] ?? null : updatedTypes;
+    return Array.isArray(updatedTypes) ? (updatedTypes[0] ?? null) : updatedTypes;
   }
 
   /** 删除字典类型（级联删除字典项） */
@@ -174,7 +169,7 @@ export class DictService {
     return this.drizzle.db.transaction(async (tx: any) => {
       await softDeleteWhere(tx, DictItem, eq(DictItem.dictTypeId, id));
       const deletedTypes = await softDeleteWhere(tx, DictType, eq(DictType.id, id));
-      return Array.isArray(deletedTypes) ? deletedTypes[0] ?? null : deletedTypes;
+      return Array.isArray(deletedTypes) ? (deletedTypes[0] ?? null) : deletedTypes;
     });
   }
 
@@ -207,11 +202,7 @@ export class DictService {
       })
       .from(DictItem)
       .where(
-        and(
-          withSoftDelete(DictItem),
-          eq(DictItem.dictTypeId, dictType.id),
-          eq(DictItem.status, 1),
-        ),
+        and(withSoftDelete(DictItem), eq(DictItem.dictTypeId, dictType.id), eq(DictItem.status, 1)),
       )
       .orderBy(asc(DictItem.sort));
   }
@@ -224,15 +215,15 @@ export class DictService {
     }
 
     const createdItems = await insertWithAudit(this.drizzle.db, DictItem, {
-        dictTypeId: dto.dictTypeId,
-        label: dto.label,
-        value: dto.value,
-        colorType: dto.colorType ?? '',
-        sort: dto.sort ?? 0,
-        status: dto.status ?? 1,
-        updatedAt: new Date().toISOString(),
+      dictTypeId: dto.dictTypeId,
+      label: dto.label,
+      value: dto.value,
+      colorType: dto.colorType ?? '',
+      sort: dto.sort ?? 0,
+      status: dto.status ?? 1,
+      updatedAt: new Date().toISOString(),
     });
-    return Array.isArray(createdItems) ? createdItems[0] ?? null : createdItems;
+    return Array.isArray(createdItems) ? (createdItems[0] ?? null) : createdItems;
   }
 
   /** 更新字典项 */
@@ -243,11 +234,11 @@ export class DictService {
     }
 
     const updatedItems = await updateWithAudit(this.drizzle.db, DictItem, eq(DictItem.id, id), {
-        ...dto,
-        status: dto.status !== undefined ? +dto.status : undefined,
-        sort: dto.sort !== undefined ? +dto.sort : undefined,
+      ...dto,
+      status: dto.status !== undefined ? +dto.status : undefined,
+      sort: dto.sort !== undefined ? +dto.sort : undefined,
     });
-    return Array.isArray(updatedItems) ? updatedItems[0] ?? null : updatedItems;
+    return Array.isArray(updatedItems) ? (updatedItems[0] ?? null) : updatedItems;
   }
 
   /** 删除字典项 */
@@ -258,6 +249,6 @@ export class DictService {
     }
 
     const deletedItems = await softDeleteWhere(this.drizzle.db, DictItem, eq(DictItem.id, id));
-    return Array.isArray(deletedItems) ? deletedItems[0] ?? null : deletedItems;
+    return Array.isArray(deletedItems) ? (deletedItems[0] ?? null) : deletedItems;
   }
 }

@@ -6,10 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto, UserProfileDto } from './dto/auth-response.dto';
 import { RoutePermissionTreeNodeDto } from './dto/route-permission.dto';
 import { Public } from './decorators/public.decorator';
-import {
-  ApiSuccessResponse,
-  ApiErrorResponse,
-} from '@/common/decorators/api-response.decorator';
+import { ApiSuccessResponse, ApiErrorResponse } from '@/common/decorators/api-response.decorator';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @ApiTags('认证')

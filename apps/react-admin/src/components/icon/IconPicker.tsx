@@ -37,7 +37,10 @@ export function IconPicker({ open, value, onClose, onSelect }: Props) {
     setPage(1)
   }, [keyword, library])
 
-  const { items, total } = useMemo(() => getIcons(library, keyword, page), [getIcons, keyword, library, page])
+  const { items, total } = useMemo(
+    () => getIcons(library, keyword, page),
+    [getIcons, keyword, library, page],
+  )
 
   return (
     <Modal
@@ -105,7 +108,11 @@ export function IconPicker({ open, value, onClose, onSelect }: Props) {
                     }}
                   >
                     <DynamicIcon icon={item.icon} className="size-5" />
-                    <Space direction="vertical" size={2} style={{ display: 'flex', textAlign: 'center' }}>
+                    <Space
+                      direction="vertical"
+                      size={2}
+                      style={{ display: 'flex', textAlign: 'center' }}
+                    >
                       <Typography.Text style={{ fontSize: 12 }}>{item.displayName}</Typography.Text>
                       <Typography.Text type="secondary" style={{ fontSize: 11 }}>
                         {item.name}

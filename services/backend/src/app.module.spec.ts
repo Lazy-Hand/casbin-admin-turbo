@@ -6,8 +6,7 @@ import { JwtAuthGuard } from './app/system/auth/guards/jwt-auth.guard';
 
 describe('AppModule guards', () => {
   it('registers JWT and ability guards globally in order', () => {
-    const providers =
-      Reflect.getMetadata(MODULE_METADATA.PROVIDERS, AppModule) ?? [];
+    const providers = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, AppModule) ?? [];
 
     const guardProviders = providers.filter(
       (provider: { provide?: unknown }) => provider?.provide === APP_GUARD,

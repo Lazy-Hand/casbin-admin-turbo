@@ -152,20 +152,17 @@ export class TimerService implements OnModuleInit {
       });
 
       await this.drizzle.db.insert(TimerExecutionLog).values({
-          timerId,
-          status,
-          startAt: startAt.toISOString(),
-          endAt: endAt.toISOString(),
-          duration,
-          result: result?.substring(0, 10000), // 限制长度
+        timerId,
+        status,
+        startAt: startAt.toISOString(),
+        endAt: endAt.toISOString(),
+        duration,
+        result: result?.substring(0, 10000), // 限制长度
       });
     }
   }
 
-  private async executeHttpTask(
-    target: string,
-    params?: unknown,
-  ): Promise<string> {
+  private async executeHttpTask(target: string, params?: unknown): Promise<string> {
     const options = (params as Record<string, unknown>) || {};
     const method = (options.method as string) || 'GET';
     const headers = (options.headers as Record<string, string>) || {};
@@ -248,16 +245,16 @@ export class TimerService implements OnModuleInit {
     await this.assertTaskTargetAllowed(dto.taskType, dto.target);
 
     const createdTimers = await insertWithAudit(this.drizzle.db, Timer, {
-        name: dto.name,
-        description: dto.description ?? null,
-        cron: dto.cron,
-        taskType: dto.taskType as TaskTypeValue,
-        target: dto.target,
-        params: dto.params ?? null,
-        status: dto.status ?? 1,
-        updatedAt: new Date().toISOString(),
+      name: dto.name,
+      description: dto.description ?? null,
+      cron: dto.cron,
+      taskType: dto.taskType as TaskTypeValue,
+      target: dto.target,
+      params: dto.params ?? null,
+      status: dto.status ?? 1,
+      updatedAt: new Date().toISOString(),
     });
-    const timer = Array.isArray(createdTimers) ? createdTimers[0] ?? null : createdTimers;
+    const timer = Array.isArray(createdTimers) ? (createdTimers[0] ?? null) : createdTimers;
 
     if (timer?.status === 1) {
       this.scheduleTimer(timer);
@@ -281,15 +278,15 @@ export class TimerService implements OnModuleInit {
     this.unscheduleTimer(id);
 
     const updatedTimers = await updateWithAudit(this.drizzle.db, Timer, eq(Timer.id, id), {
-        name: dto.name,
-        description: dto.description,
-        cron: dto.cron,
-        taskType: dto.taskType as TaskTypeValue | undefined,
-        target: dto.target,
-        params: dto.params,
-        status: dto.status,
+      name: dto.name,
+      description: dto.description,
+      cron: dto.cron,
+      taskType: dto.taskType as TaskTypeValue | undefined,
+      target: dto.target,
+      params: dto.params,
+      status: dto.status,
     });
-    const timer = Array.isArray(updatedTimers) ? updatedTimers[0] ?? null : updatedTimers;
+    const timer = Array.isArray(updatedTimers) ? (updatedTimers[0] ?? null) : updatedTimers;
 
     if (timer?.status === 1) {
       this.scheduleTimer(timer);
@@ -307,7 +304,7 @@ export class TimerService implements OnModuleInit {
 
     this.unscheduleTimer(id);
     const deletedTimers = await softDeleteWhere(this.drizzle.db, Timer, eq(Timer.id, id));
-    return Array.isArray(deletedTimers) ? deletedTimers[0] ?? null : deletedTimers;
+    return Array.isArray(deletedTimers) ? (deletedTimers[0] ?? null) : deletedTimers;
   }
 
   /** 手动执行定时器 */
@@ -333,19 +330,13 @@ export class TimerService implements OnModuleInit {
       .orderBy(desc(TimerExecutionLog.startAt));
   }
 
-  private async assertTaskTargetAllowed(
-    taskType: string,
-    target: string,
-  ): Promise<void> {
+  private async assertTaskTargetAllowed(taskType: string, target: string): Promise<void> {
     if (!(await this.isTaskTargetAllowed(taskType, target))) {
       throw new BadRequestException('任务目标不安全或暂不支持');
     }
   }
 
-  private async isTaskTargetAllowed(
-    taskType: string,
-    target: string,
-  ): Promise<boolean> {
+  private async isTaskTargetAllowed(taskType: string, target: string): Promise<boolean> {
     if (taskType === 'SCRIPT') {
       return false;
     }
@@ -374,9 +365,7 @@ export class TimerService implements OnModuleInit {
         return false;
       }
 
-      return records.every((record) =>
-        !this.isPrivateOrLocalAddress(record.address),
-      );
+      return records.every((record) => !this.isPrivateOrLocalAddress(record.address));
     } catch {
       return false;
     }

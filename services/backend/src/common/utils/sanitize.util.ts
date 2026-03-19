@@ -94,7 +94,9 @@ export function simplifyParams(
         sanitized.name ||
         sanitized.dictName;
     }
-    return (Object.keys(simplified).length > 0 ? simplified : undefined) as JsonInputValue | undefined;
+    return (Object.keys(simplified).length > 0 ? simplified : undefined) as
+      | JsonInputValue
+      | undefined;
   }
 
   // 对于 UPDATE 操作，只保留变更的字段

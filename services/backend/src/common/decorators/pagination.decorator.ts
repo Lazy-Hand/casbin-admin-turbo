@@ -48,10 +48,7 @@ export const Pagination = createParamDecorator(
  * ```
  */
 export const RawPagination = createParamDecorator(
-  (
-    data: unknown,
-    ctx: ExecutionContext,
-  ): { pageNo: number; pageSize: number } => {
+  (data: unknown, ctx: ExecutionContext): { pageNo: number; pageSize: number } => {
     const request = ctx.switchToHttp().getRequest();
     const query = request.query;
 

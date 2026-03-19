@@ -39,9 +39,7 @@ async function testQueryPerformance() {
     console.log(`  ✅ 完成 ${iterations} 次查询`);
     console.log(`  ⏱️  总耗时: ${duration1}ms`);
     console.log(`  📈 平均: ${(duration1 / iterations).toFixed(2)}ms`);
-    console.log(
-      `  🎯 目标: < 100ms (${duration1 / iterations < 100 ? '✅ 达标' : '❌ 未达标'})\n`,
-    );
+    console.log(`  🎯 目标: < 100ms (${duration1 / iterations < 100 ? '✅ 达标' : '❌ 未达标'})\n`);
 
     // 测试2: 批量查询
     console.log('📊 测试2: 批量用户权限查询');
@@ -64,9 +62,7 @@ async function testQueryPerformance() {
     console.log(`  ✅ 完成 ${userIds.length} 个用户查询`);
     console.log(`  ⏱️  总耗时: ${duration2}ms`);
     console.log(`  📈 平均: ${(duration2 / userIds.length).toFixed(2)}ms/用户`);
-    console.log(
-      `  🎯 目标: < 500ms (${duration2 < 500 ? '✅ 达标' : '❌ 未达标'})\n`,
-    );
+    console.log(`  🎯 目标: < 500ms (${duration2 < 500 ? '✅ 达标' : '❌ 未达标'})\n`);
 
     // 测试3: 权限代码查询
     console.log('📊 测试3: 权限代码查询');
@@ -109,18 +105,10 @@ async function testQueryPerformance() {
     // 总结
     console.log('📋 性能测试总结:');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log(
-      `  单用户查询: ${(duration1 / iterations).toFixed(2)}ms (目标: <100ms)`,
-    );
-    console.log(
-      `  批量查询: ${(duration2 / userIds.length).toFixed(2)}ms/用户 (目标: <5ms)`,
-    );
-    console.log(
-      `  权限查询: ${(duration3 / permIterations).toFixed(2)}ms (目标: <50ms)`,
-    );
-    console.log(
-      `  角色查询: ${(duration4 / roleIterations).toFixed(2)}ms (目标: <50ms)`,
-    );
+    console.log(`  单用户查询: ${(duration1 / iterations).toFixed(2)}ms (目标: <100ms)`);
+    console.log(`  批量查询: ${(duration2 / userIds.length).toFixed(2)}ms/用户 (目标: <5ms)`);
+    console.log(`  权限查询: ${(duration3 / permIterations).toFixed(2)}ms (目标: <50ms)`);
+    console.log(`  角色查询: ${(duration4 / roleIterations).toFixed(2)}ms (目标: <50ms)`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     console.log('✅ 性能测试完成！');

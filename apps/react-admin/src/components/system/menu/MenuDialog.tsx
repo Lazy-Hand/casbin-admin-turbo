@@ -2,7 +2,15 @@ import { useEffect } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Form, Input, InputNumber, Modal, Segmented, TreeSelect } from 'antd'
 import type { TreeSelectProps } from 'antd'
-import { createMenu, getMenu, getMenuList, updateMenu, type Menu, type MenuParams, type MenuType } from '@/api/menu'
+import {
+  createMenu,
+  getMenu,
+  getMenuList,
+  updateMenu,
+  type Menu,
+  type MenuParams,
+  type MenuType,
+} from '@/api/menu'
 import { DictRadio } from '@/components/dict/DictRadio'
 import { DictSelect } from '@/components/dict/DictSelect'
 import { IconSelect } from '@/components/icon/IconSelect'
@@ -138,12 +146,24 @@ export function MenuDialog({ open, menuId, parentId, onClose }: Props) {
         </Form.Item>
 
         <Form.Item label="父菜单" name="parentId">
-          <TreeSelect allowClear placeholder="选择父菜单" treeData={processMenuTree(menuTree) ?? []} />
+          <TreeSelect
+            allowClear
+            placeholder="选择父菜单"
+            treeData={processMenuTree(menuTree) ?? []}
+          />
         </Form.Item>
-        <Form.Item label="菜单名称" name="permName" rules={[{ required: true, message: '请输入菜单名称' }]}>
+        <Form.Item
+          label="菜单名称"
+          name="permName"
+          rules={[{ required: true, message: '请输入菜单名称' }]}
+        >
           <Input placeholder="输入菜单名称" />
         </Form.Item>
-        <Form.Item label="菜单编码" name="permCode" rules={[{ required: true, message: '请输入菜单编码' }]}>
+        <Form.Item
+          label="菜单编码"
+          name="permCode"
+          rules={[{ required: true, message: '请输入菜单编码' }]}
+        >
           <Input placeholder="例如：System" />
         </Form.Item>
         <Form.Item label="图标" name="icon">
@@ -154,12 +174,18 @@ export function MenuDialog({ open, menuId, parentId, onClose }: Props) {
           name="path"
           rules={[
             {
-              required: ['menu', 'page', 'link', 'iframe', 'window', 'group'].includes(currentMenuType || ''),
+              required: ['menu', 'page', 'link', 'iframe', 'window', 'group'].includes(
+                currentMenuType || '',
+              ),
               message: '请输入路由路径',
             },
           ]}
         >
-          <Input placeholder={currentMenuType === 'link' ? '例如：https://example.com' : '例如：/system/user'} />
+          <Input
+            placeholder={
+              currentMenuType === 'link' ? '例如：https://example.com' : '例如：/system/user'
+            }
+          />
         </Form.Item>
         <Form.Item
           label="组件路径"

@@ -35,6 +35,6 @@ export class AppService {
       updatedAt: new Date().toISOString(),
     });
 
-    return Array.isArray(rows) ? rows[0] ?? null : null;
+    return Array.isArray(rows) ? (rows[0] ?? null) : null;
   }
 }

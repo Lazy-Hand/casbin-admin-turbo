@@ -90,24 +90,26 @@ describe('PermissionService', () => {
     selectMock
       .mockReturnValueOnce(createSelectChain([{ id: 100 }]))
       .mockReturnValueOnce(createSelectChain([{ id: 101, parentId: 100 }]))
-      .mockReturnValueOnce(createSelectChain([
-        {
-          id: 100,
-          permName: '用户管理',
-          permCode: 'system:user',
-          resourceType: 'menu',
-          parentId: null,
-          sort: 1,
-        },
-        {
-          id: 101,
-          permName: '新增用户按钮',
-          permCode: 'system:user:add',
-          resourceType: 'button',
-          parentId: 100,
-          sort: 1,
-        },
-      ]));
+      .mockReturnValueOnce(
+        createSelectChain([
+          {
+            id: 100,
+            permName: '用户管理',
+            permCode: 'system:user',
+            resourceType: 'menu',
+            parentId: null,
+            sort: 1,
+          },
+          {
+            id: 101,
+            permName: '新增用户按钮',
+            permCode: 'system:user:add',
+            resourceType: 'button',
+            parentId: 100,
+            sort: 1,
+          },
+        ]),
+      );
 
     const result = await service.getMenuAndButtonPermissions({
       permName: '用户',
@@ -141,24 +143,26 @@ describe('PermissionService', () => {
     selectMock
       .mockReturnValueOnce(createSelectChain([]))
       .mockReturnValueOnce(createSelectChain([{ id: 201, parentId: 200 }]))
-      .mockReturnValueOnce(createSelectChain([
-        {
-          id: 200,
-          permName: '订单管理',
-          permCode: 'system:order',
-          resourceType: 'menu',
-          parentId: null,
-          sort: 1,
-        },
-        {
-          id: 201,
-          permName: '导出订单',
-          permCode: 'system:order:export',
-          resourceType: 'button',
-          parentId: 200,
-          sort: 2,
-        },
-      ]));
+      .mockReturnValueOnce(
+        createSelectChain([
+          {
+            id: 200,
+            permName: '订单管理',
+            permCode: 'system:order',
+            resourceType: 'menu',
+            parentId: null,
+            sort: 1,
+          },
+          {
+            id: 201,
+            permName: '导出订单',
+            permCode: 'system:order:export',
+            resourceType: 'button',
+            parentId: 200,
+            sort: 2,
+          },
+        ]),
+      );
 
     const result = await service.getMenuAndButtonPermissions({
       permName: '导出',

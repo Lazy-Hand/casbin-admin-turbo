@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Button, Card, Form, Input, Popconfirm, Space, Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
 import { deleteConfig, getConfigPage, type Config, type ConfigSearchParams } from '@/api/config'
 import { DictSelect } from '@/components/dict/DictSelect'
 import { DictTag } from '@/components/dict/DictTag'

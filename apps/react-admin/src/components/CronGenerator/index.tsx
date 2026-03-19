@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { App, Button, Input, Modal, Space, Tabs } from 'antd'
 import { ClockCircleOutlined, CopyOutlined } from '@ant-design/icons'
-import { CronFieldConfig, type CronFieldConfigValue } from '@/components/CronGenerator/CronFieldConfig'
+import {
+  CronFieldConfig,
+  type CronFieldConfigValue,
+} from '@/components/CronGenerator/CronFieldConfig'
 
 type Props = {
   open: boolean

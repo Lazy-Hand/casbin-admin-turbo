@@ -11,14 +11,8 @@ describe('FileController ability metadata', () => {
       CHECK_ABILITY_KEY,
       FileController.prototype.uploadChunk,
     );
-    const mergeRules = Reflect.getMetadata(
-      CHECK_ABILITY_KEY,
-      FileController.prototype.mergeChunks,
-    );
-    const deleteRules = Reflect.getMetadata(
-      CHECK_ABILITY_KEY,
-      FileController.prototype.delete,
-    );
+    const mergeRules = Reflect.getMetadata(CHECK_ABILITY_KEY, FileController.prototype.mergeChunks);
+    const deleteRules = Reflect.getMetadata(CHECK_ABILITY_KEY, FileController.prototype.delete);
 
     expect(uploadRules).toEqual([{ action: 'create', subject: 'File' }]);
     expect(uploadChunkRules).toEqual([{ action: 'create', subject: 'File' }]);

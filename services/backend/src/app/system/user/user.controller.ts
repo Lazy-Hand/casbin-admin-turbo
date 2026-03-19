@@ -32,17 +32,9 @@ export class UserController {
   @ApiPaginatedResponse(UserEntity, {
     description: '成功返回用户列表',
   })
-  async findPage(
-    @Query() searchDto: SearchUserDto,
-    @CurrentUser() user: { id: number },
-  ) {
+  async findPage(@Query() searchDto: SearchUserDto, @CurrentUser() user: { id: number }) {
     const { list, total } = await this.userService.findPage(searchDto, user.id);
-    return createPaginationResponse(
-      list,
-      total,
-      searchDto.pageNo ?? 1,
-      searchDto.pageSize ?? 10,
-    );
+    return createPaginationResponse(list, total, searchDto.pageNo ?? 1, searchDto.pageSize ?? 10);
   }
 
   @Get()
@@ -60,10 +52,7 @@ export class UserController {
   @ApiSuccessResponse(UserEntity, {
     description: '成功返回用户详情',
   })
-  async getUserDetail(
-    @Param('userId') userId: string,
-    @CurrentUser() user: { id: number },
-  ) {
+  async getUserDetail(@Param('userId') userId: string, @CurrentUser() user: { id: number }) {
     return this.userService.getUserDetail(+userId, user.id);
   }
 

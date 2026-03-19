@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  AbilityBuilder,
-  createMongoAbility,
-  ExtractSubjectType,
-} from '@casl/ability';
+import { AbilityBuilder, createMongoAbility, ExtractSubjectType } from '@casl/ability';
 import { PermissionService } from '../../system/permission/permission.service';
 import type { AppAbility, UserWithPermissions, Action, Subject } from './types';
 import type { ParsedPermission } from './types';
@@ -26,9 +22,7 @@ export class AbilityFactory {
     const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
 
     // 加载用户权限
-    const permissions = await this.permissionService.getUserPermissions(
-      user.id,
-    );
+    const permissions = await this.permissionService.getUserPermissions(user.id);
 
     // 根据权限定义规则
     for (const permission of permissions) {
@@ -95,11 +89,7 @@ export class AbilityFactory {
    * @param can 允许规则构建器
    * @param cannot 禁止规则构建器
    */
-  private applyRoleSpecificRules(
-    user: UserWithPermissions,
-    can: any,
-    cannot: any,
-  ): void {
+  private applyRoleSpecificRules(user: UserWithPermissions, can: any, cannot: any): void {
     const roleCodes = user.roles.map((role) => role.roleCode);
 
     // 管理员拥有所有权限

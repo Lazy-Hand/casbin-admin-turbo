@@ -30,7 +30,9 @@ export function PlaygroundPage() {
             当前按钮权限
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            {buttonPermissions.length ? buttonPermissions.join('、') : '当前账号还没有返回按钮级权限'}
+            {buttonPermissions.length
+              ? buttonPermissions.join('、')
+              : '当前账号还没有返回按钮级权限'}
           </Typography.Paragraph>
         </div>
         <div className="rounded-2xl border border-border bg-card p-4">
@@ -39,9 +41,7 @@ export function PlaygroundPage() {
           </Typography.Title>
           <Space direction="vertical" size={12} style={{ display: 'flex' }}>
             <IconSelect value={iconValue} onChange={setIconValue} />
-            <Typography.Text type="secondary">
-              当前值：{iconValue || '未选择'}
-            </Typography.Text>
+            <Typography.Text type="secondary">当前值：{iconValue || '未选择'}</Typography.Text>
           </Space>
         </div>
         <Space>
@@ -64,19 +64,31 @@ export function PlaygroundPage() {
         <Space wrap>
           <PermissionGate
             permCode="system:user:create"
-            fallback={<Button variant="outline" disabled>缺少 system:user:create</Button>}
+            fallback={
+              <Button variant="outline" disabled>
+                缺少 system:user:create
+              </Button>
+            }
           >
             <Button>新建用户</Button>
           </PermissionGate>
           <PermissionGate
             permCode="system:role:update"
-            fallback={<Button variant="outline" disabled>缺少 system:role:update</Button>}
+            fallback={
+              <Button variant="outline" disabled>
+                缺少 system:role:update
+              </Button>
+            }
           >
             <Button variant="secondary">编辑角色</Button>
           </PermissionGate>
           <PermissionGate
             permCode="system:permission:delete"
-            fallback={<Button variant="outline" disabled>缺少 system:permission:delete</Button>}
+            fallback={
+              <Button variant="outline" disabled>
+                缺少 system:permission:delete
+              </Button>
+            }
           >
             <Button variant="destructive">删除权限</Button>
           </PermissionGate>

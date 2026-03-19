@@ -1,11 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import {
-  loadYamlConfig,
-  resolveConfigPaths,
-  type AppConfig,
-} from './yaml-config.loader';
+import { loadYamlConfig, resolveConfigPaths, type AppConfig } from './yaml-config.loader';
 
 function writeYamlFile(dir: string, fileName: string, content: string): void {
   writeFileSync(join(dir, fileName), content, 'utf8');

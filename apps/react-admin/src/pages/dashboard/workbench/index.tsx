@@ -37,7 +37,11 @@ export function WorkbenchPage() {
       >
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
-            <Card title="React + Ant Design Component" variant="borderless" className="h-full bg-slate-50">
+            <Card
+              title="React + Ant Design Component"
+              variant="borderless"
+              className="h-full bg-slate-50"
+            >
               <Typography.Paragraph type="secondary">
                 这张卡片用来承接 React 版工作台的基础组件示例。
               </Typography.Paragraph>
@@ -49,7 +53,11 @@ export function WorkbenchPage() {
           </Col>
 
           <Col xs={24} md={12}>
-            <Card title="Upload Components Test" variant="borderless" className="h-full bg-slate-50">
+            <Card
+              title="Upload Components Test"
+              variant="borderless"
+              className="h-full bg-slate-50"
+            >
               <Typography.Paragraph type="secondary">
                 这里集中演示 React 版上传组件的单文件、多文件和分片上传能力。
               </Typography.Paragraph>

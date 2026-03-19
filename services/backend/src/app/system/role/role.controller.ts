@@ -21,10 +21,7 @@ import {
 } from './dto/role.dto';
 import { ApiSuccessResponse, ApiPaginatedResponse } from '@/common/decorators';
 import { RoleEntity } from './entities/role.entity';
-import {
-  PaginationDto,
-  createPaginationResponse,
-} from '@/common/dto/pagination.dto';
+import { PaginationDto, createPaginationResponse } from '@/common/dto/pagination.dto';
 
 @ApiTags('角色管理')
 @Controller('roles')
@@ -41,8 +38,7 @@ export class RoleController {
     description: '成功返回角色列表',
   })
   async findPage(@Query() paginationDto: PaginationDto) {
-    const { list, total, pageNo, pageSize } =
-      await this.roleService.findPage(paginationDto);
+    const { list, total, pageNo, pageSize } = await this.roleService.findPage(paginationDto);
     return createPaginationResponse(list, total, pageNo, pageSize);
   }
 
@@ -79,10 +75,7 @@ export class RoleController {
   @ApiSuccessResponse(RoleEntity, {
     description: '成功更新角色',
   })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateRoleDto: UpdateRoleDto,
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateRoleDto: UpdateRoleDto) {
     return this.roleService.update(id, updateRoleDto);
   }
 

@@ -40,7 +40,7 @@ function toDataScopeValue(value?: 'ALL' | 'CUSTOM' | 'DEPT' | 'DEPT_AND_CHILD') 
     [DataScope.DEPT_AND_CHILD]: 'DEPT_AND_CHILD',
   }
   const entry = Object.entries(map).find(([, scope]) => scope === value)
-  return entry ? Number(entry[0]) as DataScope : undefined
+  return entry ? (Number(entry[0]) as DataScope) : undefined
 }
 
 export function RoleDialog({ open, roleId, onClose }: Props) {
@@ -150,7 +150,11 @@ export function RoleDialog({ open, roleId, onClose }: Props) {
           customDepts: [],
         }}
       >
-        <Form.Item label="角色名称" name="roleName" rules={[{ required: true, message: '请输入角色名称' }]}>
+        <Form.Item
+          label="角色名称"
+          name="roleName"
+          rules={[{ required: true, message: '请输入角色名称' }]}
+        >
           <Input placeholder="输入角色名称" />
         </Form.Item>
         <Form.Item

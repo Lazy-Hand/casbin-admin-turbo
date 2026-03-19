@@ -1,6 +1,6 @@
-import { CloseOutlined, DownOutlined } from '@ant-design/icons'
-import { Button, Dropdown, Space, Tabs, Typography } from 'antd'
-import type { MenuProps, TabsProps } from 'antd'
+import { CloseOutlined } from '@ant-design/icons'
+import { Dropdown, Space, Tabs, Typography } from 'antd'
+import type { TabsProps } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
 import '@/layout/AppTabs.css'
@@ -50,16 +50,19 @@ export function AppTabs() {
     })
   }, [ensureTab, flatPermissions, pathname])
 
-  const handleRemove = useCallback((targetKey: string) => {
-    const targetIndex = tabs.findIndex((item) => item.fullPath === targetKey)
-    const fallbackTab = tabs[targetIndex - 1] ?? tabs[targetIndex + 1] ?? tabs[0]
+  const handleRemove = useCallback(
+    (targetKey: string) => {
+      const targetIndex = tabs.findIndex((item) => item.fullPath === targetKey)
+      const fallbackTab = tabs[targetIndex - 1] ?? tabs[targetIndex + 1] ?? tabs[0]
 
-    removeTab(targetKey)
+      removeTab(targetKey)
 
-    if (pathname === targetKey && fallbackTab) {
-      navigate({ to: fallbackTab.fullPath })
-    }
-  }, [navigate, pathname, removeTab, tabs])
+      if (pathname === targetKey && fallbackTab) {
+        navigate({ to: fallbackTab.fullPath })
+      }
+    },
+    [navigate, pathname, removeTab, tabs],
+  )
 
   const items = useMemo<TabsProps['items']>(
     () =>
@@ -79,7 +82,8 @@ export function AppTabs() {
                 {
                   key: 'close-left',
                   label: '关闭左侧标签',
-                  disabled: tab.affix || tabs.findIndex((item) => item.fullPath === tab.fullPath) <= 1,
+                  disabled:
+                    tab.affix || tabs.findIndex((item) => item.fullPath === tab.fullPath) <= 1,
                 },
                 {
                   key: 'close-right',
@@ -163,7 +167,7 @@ export function AppTabs() {
             >
               <Space size={6}>
                 <Typography.Text
-                  className={`app-tabs__label-text${pathname === tab.fullPath ? ' app-tabs__label-text--active' : ''}`}
+                  className="app-tabs__label-text"
                   style={{ fontWeight: pathname === tab.fullPath ? 600 : 450 }}
                 >
                   {tab.title}
@@ -187,14 +191,6 @@ export function AppTabs() {
     ],
   )
 
-  const actionItems = useMemo<MenuProps['items']>(
-    () => [
-      { key: 'close-others', label: '关闭其他标签' },
-      { key: 'close-all', label: '关闭全部标签' },
-    ],
-    [],
-  )
-
   const handleChange = (key: string) => {
     navigate({ to: key })
   }
@@ -203,16 +199,6 @@ export function AppTabs() {
     if (action === 'remove' && typeof targetKey === 'string') {
       handleRemove(targetKey)
     }
-  }
-
-  const handleActionMenuClick: MenuProps['onClick'] = ({ key }) => {
-    if (key === 'close-others') {
-      closeOtherTabs(pathname)
-      return
-    }
-
-    closeAllTabs()
-    navigate({ to: '/' })
   }
 
   return (
@@ -226,23 +212,6 @@ export function AppTabs() {
         onChange={handleChange}
         onEdit={handleEdit}
         tabBarStyle={{ margin: 0 }}
-        tabBarExtraContent={{
-          right: (
-            <Dropdown
-              menu={{
-                items: actionItems,
-                onClick: handleActionMenuClick,
-              }}
-            >
-              <Button type="text" size="small" className="app-tabs__actions">
-                <Space size={4}>
-                  标签操作
-                  <DownOutlined />
-                </Space>
-              </Button>
-            </Dropdown>
-          ),
-        }}
         removeIcon={<CloseOutlined />}
       />
     </div>

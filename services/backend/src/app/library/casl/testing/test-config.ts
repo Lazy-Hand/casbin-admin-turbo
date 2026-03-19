@@ -18,9 +18,7 @@ export const testConfig = {
 
   // 数据库配置
   database: {
-    url:
-      process.env.TEST_DATABASE_URL ||
-      'postgresql://test:test@localhost:5432/test_db',
+    url: process.env.TEST_DATABASE_URL || 'postgresql://test:test@localhost:5432/test_db',
   },
 
   // 日志配置

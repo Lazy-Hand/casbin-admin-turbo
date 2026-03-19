@@ -10,9 +10,7 @@ async function testPermissionCreation() {
     console.log('🧪 Testing permission creation...');
 
     // First check current max ID
-    const before = await pool.query(
-      'select id from sys_permission order by id desc limit 1',
-    );
+    const before = await pool.query('select id from sys_permission order by id desc limit 1');
     console.log('Current max ID:', before.rows[0]?.id || 'none');
 
     // Test creating a new permission

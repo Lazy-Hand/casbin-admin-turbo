@@ -16,9 +16,7 @@ import type {
  * @param overrides 覆盖默认值
  * @returns 测试用户对象
  */
-export function createTestUser(
-  overrides?: Partial<UserWithPermissions>,
-): UserWithPermissions {
+export function createTestUser(overrides?: Partial<UserWithPermissions>): UserWithPermissions {
   return {
     id: 1,
     username: 'testuser',
@@ -32,9 +30,7 @@ export function createTestUser(
  * @param overrides 覆盖默认值
  * @returns 测试角色对象
  */
-export function createTestRole(
-  overrides?: Partial<RoleWithPermissions>,
-): RoleWithPermissions {
+export function createTestRole(overrides?: Partial<RoleWithPermissions>): RoleWithPermissions {
   return {
     id: 1,
     roleName: '测试角色',
@@ -49,9 +45,7 @@ export function createTestRole(
  * @param overrides 覆盖默认值
  * @returns 测试权限对象
  */
-export function createTestPermission(
-  overrides?: Partial<PermissionInfo>,
-): PermissionInfo {
+export function createTestPermission(overrides?: Partial<PermissionInfo>): PermissionInfo {
   return {
     id: 1,
     permCode: 'article:read',
@@ -68,9 +62,7 @@ export function createTestPermission(
  * @param permissions 权限列表
  * @returns 测试用户对象
  */
-export function createUserWithPermissions(
-  permissions: PermissionInfo[],
-): UserWithPermissions {
+export function createUserWithPermissions(permissions: PermissionInfo[]): UserWithPermissions {
   return {
     id: 1,
     username: 'testuser',
@@ -143,12 +135,7 @@ export function createAdminAbility(): AppAbility {
  * @param body 请求体
  * @returns 模拟请求对象
  */
-export function createMockRequest(
-  user?: any,
-  params?: any,
-  query?: any,
-  body?: any,
-) {
+export function createMockRequest(user?: any, params?: any, query?: any, body?: any) {
   return {
     user: user || { id: 1, username: 'testuser' },
     params: params || {},

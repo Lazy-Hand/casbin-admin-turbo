@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DictService } from './dict.service';
 import {
@@ -36,8 +27,7 @@ export class DictController {
     description: '成功返回字典类型列表',
   })
   async findTypePage(@Query(PaginationPipe) query: DictTypeQueryDto) {
-    const { list, total, pageNo, pageSize } =
-      await this.dictService.findTypePage(query);
+    const { list, total, pageNo, pageSize } = await this.dictService.findTypePage(query);
     return createPaginationResponse(list, total, pageNo, pageSize);
   }
 

@@ -10,22 +10,39 @@
     </NButton>
 
     <!-- Tabs Container -->
-    <div ref="scrollContainer"
+    <div
+      ref="scrollContainer"
       class="flex-1 overflow-x-auto hide-scrollbar flex items-center gap-1 mx-1 h-full select-none"
-      @wheel.prevent="handleWheel">
-      <VueDraggable v-model="draggableTabs" item-key="fullPath" class="flex items-center gap-1 min-w-max h-full"
-        :animation="180" ghost-class="app-tab-ghost" chosen-class="app-tab-chosen" :move="handleTabMove">
-        <div v-for="tab in draggableTabs" :key="tab.fullPath" :ref="(el) => setTabRef(el, tab.fullPath)"
+      @wheel.prevent="handleWheel"
+    >
+      <VueDraggable
+        v-model="draggableTabs"
+        item-key="fullPath"
+        class="flex items-center gap-1 min-w-max h-full"
+        :animation="180"
+        ghost-class="app-tab-ghost"
+        chosen-class="app-tab-chosen"
+        :move="handleTabMove"
+      >
+        <div
+          v-for="tab in draggableTabs"
+          :key="tab.fullPath"
+          :ref="(el) => setTabRef(el, tab.fullPath)"
           class="group relative flex items-center px-3 py-1.5 h-7.5 text-xs transition-all duration-300 rounded cursor-pointer border border-transparent whitespace-nowrap"
           :class="[
             tab.fullPath === route.fullPath
               ? 'active-tab'
               : 'text-gray-600 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#2d2d30] hover:text-gray-900 dark:hover:text-gray-200',
             tab.affix ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
-          ]" :style="tab.fullPath === route.fullPath
-            ? { backgroundColor: themeVars.primaryColorSuppl, color: '#fff' }
-            : {}
-            " @click="handleTabClick(tab)" @contextmenu.prevent="(e) => handleContextMenu(e, tab)">
+          ]"
+          :style="
+            tab.fullPath === route.fullPath
+              ? { backgroundColor: themeVars.primaryColorSuppl, color: '#fff' }
+              : {}
+          "
+          @click="handleTabClick(tab)"
+          @contextmenu.prevent="(e) => handleContextMenu(e, tab)"
+        >
           <div class="flex items-center">
             <!-- Tab Icon (Optional) -->
             <IconRender v-if="tab.icon" :iconValue="tab.icon" class="mr-1.5" />
@@ -34,9 +51,12 @@
           </div>
 
           <!-- Close Button -->
-          <span v-if="!tab.affix"
+          <span
+            v-if="!tab.affix"
             class="text-xs! ml-2 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-200 dark:hover:bg-gray-600"
-            :class="{ 'opacity-100!': tab.fullPath === route.fullPath }" @click.stop="handleCloseTab(tab.fullPath)">
+            :class="{ 'opacity-100!': tab.fullPath === route.fullPath }"
+            @click.stop="handleCloseTab(tab.fullPath)"
+          >
             <IconRender iconValue="antd:CloseOutlined" />
           </span>
         </div>
@@ -53,9 +73,16 @@
     </NButton>
 
     <!-- Context Menu -->
-    <NDropdown placement="bottom-start" trigger="manual" :x="contextMenuX" :y="contextMenuY"
-      :options="contextMenuOptions" :show="showContextMenu" :on-clickoutside="closeContextMenu"
-      @select="handleContextMenuSelect" />
+    <NDropdown
+      placement="bottom-start"
+      trigger="manual"
+      :x="contextMenuX"
+      :y="contextMenuY"
+      :options="contextMenuOptions"
+      :show="showContextMenu"
+      :on-clickoutside="closeContextMenu"
+      @select="handleContextMenuSelect"
+    />
   </div>
 </template>
 

@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Button, Card, Drawer, Form, Input, Popconfirm, Space, Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
 import { deleteMenu, getButtonPermissionPage, type Menu } from '@/api/menu'
 import { DictTag } from '@/components/dict/DictTag'
 import { PermissionGate } from '@/components/PermissionGate'
@@ -184,7 +190,9 @@ export function ButtonManageDialog({ open, menuId, menuName, onClose }: Props) {
 
           <Card>
             <Space direction="vertical" size={16} style={{ display: 'flex' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
                 <PermissionGate permCode="MENU_ADD">
                   <Button
                     type="primary"

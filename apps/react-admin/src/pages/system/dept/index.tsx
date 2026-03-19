@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Button, Card, Form, Input, Popconfirm, Space, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { DownOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons'
+import {
+  DownOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  UpOutlined,
+} from '@ant-design/icons'
 import { deleteDept, getDeptTree, type Dept } from '@/api/dept'
 import { DictSelect } from '@/components/dict/DictSelect'
 import { PermissionGate } from '@/components/PermissionGate'
@@ -62,13 +68,20 @@ function extractExpandedKeys(nodes: Dept[]): number[] {
 export function DeptPage() {
   const { message } = App.useApp()
   const [form] = Form.useForm<{ name?: string; status?: number }>()
-  const [search, setSearch] = useState<{ name: string; status?: number }>({ name: '', status: undefined })
+  const [search, setSearch] = useState<{ name: string; status?: number }>({
+    name: '',
+    status: undefined,
+  })
   const [expandedRowKeys, setExpandedRowKeys] = useState<number[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingDeptId, setEditingDeptId] = useState<number | null>(null)
   const [parentId, setParentId] = useState<number | null>(null)
 
-  const { data = [], isLoading, isFetching } = useQuery({
+  const {
+    data = [],
+    isLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ['dept-tree'],
     queryFn: getDeptTree,
   })
@@ -115,7 +128,9 @@ export function DeptPage() {
         dataIndex: 'status',
         key: 'status',
         width: 100,
-        render: (value: number) => <Tag color={value === 1 ? 'success' : 'default'}>{value === 1 ? '正常' : '停用'}</Tag>,
+        render: (value: number) => (
+          <Tag color={value === 1 ? 'success' : 'default'}>{value === 1 ? '正常' : '停用'}</Tag>
+        ),
       },
       {
         title: '创建时间',
@@ -240,7 +255,10 @@ export function DeptPage() {
                   新增部门
                 </Button>
               </PermissionGate>
-              <Button icon={<DownOutlined />} onClick={() => setExpandedRowKeys(extractExpandedKeys(filteredTree))}>
+              <Button
+                icon={<DownOutlined />}
+                onClick={() => setExpandedRowKeys(extractExpandedKeys(filteredTree))}
+              >
                 展开全部
               </Button>
               <Button icon={<UpOutlined />} onClick={() => setExpandedRowKeys([])}>

@@ -29,10 +29,7 @@ const OPERATION_TEXT_MAP: Record<LogOperationValue, string> = {
  * @param responseData 响应数据
  * @returns 实体名称
  */
-function extractEntityName(
-  module: string,
-  responseData: unknown,
-): string | undefined {
+function extractEntityName(module: string, responseData: unknown): string | undefined {
   if (!responseData || typeof responseData !== 'object') {
     return undefined;
   }

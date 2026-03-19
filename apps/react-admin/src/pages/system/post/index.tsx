@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Button, Card, Form, Input, Popconfirm, Space, Table, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
 import { deletePost, getPostPage, type Post, type PostSearchParams } from '@/api/post'
 import { DictSelect } from '@/components/dict/DictSelect'
 import { DictTag } from '@/components/dict/DictTag'
@@ -124,7 +130,11 @@ export function PostPage() {
   return (
     <Space direction="vertical" size={16} style={{ display: 'flex' }}>
       <Card>
-        <Form form={form} layout="inline" initialValues={{ postName: '', postCode: '', status: undefined }}>
+        <Form
+          form={form}
+          layout="inline"
+          initialValues={{ postName: '', postCode: '', status: undefined }}
+        >
           <Form.Item label="岗位名称" name="postName">
             <Input allowClear placeholder="输入岗位名称" style={{ width: 180 }} />
           </Form.Item>

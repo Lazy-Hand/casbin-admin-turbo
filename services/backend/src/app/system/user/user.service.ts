@@ -67,25 +67,23 @@ export class UserService {
     const users = new Map<number, any>();
 
     for (const row of rows) {
-      const current =
-        users.get(row.id) ??
-        {
-          id: row.id,
-          username: row.username,
-          nickname: row.nickname,
-          gender: row.gender,
-          avatar: row.avatar,
-          email: row.email,
-          mobile: row.mobile,
-          status: row.status,
-          deptId: row.deptId,
-          postId: row.postId,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-          dept: row.dept?.id ? row.dept : null,
-          post: row.post?.id ? row.post : null,
-          roles: [],
-        };
+      const current = users.get(row.id) ?? {
+        id: row.id,
+        username: row.username,
+        nickname: row.nickname,
+        gender: row.gender,
+        avatar: row.avatar,
+        email: row.email,
+        mobile: row.mobile,
+        status: row.status,
+        deptId: row.deptId,
+        postId: row.postId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        dept: row.dept?.id ? row.dept : null,
+        post: row.post?.id ? row.post : null,
+        roles: [],
+      };
 
       if (row.role?.id) {
         current.roles.push({ role: row.role });
@@ -128,12 +126,12 @@ export class UserService {
 
     const result = await this.drizzle.db.transaction(async (tx: any) => {
       const createdUsers = await insertWithAudit(tx, User, {
-          ...userData,
-          password: hashedPassword,
-          deptId,
-          postId,
-          isAdmin: false,
-          updatedAt: new Date().toISOString(),
+        ...userData,
+        password: hashedPassword,
+        deptId,
+        postId,
+        isAdmin: false,
+        updatedAt: new Date().toISOString(),
       });
       const user = Array.isArray(createdUsers) ? createdUsers[0] : createdUsers;
 
@@ -155,9 +153,7 @@ export class UserService {
   // 更新用户
   async update(id: number, dto: UpdateUserDto) {
     const { roles, deptId, postId, ...userData } = dto;
-    const hashedPassword = userData.password
-      ? await bcrypt.hash(userData.password, 10)
-      : undefined;
+    const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : undefined;
 
     // 验证部门是否存在
     if (deptId !== undefined) {
@@ -177,12 +173,12 @@ export class UserService {
 
     const result = await this.drizzle.db.transaction(async (tx: any) => {
       const updatedUsers = await updateWithAudit(tx, User, eq(User.id, id), {
-          ...userData,
-          ...(hashedPassword ? { password: hashedPassword } : {}),
-          deptId,
-          postId,
-          gender: userData.gender !== undefined ? +userData.gender : undefined,
-          status: userData.status !== undefined ? +userData.status : undefined,
+        ...userData,
+        ...(hashedPassword ? { password: hashedPassword } : {}),
+        deptId,
+        postId,
+        gender: userData.gender !== undefined ? +userData.gender : undefined,
+        status: userData.status !== undefined ? +userData.status : undefined,
       });
       const user = Array.isArray(updatedUsers) ? updatedUsers[0] : updatedUsers;
 
@@ -210,7 +206,7 @@ export class UserService {
     return this.drizzle.db.transaction(async (tx: any) => {
       await tx.delete(UserRole).where(eq(UserRole.userId, id));
       const deletedUsers = await softDeleteWhere(tx, User, eq(User.id, id));
-      return Array.isArray(deletedUsers) ? deletedUsers[0] ?? null : null;
+      return Array.isArray(deletedUsers) ? (deletedUsers[0] ?? null) : null;
     });
   }
 

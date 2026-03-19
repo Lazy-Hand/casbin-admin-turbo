@@ -21,8 +21,7 @@ export const CHECK_ABILITY_KEY = 'check_ability';
  * )
  * ```
  */
-export const CheckAbility = (...rules: RequiredRule[]) =>
-  SetMetadata(CHECK_ABILITY_KEY, rules);
+export const CheckAbility = (...rules: RequiredRule[]) => SetMetadata(CHECK_ABILITY_KEY, rules);
 
 /**
  * Can 装饰器
@@ -40,8 +39,7 @@ export const CheckAbility = (...rules: RequiredRule[]) =>
  * }
  * ```
  */
-export const Can = (action: string, subject: string) =>
-  CheckAbility({ action, subject });
+export const Can = (action: string, subject: string) => CheckAbility({ action, subject });
 
 /**
  * CanWithConditions 装饰器
@@ -60,8 +58,5 @@ export const Can = (action: string, subject: string) =>
  * }
  * ```
  */
-export const CanWithConditions = (
-  action: string,
-  subject: string,
-  resourceParam: string,
-) => CheckAbility({ action, subject, conditions: true, resourceParam });
+export const CanWithConditions = (action: string, subject: string, resourceParam: string) =>
+  CheckAbility({ action, subject, conditions: true, resourceParam });

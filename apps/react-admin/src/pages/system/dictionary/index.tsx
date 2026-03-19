@@ -1,16 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  App,
-  Button,
-  Card,
-  Form,
-  Input,
-  Popconfirm,
-  Space,
-  Table,
-  Typography,
-} from 'antd'
+import { App, Button, Card, Form, Input, Popconfirm, Space, Table, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   DeleteOutlined,
@@ -66,7 +56,11 @@ export function DictionaryPage() {
   })
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingDictionaryId, setEditingDictionaryId] = useState<number | null>(null)
-  const [drawerState, setDrawerState] = useState<{ open: boolean; id: number | null; name: string }>({
+  const [drawerState, setDrawerState] = useState<{
+    open: boolean
+    id: number | null
+    name: string
+  }>({
     open: false,
     id: null,
     name: '',

@@ -5,14 +5,17 @@
     >
       <div class="flex items-start justify-between gap-6">
         <div class="space-y-4">
-          <div class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-sm text-slate-600">
+          <div
+            class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-sm text-slate-600"
+          >
             <AppIcon icon="antd:HomeOutlined" />
             固定首页
           </div>
           <div class="space-y-2">
             <h1 class="text-3xl font-semibold text-slate-900">欢迎回来</h1>
             <p class="max-w-2xl text-slate-600">
-              这是系统固定首页，不受数据库动态权限路由控制。首次登录且没有 `redirect` 时，会默认进入这里。
+              这是系统固定首页，不受数据库动态权限路由控制。首次登录且没有 `redirect`
+              时，会默认进入这里。
             </p>
           </div>
         </div>

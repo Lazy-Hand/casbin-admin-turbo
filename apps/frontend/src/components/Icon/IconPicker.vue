@@ -165,11 +165,7 @@
           v-if="!loadingIonicons && filteredIoniconsIcons.length > 0"
           class="flex justify-center items-center gap-2 mt-4"
         >
-          <NButton
-            size="small"
-            :disabled="ioniconsIconsPage <= 1"
-            @click="ioniconsIconsPage--"
-          >
+          <NButton size="small" :disabled="ioniconsIconsPage <= 1" @click="ioniconsIconsPage--">
             上一页
           </NButton>
           <span class="text-sm text-gray-500">

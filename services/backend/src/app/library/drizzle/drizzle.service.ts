@@ -35,7 +35,10 @@ export class DrizzleService {
   }
 
   findMany<TTable extends AnyPgTable>(table: TTable, where?: SQL) {
-    return this.database.select().from(table as any).where(withSoftDelete(table, where));
+    return this.database
+      .select()
+      .from(table as any)
+      .where(withSoftDelete(table, where));
   }
 
   async findFirst<TTable extends AnyPgTable>(table: TTable, where?: SQL) {
@@ -48,10 +51,7 @@ export class DrizzleService {
     return row ?? null;
   }
 
-  insertWithAudit<TTable extends AnyPgTable>(
-    table: TTable,
-    values: InferInsertModel<TTable>,
-  ) {
+  insertWithAudit<TTable extends AnyPgTable>(table: TTable, values: InferInsertModel<TTable>) {
     return insertWithAudit(this.database, table, values);
   }
 
