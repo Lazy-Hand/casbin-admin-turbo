@@ -99,11 +99,12 @@ defineOptions({
 
 import { ref } from 'vue'
 import { ImageUpload, FileUpload } from '@/components/Upload'
+import type { FileEntity } from '@/api/file'
 
-const testImageUrl = ref<any | null>(null)
-const testFileUrl = ref<any | null>(null)
-const testMultiImageUrls = ref<any[]>([])
-const testMultiFileUrls = ref<any[]>([])
+const testImageUrl = ref<FileEntity | null>(null)
+const testFileUrl = ref<FileEntity | null>(null)
+const testMultiImageUrls = ref<FileEntity[]>([])
+const testMultiFileUrls = ref<FileEntity[]>([])
 
 const message = useMessage()
 const { toggleDarkMode } = useLayout()

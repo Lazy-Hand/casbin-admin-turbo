@@ -20,7 +20,7 @@ const props = defineProps<{
   dictCode: string
 }>()
 
-const model = defineModel<any>('value')
+const model = defineModel<string | number>('value')
 const attrs = useAttrs()
 
 const { items } = useDict(props.dictCode)
@@ -30,17 +30,19 @@ const name = computed(() => attrs.name as string | undefined)
 const bindings = computed(() => {
   if (name.value && model.value === undefined) {
     return {
-      'onUpdate:value': (val: any) => (model.value = val),
+      'onUpdate:value': (val: string | number) => (model.value = val),
     }
   }
   return {
     value: formatValue(model.value),
-    'onUpdate:value': (val: any) => (model.value = val),
+    'onUpdate:value': (val: string | number) => (model.value = val),
   }
 })
 
-const formatValue = (val: string) => {
-  const num = Number(val)
-  return isNaN(num) ? val : num
+const formatValue = (val: string | number | undefined) => {
+  if (val === undefined) return ''
+  const strVal = String(val)
+  const num = Number(strVal)
+  return isNaN(num) ? strVal : num
 }
 </script>

@@ -20,7 +20,7 @@ const props = defineProps<{
   dictCode: string
 }>()
 
-const model = defineModel<any[]>('value')
+const model = defineModel<(string | number)[]>('value')
 const attrs = useAttrs()
 
 const { items } = useDict(props.dictCode)
@@ -29,12 +29,12 @@ const bindings = computed(() => {
   // Naive UI v-model is 'value'
   if (attrs.name && model.value === undefined) {
     return {
-      'onUpdate:value': (val: any) => (model.value = val),
+      'onUpdate:value': (val: (string | number)[]) => (model.value = val),
     }
   }
   return {
     value: model.value,
-    'onUpdate:value': (val: any) => (model.value = val),
+    'onUpdate:value': (val: (string | number)[]) => (model.value = val),
   }
 })
 

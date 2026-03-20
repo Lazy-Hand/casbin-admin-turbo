@@ -18,7 +18,7 @@ const props = defineProps<{
   dictCode: string
 }>()
 
-const model = defineModel<any>('value')
+const model = defineModel<string | number>('value')
 const attrs = useAttrs()
 
 const { items } = useDict(props.dictCode)
@@ -28,12 +28,12 @@ const name = computed(() => attrs.name as string | undefined)
 const bindings = computed(() => {
   if (name.value && model.value === undefined) {
     return {
-      'onUpdate:value': (val: any) => (model.value = val),
+      'onUpdate:value': (val: string | number) => (model.value = val),
     }
   }
   return {
     value: model.value,
-    'onUpdate:value': (val: any) => (model.value = val),
+    'onUpdate:value': (val: string | number) => (model.value = val),
   }
 })
 

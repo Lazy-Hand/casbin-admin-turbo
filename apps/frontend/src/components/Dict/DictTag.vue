@@ -11,7 +11,7 @@ import { useDict } from '@/composables/useDict'
 import { NTag } from 'naive-ui'
 
 const props = defineProps<{
-  value: any
+  value: string | number
   dictCode: string
   // Map values to Naive UI types: default, primary, info, success, warning, error
   typeMap?: Record<string, 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error'>

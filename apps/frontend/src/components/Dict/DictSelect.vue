@@ -17,13 +17,13 @@ const props = defineProps<{
   dictCode: string
 }>()
 
-const model = defineModel<any>('value')
+const model = defineModel<string | number | null>('value')
 
 const { items, loading } = useDict(props.dictCode)
 
 const formattedOptions = computed(() => {
   return (
-    items.value?.map((item: any) => {
+    items.value?.map((item) => {
       const numValue = Number(item.value)
       const isNumeric = !isNaN(numValue) && String(numValue) === item.value
 

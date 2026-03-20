@@ -115,9 +115,9 @@ const draggableTabs = computed({
 })
 
 // Set Tab functionality for scrolling
-const setTabRef = (el: any, fullPath: string) => {
+const setTabRef = (el: HTMLElement | Element | ComponentPublicInstance | null, fullPath: string) => {
   if (el) {
-    tabRefs.value.set(fullPath, el)
+    tabRefs.value.set(fullPath, el as HTMLElement)
   }
 }
 
@@ -204,7 +204,7 @@ const scrollToTab = (fullPath: string) => {
 }
 
 // Tab Actions
-const handleTabClick = (tab: any) => {
+const handleTabClick = (tab: TabItem) => {
   router.push(tab.fullPath)
 }
 
@@ -251,7 +251,7 @@ const contextMenuOptions = computed(() => [
   { label: 'Close All', key: 'close-all', disabled: tabsStore.tabs.length <= 1 },
 ])
 
-const handleContextMenu = (e: MouseEvent, tab: any) => {
+const handleContextMenu = (e: MouseEvent, tab: TabItem) => {
   e.preventDefault()
   showContextMenu.value = false
   nextTick().then(() => {

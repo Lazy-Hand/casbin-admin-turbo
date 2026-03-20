@@ -2,13 +2,14 @@
 import { ref, watch } from 'vue'
 import { NUpload, useMessage } from 'naive-ui'
 import type { UploadFileInfo, UploadCustomRequestOptions } from 'naive-ui'
-import { uploadSingle } from '@/api/file'
+import { uploadSingle, type FileEntity } from '@/api/file'
+import type { ResponseData } from '@casbin-admin/http-client'
 
 import { useThemeVars } from 'naive-ui'
 import { ImageOutline } from '@vicons/ionicons5'
 
 interface Props {
-  value?: any | any[] | null
+  value?: Partial<FileEntity> | Partial<FileEntity>[] | null
   businessId?: number
   businessType?: string
   maxSize?: number // 单位: MB
@@ -24,25 +25,25 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: any | any[] | null]
+  'update:value': [value: Partial<FileEntity> | Partial<FileEntity>[] | null]
 }>()
 
 const message = useMessage()
 const themeVars = useThemeVars()
 
 const fileList = ref<UploadFileInfo[]>([])
-const fileRecordMap = new Map<string, any>()
+const fileRecordMap = new Map<string, Partial<FileEntity>>()
 
 watch(
   () => props.value,
   (newVal) => {
     const rawRecords = Array.isArray(newVal) ? newVal : newVal ? [newVal] : []
     // Only treat as valid records those that have a url (avoid empty object from v-model)
-    const records = rawRecords.filter((r) => r && (r as { url?: string }).url)
+    const records = rawRecords.filter((r) => r && r.url)
 
     const localFinishedRecords = fileList.value
-      .filter((f) => f.status === 'finished' && (f as any).record)
-      .map((f) => (f as any).record)
+      .filter((f) => f.status === 'finished' && (f as UploadFileInfo & { record?: Partial<FileEntity> }).record)
+      .map((f) => (f as UploadFileInfo & { record?: Partial<FileEntity> }).record)
 
     if (
       records.length === localFinishedRecords.length &&
@@ -53,27 +54,22 @@ watch(
 
     const nonFinished = fileList.value.filter((f) => f.status !== 'finished')
     const regeneratedFinished = records.map((record, index) => {
-      const url = (record as { url?: string }).url
-      const existing = fileList.value.find((f) => f.status === 'finished' && f.url === url)
+      const existing = fileList.value.find((f) => f.status === 'finished' && f.url === record.url)
       if (existing) {
         fileRecordMap.set(existing.id, record)
         return existing
       }
 
-      const fileId = `img-v-${(record as { id?: number }).id ?? Date.now()}-${index}`
+      const fileId = `img-v-${record.id ?? Date.now()}-${index}`
       fileRecordMap.set(fileId, record)
 
       return {
         id: fileId,
-        name:
-          (record as { originalName?: string }).originalName ||
-          (record as { filename?: string }).filename ||
-          (url ? url.split('/').pop() : null) ||
-          `image-${index}`,
+        name: record.originalName || record.filename || (record.url ? record.url.split('/').pop() : null) || `image-${index}`,
         status: 'finished',
-        url,
+        url: record.url,
         record: record,
-      } as UploadFileInfo & { record?: any }
+      } as UploadFileInfo & { record?: Partial<FileEntity> }
     })
 
     fileList.value = [...regeneratedFinished, ...nonFinished]
@@ -85,7 +81,7 @@ watch(
 const updateValue = (list: UploadFileInfo[]) => {
   const finishedRecords = list
     .filter((f) => f.status === 'finished')
-    .map((f) => fileRecordMap.get(f.id) || { url: f.url })
+    .map((f) => fileRecordMap.get(f.id) || { url: f.url }) as Partial<FileEntity>[]
 
   if (props.max === 1 && !props.multiple) {
     emit('update:value', finishedRecords.length > 0 ? finishedRecords[0] || null : null)
@@ -141,13 +137,13 @@ const customRequest = async ({
       },
     )
     // 统一处理返回数据，适配 { code, data, message, success } 格式
-    const resData = res as any
+    const resData = res as ResponseData<FileEntity>
     const record = resData.data || resData
-    file.url = record.url || res
-    fileRecordMap.set(file.id, record)
+    file.url = (record as FileEntity).url || String(res)
+    fileRecordMap.set(file.id, record as Partial<FileEntity>)
     onFinish()
-  } catch (error: any) {
-    message.error(error.message || '上传失败')
+  } catch (error: unknown) {
+    message.error((error as Error).message || '上传失败')
     onError()
   }
 }

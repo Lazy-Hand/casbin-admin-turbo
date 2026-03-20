@@ -3,12 +3,13 @@ import { ref, watch } from 'vue'
 import { NUpload, NUploadDragger, NIcon, useMessage, NSpin, useThemeVars } from 'naive-ui'
 import { DocumentTextOutline, CheckmarkCircleOutline, CloseCircleOutline } from '@vicons/ionicons5'
 import type { UploadFileInfo, UploadCustomRequestOptions } from 'naive-ui'
-import { uploadSingle } from '@/api/file'
+import { uploadSingle, type FileEntity } from '@/api/file'
+import type { ResponseData } from '@casbin-admin/http-client'
 import { useChunkUpload } from '@/composables/useChunkUpload'
 import dayjs from 'dayjs'
 
 interface Props {
-  value?: Record<string, any> | Record<string, any>[] | null
+  value?: FileEntity | FileEntity[] | null
   businessId?: number
   businessType?: string
   accept?: string
@@ -27,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: Record<string, any> | Record<string, any>[] | null]
+  'update:value': [value: FileEntity | FileEntity[] | null]
 }>()
 
 const message = useMessage()
@@ -39,7 +40,7 @@ const { uploadFileChunks } = useChunkUpload({
 const uploadRef = ref<InstanceType<typeof NUpload> | null>(null)
 
 const fileList = ref<UploadFileInfo[]>([])
-const fileRecordMap = new Map<string, any>()
+const fileRecordMap = new Map<string, FileEntity>()
 
 watch(
   () => props.value,
@@ -47,13 +48,13 @@ watch(
     const records = Array.isArray(newVal) ? newVal : newVal ? [newVal] : []
 
     const localFinishedRecords = fileList.value
-      .filter((f) => f.status === 'finished' && (f as any).record)
-      .map((f) => (f as any).record)
+      .filter((f) => f.status === 'finished' && (f as UploadFileInfo & { record?: FileEntity }).record)
+      .map((f) => (f as UploadFileInfo & { record?: FileEntity }).record)
 
     // 简单对比长度和对象的 url 是否一致
     if (
       records.length === localFinishedRecords.length &&
-      records.every((r, i) => r.url === localFinishedRecords[i].url)
+      records.every((r, i) => r.url === localFinishedRecords[i]?.url)
     ) {
       return
     }
@@ -76,7 +77,7 @@ watch(
         status: 'finished',
         url: record.url,
         record: record,
-      } as UploadFileInfo & { record?: any }
+      } as UploadFileInfo & { record?: FileEntity }
     })
 
     fileList.value = [...regeneratedFinished, ...nonFinished]
@@ -88,7 +89,7 @@ watch(
 const updateValue = (list: UploadFileInfo[]) => {
   const finishedRecords = list
     .filter((f) => f.status === 'finished')
-    .map((f) => fileRecordMap.get(f.id) || { url: f.url }) // 保底处理
+    .map((f) => fileRecordMap.get(f.id) || { url: f.url }) as FileEntity[] // 保底处理
 
   if (props.max === 1 && !props.multiple) {
     emit('update:value', finishedRecords.length > 0 ? finishedRecords[0] || null : null)
@@ -140,7 +141,7 @@ const customRequest = async ({
   const realFile = file.file
 
   try {
-    let finalUrl: any = ''
+    let finalUrl: ResponseData<FileEntity> | FileEntity = {} as ResponseData<FileEntity>
 
     // 如果大于阈值，则使用分片上传
     if (realFile.size > props.chunkSize * 1024 * 1024) {
@@ -169,13 +170,13 @@ const customRequest = async ({
       )
     }
     // 统一处理返回数据，适配 { code, data, message, success } 格式
-    const resData = finalUrl as any
-    const record = resData.data || resData
-    file.url = record.url || finalUrl
-    fileRecordMap.set(file.id, record)
+    const resData = finalUrl as ResponseData<FileEntity>
+    const record = resData.data || (finalUrl as FileEntity)
+    file.url = (record as FileEntity).url || String(finalUrl)
+    fileRecordMap.set(file.id, record as FileEntity)
     onFinish()
-  } catch (error: any) {
-    message.error(error.message || '上传失败')
+  } catch (error: unknown) {
+    message.error((error as Error).message || '上传失败')
     onError()
   }
 }

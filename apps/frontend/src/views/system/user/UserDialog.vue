@@ -127,7 +127,7 @@ const formRef = ref<FormInst | null>(null)
 const roleOptions = ref<{ label: string; value: number }[]>([])
 const postOptions = ref<{ label: string; value: number }[]>([])
 const deptOptions = ref<Dept[]>([])
-const avatarData = ref<Partial<FileEntity>>({})
+const avatarData = ref<Partial<FileEntity> | null>(null)
 const isEdit = computed(() => !!currentId.value)
 
 const formModel = ref<UserParams>({

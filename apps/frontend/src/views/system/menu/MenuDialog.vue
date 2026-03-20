@@ -222,7 +222,7 @@ const rules = computed<FormRules>(() => {
     menuType: [{ required: true, message: 'Type is required', trigger: 'change' }],
   }
 })
-const menuTypeChange = (val: Menu['menuType']) => {
+const menuTypeChange = (val: string | number | undefined) => {
   if (val === 'iframe') {
     formModel.value.component = 'iframe/index'
   } else {
