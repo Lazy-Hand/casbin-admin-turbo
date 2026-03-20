@@ -8,11 +8,11 @@ export class BaseEntity {
   @ApiProperty({ description: '更新时间' })
   updatedAt: string;
   @ApiProperty({ description: '删除时间' })
-  deletedAt: string;
+  deletedAt: string | null;
   @ApiProperty({ description: '创建人' })
-  createdBy: number;
+  createdBy: number | null;
   @ApiProperty({ description: '更新人' })
-  updatedBy: number;
+  updatedBy: number | null;
   @ApiProperty({ description: '删除人' })
-  deletedBy: number;
+  deletedBy: number | null;
 }

@@ -4,6 +4,7 @@ import { CreateDeptDto } from './dto/create-dept.dto';
 import { UpdateDeptDto } from './dto/update-dept.dto';
 import { QueryDeptDto } from './dto/query-dept.dto';
 import { DataScopeService } from '@/app/library/data-scope/data-scope.service';
+import { DeptEntity, RawDeptModel } from './entities/dept.entity';
 import {
   Dept,
   DrizzleService,
@@ -89,41 +90,30 @@ export class DeptService {
    */
   async findTree() {
     const depts = await this.drizzle.db
-      .select({
-        id: Dept.id,
-        name: Dept.name,
-        parentId: Dept.parentId,
-        ancestors: Dept.ancestors,
-        leaderId: Dept.leaderId,
-        status: Dept.status,
-        sort: Dept.sort,
-        remark: Dept.remark,
-        createdAt: Dept.createdAt,
-        updatedAt: Dept.updatedAt,
-        leader: {
-          id: User.id,
-          username: User.username,
-          nickname: User.nickname,
-        },
-      })
+      .select()
       .from(Dept)
       .leftJoin(User, joinOnWithSoftDelete(User, eq(Dept.leaderId, User.id)))
       .where(and(withSoftDelete(Dept), eq(Dept.status, 1)))
       .orderBy(asc(Dept.sort), asc(Dept.id));
 
-    return this.buildTree(depts);
+    const result = depts.map((row) => DeptEntity.fromModel(row as unknown as RawDeptModel));
+
+    return this.buildTree(result);
   }
 
   /**
    * 构建树形结构
    */
-  private buildTree(depts: any[], parentId: number | null = null): any[] {
+  private buildTree(depts: DeptEntity[], parentId: number | null = null): DeptEntity[] {
     return depts
       .filter((dept) => dept.parentId === parentId)
-      .map((dept) => ({
-        ...dept,
-        children: this.buildTree(depts, dept.id),
-      }));
+      .map((dept) => {
+        const children = this.buildTree(depts, dept.id);
+        return {
+          ...dept,
+          children: children.length > 0 ? children : undefined,
+        };
+      });
   }
 
   /**

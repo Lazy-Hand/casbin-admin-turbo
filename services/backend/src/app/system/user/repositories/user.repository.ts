@@ -201,8 +201,8 @@ export class UserRepository {
     }
   }
 
-  private groupUsersWithRoles(rows: any[]) {
-    const users = new Map<number, any>();
+  private groupUsersWithRoles(rows: UserWithRoleRow[]) {
+    const users = new Map<number, UserWithRolesResult>();
 
     for (const row of rows) {
       const current = users.get(row.id) ?? {
@@ -221,7 +221,7 @@ export class UserRepository {
         roles: [],
       };
 
-      if (row.role?.id && !current.roles.some((role: any) => role.id === row.role.id)) {
+      if (row.role?.id && !current.roles.some((role) => role.id === row.role!.id)) {
         current.roles.push(row.role);
       }
 
@@ -231,9 +231,9 @@ export class UserRepository {
     return [...users.values()];
   }
 
-  private groupUserDetail(rows: any[]) {
+  private groupUserDetail(rows: UserDetailRow[]) {
     const first = rows[0];
-    const roles = new Map<number, any>();
+    const roles = new Map<number, RoleWithPermissions>();
 
     for (const row of rows) {
       if (!row.role?.id) {
@@ -247,7 +247,7 @@ export class UserRepository {
 
       if (
         row.permission?.id &&
-        !currentRole.permissions.some((permission: any) => permission.id === row.permission.id)
+        !currentRole.permissions.some((p) => p.permission?.id === row.permission!.id)
       ) {
         currentRole.permissions.push({
           permission: row.permission,
@@ -277,4 +277,64 @@ export class UserRepository {
       roles: [...roles.values()],
     };
   }
+}
+
+interface UserWithRoleRow {
+  id: number;
+  username: string;
+  nickname: string;
+  gender: number;
+  avatar: string;
+  email: string;
+  mobile: string;
+  status: number;
+  deptId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  dept: { id: number } | null;
+  role: { id: number; roleCode: string; roleName: string } | null;
+}
+
+export interface UserWithRolesResult {
+  id: number;
+  username: string;
+  nickname: string;
+  gender: number;
+  avatar: string;
+  email: string;
+  mobile: string;
+  status: number;
+  deptId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  dept: { id: number } | null;
+  roles: Array<{ id: number; roleCode: string; roleName: string }>;
+}
+
+interface UserDetailRow {
+  id: number;
+  username: string;
+  nickname: string;
+  email: string;
+  mobile: string;
+  gender: number;
+  avatar: string;
+  status: number;
+  deptId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  createdBy: number | null;
+  updatedBy: number | null;
+  deletedBy: number | null;
+  dept: { id: number } | null;
+  role: { id: number; roleCode: string; roleName: string } | null;
+  permission: { id: number; permCode: string; permName: string } | null;
+}
+
+export interface RoleWithPermissions {
+  id: number;
+  roleCode: string;
+  roleName: string;
+  permissions: Array<{ permission: { id: number; permCode: string; permName: string } | null }>;
 }

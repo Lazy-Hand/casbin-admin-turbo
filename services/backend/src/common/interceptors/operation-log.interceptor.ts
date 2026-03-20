@@ -139,7 +139,7 @@ export class OperationLogInterceptor implements NestInterceptor {
     method: string;
     path: string;
     request: Request;
-    response: any;
+    response: unknown;
     duration: number;
     status: number;
   }) {
@@ -213,7 +213,7 @@ export class OperationLogInterceptor implements NestInterceptor {
   /**
    * 从请求中提取参数
    */
-  private extractParams(request: Request): any {
+  private extractParams(request: Request): Record<string, unknown> {
     // 对于 POST/PUT/PATCH，从 body 获取
     if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
       return request.body || {};

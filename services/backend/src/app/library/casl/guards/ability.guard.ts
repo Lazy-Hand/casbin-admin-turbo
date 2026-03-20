@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
+import type { Request } from 'express';
 import { AbilityFactory } from '../ability.factory';
 import { UserHook } from '../user.hook';
 import { CHECK_ABILITY_KEY, CHECK_POLICIES_KEY } from '../decorators';
@@ -96,7 +97,7 @@ export class AbilityGuard implements CanActivate {
         // 条件权限检查
         if (conditions && resourceParam) {
           const resource = this.extractResource(request, resourceParam);
-          if (!ability.can(action, subject, resource)) {
+          if (!ability.can(action, subject, resource as never)) {
             this.logger.warn(
               `权限检查失败: userId=${userId}, action=${action}, subject=${subject}, resource=${JSON.stringify(resource)}`,
             );
@@ -145,7 +146,7 @@ export class AbilityGuard implements CanActivate {
    * @param paramName 参数名称
    * @returns 资源实例
    */
-  private extractResource(request: any, paramName: string): any {
+  private extractResource(request: Request, paramName: string): unknown {
     if (!paramName) {
       return null;
     }

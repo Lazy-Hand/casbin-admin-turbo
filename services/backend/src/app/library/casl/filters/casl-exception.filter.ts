@@ -4,6 +4,16 @@ import { Response } from 'express';
 import { PermissionDeniedException } from '../exceptions';
 import { IResponse } from '../../../../common/interfaces/response.interface';
 
+interface ErrorResponseWithDetails extends IResponse {
+  details?: {
+    action: string;
+    subject: string;
+    userId: number | undefined;
+    path: string;
+    method: string;
+  };
+}
+
 /**
  * CASL 异常过滤器
  * 统一处理权限相关的异常，提供友好的错误响应
@@ -25,7 +35,7 @@ export class CaslExceptionFilter implements ExceptionFilter {
     const isProduction = this.configService.get<string>('nodeEnv') === 'production';
 
     // 构建统一格式的错误响应
-    const errorResponse: IResponse = {
+    const errorResponse: ErrorResponseWithDetails = {
       code: status,
       data: null,
       message: '权限不足',
@@ -34,7 +44,7 @@ export class CaslExceptionFilter implements ExceptionFilter {
 
     // 开发环境提供详细信息
     if (!isProduction) {
-      (errorResponse as any).details = {
+      errorResponse.details = {
         action: exception.action,
         subject: exception.subject,
         userId: exception.userId,

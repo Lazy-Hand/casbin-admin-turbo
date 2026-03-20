@@ -32,14 +32,16 @@ export class TransformInterceptor<T> implements NestInterceptor<T, IResponse<T>>
     );
   }
 
-  private isIResponse(data: any): data is IResponse {
+  private isIResponse(data: unknown): data is IResponse {
+    if (!data || typeof data !== 'object') {
+      return false;
+    }
+    const obj = data as Record<string, unknown>;
     return (
-      data &&
-      typeof data === 'object' &&
-      'code' in data &&
-      'data' in data &&
-      'message' in data &&
-      'success' in data
+      'code' in obj &&
+      'data' in obj &&
+      'message' in obj &&
+      'success' in obj
     );
   }
 }

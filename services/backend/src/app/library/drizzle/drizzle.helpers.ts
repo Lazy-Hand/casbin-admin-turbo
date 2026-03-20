@@ -7,8 +7,10 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import type { AnyPgTable } from 'drizzle-orm/pg-core';
-import type { AppDrizzleDb } from './drizzle.types';
+import type { AppDrizzleDb, TransactionClient } from './drizzle.types';
 import { asyncLocalStorage } from '../context/user-context';
+
+type DbClient = AppDrizzleDb | TransactionClient;
 
 function hasColumn(table: AnyPgTable, columnName: string): boolean {
   return columnName in getTableColumns(table);
@@ -88,7 +90,7 @@ export function joinOnWithSoftDelete<TTable extends AnyPgTable>(table: TTable, o
 }
 
 export function insertWithAudit<TTable extends AnyPgTable>(
-  db: AppDrizzleDb,
+  db: DbClient,
   table: TTable,
   values: InferInsertModel<TTable>,
 ) {
@@ -97,7 +99,7 @@ export function insertWithAudit<TTable extends AnyPgTable>(
 }
 
 export function updateWithAudit<TTable extends AnyPgTable>(
-  db: AppDrizzleDb,
+  db: DbClient,
   table: TTable,
   where: SQL,
   values: Partial<InferInsertModel<TTable>>,
@@ -114,7 +116,7 @@ export function updateWithAudit<TTable extends AnyPgTable>(
 }
 
 export function softDeleteWhere<TTable extends AnyPgTable>(
-  db: AppDrizzleDb,
+  db: DbClient,
   table: TTable,
   where: SQL,
 ) {

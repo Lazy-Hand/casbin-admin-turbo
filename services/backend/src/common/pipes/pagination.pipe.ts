@@ -7,11 +7,11 @@ import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
  */
 @Injectable()
 export class PaginationPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata) {
+  transform(value: Record<string, unknown>, metadata: ArgumentMetadata) {
     // 如果值中包含 pageNo 或 pageSize，进行转换
     if (value && (value.pageNo !== undefined || value.pageSize !== undefined)) {
-      const pageNo = parseInt(value.pageNo) || 1;
-      const pageSize = Math.min(parseInt(value.pageSize) || 10, 100); // 限制最大 100
+      const pageNo = parseInt(String(value.pageNo)) || 1;
+      const pageSize = Math.min(parseInt(String(value.pageSize)) || 10, 100); // 限制最大 100
 
       // 计算偏移分页参数
       const skip = (pageNo - 1) * pageSize;

@@ -32,7 +32,7 @@ export class DeptEntity {
   /**
    * 从原始模型转换为实体
    */
-  static fromModel(dept: any & { leader?: any; parent?: any; children?: any[] }): DeptEntity {
+  static fromModel(dept: RawDeptModel): DeptEntity {
     const entity: DeptEntity = {
       id: dept.id,
       name: dept.name,
@@ -66,9 +66,40 @@ export class DeptEntity {
     }
 
     if (dept.children && dept.children.length > 0) {
-      entity.children = dept.children.map((child: any) => DeptEntity.fromModel(child));
+      entity.children = dept.children.map((child: RawDeptModel) => DeptEntity.fromModel(child));
     }
 
     return entity;
   }
+}
+
+interface RawDeptLeader {
+  id: number;
+  username: string;
+  nickname: string;
+}
+
+interface RawDeptParent {
+  id: number;
+  name: string;
+}
+
+export interface RawDeptModel {
+  id: number;
+  name: string;
+  parentId: number | null;
+  ancestors: string | null;
+  leaderId: number | null;
+  status: number;
+  sort: number;
+  remark: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  createdBy: number | null;
+  updatedBy: number | null;
+  deletedBy: number | null;
+  leader?: RawDeptLeader | null;
+  parent?: RawDeptParent | null;
+  children?: RawDeptModel[];
 }

@@ -5,3 +5,5 @@ import type * as schema from './schema';
 export type AppDrizzleDb = NodePgDatabase<typeof schema> & {
   $client: Pool;
 };
+
+export type TransactionClient = Omit<AppDrizzleDb, '$client'>;

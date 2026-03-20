@@ -1,5 +1,6 @@
-import { Controller, Post, Body, Get, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Request as NestRequest } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -8,6 +9,7 @@ import { RoutePermissionTreeNodeDto } from './dto/route-permission.dto';
 import { Public } from './decorators/public.decorator';
 import { ApiSuccessResponse, ApiErrorResponse } from '@/common/decorators/api-response.decorator';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import type { RequestUser } from '@/common/types/user.types';
 
 @ApiTags('认证')
 @Controller('auth')
@@ -28,13 +30,17 @@ export class AuthController {
   @ApiOperation({ summary: '用户登录' })
   @ApiSuccessResponse(AuthResponseDto, { description: '登录成功' })
   @ApiErrorResponse({ status: 401, message: '用户名或密码错误' })
-  async login(@Body() loginDto: LoginDto, @Request() req: any) {
+  async login(@Body() loginDto: LoginDto, @NestRequest() req: Request) {
+    const xForwardedFor = req.headers?.['x-forwarded-for'];
+    const firstIp = Array.isArray(xForwardedFor) ? xForwardedFor[0] : xForwardedFor;
     const ip =
       req.ip ||
-      req.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
+      firstIp?.split(',')[0]?.trim() ||
       req.socket?.remoteAddress ||
       '';
-    const userAgent = req.headers?.['user-agent'] || '';
+    const userAgent = Array.isArray(req.headers?.['user-agent'])
+      ? req.headers['user-agent'][0]
+      : req.headers?.['user-agent'] || '';
     return this.authService.login(loginDto, { ip, userAgent });
   }
 
@@ -43,7 +49,7 @@ export class AuthController {
   @ApiOperation({ summary: '获取当前用户信息' })
   @ApiSuccessResponse(UserProfileDto, { description: '获取用户信息成功' })
   @ApiErrorResponse({ status: 401, message: 'Unauthorized' })
-  async getProfile(@Request() req: any) {
+  async getProfile(@NestRequest() req: Request & { user: RequestUser }) {
     return this.authService.getProfile(req.user);
   }
 
@@ -70,7 +76,7 @@ export class AuthController {
     description: '登出后会清除 Redis 中的会话状态和用户缓存，token 将失效',
   })
   @ApiErrorResponse({ status: 401, message: 'Unauthorized' })
-  async logout(@CurrentUser() user: any) {
+  async logout(@CurrentUser() user: RequestUser) {
     await this.authService.logout(user);
     return { message: '登出成功' };
   }

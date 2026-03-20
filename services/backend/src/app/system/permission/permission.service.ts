@@ -19,6 +19,7 @@ import {
   withSoftDelete,
 } from '../../library/drizzle';
 import type { MenuTypeValue, ResourceTypeValue } from '../../library/drizzle';
+import type { PermissionTreeNode } from './entities/permission.entity';
 
 /**
  * Permission Service
@@ -415,9 +416,9 @@ export class PermissionService {
     };
   }
 
-  private buildMenuTree(permissions: any[]): any[] {
-    const map = new Map<number, any>();
-    const roots: any[] = [];
+  private buildMenuTree(permissions: PermissionRow[]): PermissionTreeNode[] {
+    const map = new Map<number, PermissionTreeNode>();
+    const roots: PermissionTreeNode[] = [];
 
     for (const perm of permissions) {
       map.set(perm.id, { ...perm, children: [] });
@@ -432,14 +433,14 @@ export class PermissionService {
       } else {
         const parent = map.get(perm.parentId);
         if (parent) {
-          parent.children.push(node);
+          parent.children!.push(node);
         }
       }
     }
 
-    const removeEmptyChildren = (nodes: any[]): any[] => {
+    const removeEmptyChildren = (nodes: PermissionTreeNode[]): PermissionTreeNode[] => {
       return nodes.map((node) => {
-        const result = { ...node };
+        const result: PermissionTreeNode = { ...node };
         if (result.children && result.children.length === 0) {
           delete result.children;
         } else if (result.children) {
@@ -706,3 +707,5 @@ export class PermissionService {
     return [...roles.values()];
   }
 }
+
+type PermissionRow = Omit<PermissionTreeNode, 'children'>;

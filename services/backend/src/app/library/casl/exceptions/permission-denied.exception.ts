@@ -9,7 +9,7 @@ export class PermissionDeniedException extends ForbiddenException {
     public readonly action: string,
     public readonly subject: string,
     public readonly userId?: number,
-    public readonly details?: any,
+    public readonly details?: unknown,
   ) {
     super({
       statusCode: 403,

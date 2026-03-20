@@ -8,6 +8,7 @@ import {
   UpdateDictItemDto,
 } from './dto/dict.dto';
 import {
+  TransactionClient,
   DictItem,
   DictType,
   DrizzleService,
@@ -166,7 +167,7 @@ export class DictService {
       throw new NotFoundException(`字典类型 ID=${id} 不存在`);
     }
 
-    return this.drizzle.db.transaction(async (tx: any) => {
+    return this.drizzle.db.transaction(async (tx: TransactionClient) => {
       await softDeleteWhere(tx, DictItem, eq(DictItem.dictTypeId, id));
       const deletedTypes = await softDeleteWhere(tx, DictType, eq(DictType.id, id));
       return Array.isArray(deletedTypes) ? (deletedTypes[0] ?? null) : deletedTypes;

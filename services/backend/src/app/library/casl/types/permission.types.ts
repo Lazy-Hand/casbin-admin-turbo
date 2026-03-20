@@ -1,13 +1,19 @@
 import { AppAbility } from './ability.types';
 
 /**
+ * CASL 条件类型
+ * 用于定义资源实例的过滤条件
+ */
+export type Conditions = Record<string, unknown>;
+
+/**
  * 权限要求规则接口
  * 用于装饰器中定义权限检查规则
  */
 export interface RequiredRule {
   action: string;
   subject: string;
-  conditions?: any;
+  conditions?: Conditions | boolean;
   resourceParam?: string;
 }
 
@@ -26,7 +32,7 @@ export interface PolicyHandler {
 export interface ParsedPermission {
   action: string;
   subject: string;
-  conditions?: any;
+  conditions?: Conditions;
 }
 
 /**

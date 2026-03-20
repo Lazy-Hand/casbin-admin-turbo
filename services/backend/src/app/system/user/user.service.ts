@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { SearchUserDto } from './dto/search-user.dto';
 import { UserRepository } from './repositories/user.repository';
 import {
+  TransactionClient,
   Dept,
   DrizzleService,
   insertWithAudit,
@@ -124,7 +125,7 @@ export class UserService {
       }
     }
 
-    const result = await this.drizzle.db.transaction(async (tx: any) => {
+    const result = await this.drizzle.db.transaction(async (tx: TransactionClient) => {
       const createdUsers = await insertWithAudit(tx, User, {
         ...userData,
         password: hashedPassword,
@@ -171,7 +172,7 @@ export class UserService {
       }
     }
 
-    const result = await this.drizzle.db.transaction(async (tx: any) => {
+    const result = await this.drizzle.db.transaction(async (tx: TransactionClient) => {
       const updatedUsers = await updateWithAudit(tx, User, eq(User.id, id), {
         ...userData,
         ...(hashedPassword ? { password: hashedPassword } : {}),
@@ -203,7 +204,7 @@ export class UserService {
 
   // 删除用户
   async delete(id: number) {
-    return this.drizzle.db.transaction(async (tx: any) => {
+    return this.drizzle.db.transaction(async (tx: TransactionClient) => {
       await tx.delete(UserRole).where(eq(UserRole.userId, id));
       const deletedUsers = await softDeleteWhere(tx, User, eq(User.id, id));
       return Array.isArray(deletedUsers) ? (deletedUsers[0] ?? null) : null;

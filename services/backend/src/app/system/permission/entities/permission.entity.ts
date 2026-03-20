@@ -32,4 +32,10 @@ export class PermissionEntity extends BaseEntity {
 
   @ApiProperty({ description: '内链URL' })
   frameUrl: string;
+
+  children?: PermissionTreeNode[];
 }
+
+export type PermissionTreeNode = Omit<PermissionEntity, 'children'> & {
+  children?: PermissionTreeNode[];
+};

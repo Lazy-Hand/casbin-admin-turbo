@@ -3,6 +3,11 @@ import { Response } from 'express';
 import { IResponse } from '../interfaces/response.interface';
 import { BusinessException } from '../exceptions/business.exception';
 
+interface ExceptionResponseWithMessage {
+  message: string | string[];
+  [key: string]: unknown;
+}
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -20,7 +25,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
       message =
         typeof exceptionResponse === 'object' && 'message' in exceptionResponse
-          ? (exceptionResponse as any).message
+          ? String((exceptionResponse as ExceptionResponseWithMessage).message)
           : exception.message;
     } else if (exception instanceof HttpException) {
       // 处理 HTTP 异常
@@ -29,7 +34,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
       message =
         typeof exceptionResponse === 'object' && 'message' in exceptionResponse
-          ? (exceptionResponse as any).message
+          ? String((exceptionResponse as ExceptionResponseWithMessage).message)
           : exception.message;
     } else {
       // 处理未知异常

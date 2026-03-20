@@ -4,6 +4,7 @@ import { CreateRoleDto, UpdateRoleDto } from './dto/role.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { DataScopeService } from '@/app/library/data-scope/data-scope.service';
 import {
+  TransactionClient,
   Dept,
   DrizzleService,
   Permission,
@@ -224,7 +225,7 @@ export class RoleService {
       }
     }
 
-    const result = await this.drizzle.db.transaction(async (tx: any) => {
+    const result = await this.drizzle.db.transaction(async (tx: TransactionClient) => {
       const createdRoles = await insertWithAudit(tx, Role, {
         ...roleData,
         description: roleData.description ?? '',
@@ -267,7 +268,7 @@ export class RoleService {
       }
     }
 
-    const result = await this.drizzle.db.transaction(async (tx: any) => {
+    const result = await this.drizzle.db.transaction(async (tx: TransactionClient) => {
       const updatedRoles = await updateWithAudit(tx, Role, eq(Role.id, id), {
         ...roleData,
         status: roleData.status !== undefined ? +roleData.status : undefined,
@@ -304,7 +305,7 @@ export class RoleService {
 
   // 删除角色
   async remove(id: number) {
-    return this.drizzle.db.transaction(async (tx: any) => {
+    return this.drizzle.db.transaction(async (tx: TransactionClient) => {
       await tx.delete(RolePermission).where(eq(RolePermission.roleId, id));
       await tx.delete(UserRole).where(eq(UserRole.roleId, id));
       const deletedRoles = await softDeleteWhere(tx, Role, eq(Role.id, id));
@@ -541,10 +542,10 @@ export class RoleService {
     return [...roles.values()];
   }
 
-  private groupRoleDetail(rows: any[]) {
+  private groupRoleDetail(rows: RoleDetailRow[]) {
     const first = rows[0];
-    const permissions = new Map<number, any>();
-    const users = new Map<number, any>();
+    const permissions = new Map<number, { permission: unknown }>();
+    const users = new Map<number, { user: unknown }>();
 
     for (const row of rows) {
       if (row.permission?.id && !permissions.has(row.permission.id)) {
@@ -575,8 +576,9 @@ export class RoleService {
     };
   }
 
-  private groupUserRoles(rows: any[]) {
-    const roles = new Map<number, any>();
+  private groupUserRoles(rows: UserRoleRow[]) {
+    type PermissionItem = { permission: { id: number } | null };
+    const roles = new Map<number, { roleId: number; userId: number; role: { id: number; roleCode: string; roleName: string; permissions: PermissionItem[] } }>();
 
     for (const row of rows) {
       if (!row.role?.id) {
@@ -594,7 +596,7 @@ export class RoleService {
 
       if (
         row.permission?.id &&
-        !current.role.permissions.some((item: any) => item.permission.id === row.permission.id)
+        !current.role.permissions.some((item) => item.permission?.id === row.permission?.id)
       ) {
         current.role.permissions.push({
           permission: row.permission,
@@ -606,4 +608,25 @@ export class RoleService {
 
     return [...roles.values()];
   }
+}
+
+interface RoleDetailRow {
+  id: number;
+  roleName: string;
+  roleCode: string;
+  description: string | null;
+  status: number;
+  dataScope: string;
+  customDepts: number[];
+  createdAt: string;
+  updatedAt: string;
+  permission: { id: number } | null;
+  user: { id: number } | null;
+}
+
+interface UserRoleRow {
+  roleId: number;
+  userId: number;
+  role: { id: number; roleCode: string; roleName: string } | null;
+  permission: { id: number } | null;
 }

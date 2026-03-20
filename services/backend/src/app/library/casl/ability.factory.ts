@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AbilityBuilder, createMongoAbility, ExtractSubjectType } from '@casl/ability';
+import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import { PermissionService } from '../../system/permission/permission.service';
 import type { AppAbility, UserWithPermissions, Action, Subject } from './types';
-import type { ParsedPermission } from './types';
+import type { ParsedPermission, Conditions } from './types';
 
 /**
  * Ability Factory
@@ -89,7 +89,11 @@ export class AbilityFactory {
    * @param can 允许规则构建器
    * @param cannot 禁止规则构建器
    */
-  private applyRoleSpecificRules(user: UserWithPermissions, can: any, cannot: any): void {
+  private applyRoleSpecificRules(
+    user: UserWithPermissions,
+    can: (action: Action, subject: Subject, conditions?: Conditions) => void,
+    cannot: (action: Action, subject: Subject, conditions?: Conditions) => void,
+  ): void {
     const roleCodes = user.roles.map((role) => role.roleCode);
 
     // 管理员拥有所有权限

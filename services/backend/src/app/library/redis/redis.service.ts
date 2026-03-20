@@ -81,7 +81,7 @@ export class RedisService implements OnModuleDestroy {
    * @param value 值
    * @param ttl 过期时间（秒），可选
    */
-  async set(key: string, value: any, ttl?: number): Promise<void> {
+  async set(key: string, value: unknown, ttl?: number): Promise<void> {
     const serialized = JSON.stringify(value);
     if (ttl) {
       await this.client.setex(key, ttl, serialized);
@@ -168,7 +168,7 @@ export class RedisService implements OnModuleDestroy {
    * 批量设置
    * @param entries 键值对数组
    */
-  async mset(entries: Array<{ key: string; value: any }>): Promise<void> {
+  async mset(entries: Array<{ key: string; value: unknown }>): Promise<void> {
     if (entries.length === 0) {
       return;
     }
@@ -207,7 +207,7 @@ export class RedisService implements OnModuleDestroy {
    * @param field 字段
    * @param value 值
    */
-  async hset(key: string, field: string, value: any): Promise<void> {
+  async hset(key: string, field: string, value: unknown): Promise<void> {
     await this.client.hset(key, field, JSON.stringify(value));
   }
 
@@ -261,7 +261,7 @@ export class RedisService implements OnModuleDestroy {
    * @param key 键
    * @param values 值数组
    */
-  async lpush(key: string, ...values: any[]): Promise<number> {
+  async lpush(key: string, ...values: unknown[]): Promise<number> {
     const serialized = values.map((v) => JSON.stringify(v));
     return await this.client.lpush(key, ...serialized);
   }
@@ -271,7 +271,7 @@ export class RedisService implements OnModuleDestroy {
    * @param key 键
    * @param values 值数组
    */
-  async rpush(key: string, ...values: any[]): Promise<number> {
+  async rpush(key: string, ...values: unknown[]): Promise<number> {
     const serialized = values.map((v) => JSON.stringify(v));
     return await this.client.rpush(key, ...serialized);
   }
@@ -351,7 +351,7 @@ export class RedisService implements OnModuleDestroy {
    * @param key 键
    * @param members 成员数组
    */
-  async sadd(key: string, ...members: any[]): Promise<number> {
+  async sadd(key: string, ...members: unknown[]): Promise<number> {
     const serialized = members.map((m) => JSON.stringify(m));
     return await this.client.sadd(key, ...serialized);
   }
@@ -376,7 +376,7 @@ export class RedisService implements OnModuleDestroy {
    * @param key 键
    * @param members 成员数组
    */
-  async srem(key: string, ...members: any[]): Promise<number> {
+  async srem(key: string, ...members: unknown[]): Promise<number> {
     const serialized = members.map((m) => JSON.stringify(m));
     return await this.client.srem(key, ...serialized);
   }
@@ -388,7 +388,7 @@ export class RedisService implements OnModuleDestroy {
    * @param channel 频道
    * @param message 消息
    */
-  async publish(channel: string, message: any): Promise<number> {
+  async publish(channel: string, message: unknown): Promise<number> {
     if (!this.publisher) {
       throw new Error('Redis Pub/Sub 未启用');
     }
@@ -400,7 +400,7 @@ export class RedisService implements OnModuleDestroy {
    * @param channel 频道
    * @param callback 回调函数
    */
-  async subscribe(channel: string, callback: (message: any) => void): Promise<void> {
+  async subscribe(channel: string, callback: (message: unknown) => void): Promise<void> {
     if (!this.subscriber) {
       throw new Error('Redis Pub/Sub 未启用');
     }

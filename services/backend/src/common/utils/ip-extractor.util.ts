@@ -1,21 +1,24 @@
+import type { Request } from 'express';
+
 /**
  * 从请求中提取客户端 IP 地址
  * 优先级：X-Forwarded-For 首位 > X-Real-IP > req.ip > remoteAddress
  * @param request 请求对象
  * @returns IP 地址
  */
-export function extractIp(request: any): string {
+export function extractIp(request: Request): string {
   // 1. 尝试从 X-Forwarded-For 获取（代理环境）
   const xForwardedFor = request.headers?.['x-forwarded-for'];
   if (xForwardedFor) {
     // X-Forwarded-For 可能包含多个 IP，取第一个
-    return xForwardedFor.split(',')[0].trim();
+    const firstIp = Array.isArray(xForwardedFor) ? xForwardedFor[0] : xForwardedFor;
+    return firstIp.split(',')[0].trim();
   }
 
   // 2. 尝试从 X-Real-IP 获取
   const xRealIp = request.headers?.['x-real-ip'];
   if (xRealIp) {
-    return xRealIp;
+    return Array.isArray(xRealIp) ? xRealIp[0] : xRealIp;
   }
 
   // 3. 使用 req.ip
@@ -36,6 +39,7 @@ export function extractIp(request: any): string {
  * @param request 请求对象
  * @returns User Agent 字符串
  */
-export function extractUserAgent(request: any): string {
-  return request.headers?.['user-agent'] || '';
+export function extractUserAgent(request: Request): string {
+  const userAgent = request.headers?.['user-agent'];
+  return Array.isArray(userAgent) ? userAgent[0] : userAgent || '';
 }

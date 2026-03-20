@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AbilityBuilder, createMongoAbility, ExtractSubjectType } from '@casl/ability';
+import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import { and, eq } from 'drizzle-orm';
-import type { AppAbility, Action, Subject } from './types';
+import type { AppAbility } from './types';
+import type { Conditions } from './types/permission.types';
 import {
   DrizzleService,
   joinOnWithSoftDelete,
@@ -26,7 +27,7 @@ export class AbilityDynamicFactory {
    * @returns CASL Ability 实例
    */
   async createForUser(userId: number): Promise<AppAbility> {
-    const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
+    const { can, build } = new AbilityBuilder(createMongoAbility);
 
     // 从数据库加载用户的所有权限
     const rows = await this.drizzle.db
@@ -191,7 +192,7 @@ export class AbilityDynamicFactory {
    * @param userId 用户 ID
    * @returns 条件对象或 null
    */
-  private getConditions(permCode: string, resourceType: string | null, userId: number): any | null {
+  private getConditions(permCode: string, resourceType: string | null, userId: number): Conditions | null {
     // 如果权限代码包含 :own，表示只能操作自己的资源
     if (permCode.includes(':own') || permCode.endsWith(':self')) {
       // 根据资源类型返回不同的条件字段
