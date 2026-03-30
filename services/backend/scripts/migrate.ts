@@ -21,7 +21,7 @@ function checksum(content: string) {
 async function listMigrationFolders() {
   const entries = await fs.readdir(MIGRATIONS_DIR, { withFileTypes: true });
   return entries
-    .filter((entry) => entry.isDirectory())
+    .filter((entry) => entry.isDirectory() && entry.name !== 'meta')
     .map((entry) => entry.name)
     .sort();
 }

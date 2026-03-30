@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(psql -U postgres -h 127.0.0.1 -c \"SELECT pg_terminate_backend\\(pid\\) FROM pg_stat_activity WHERE datname = ''casbin-admin'' AND pid <> pg_backend_pid\\(\\);\")",
+      "Bash(PGPASSWORD=123456 psql -U postgres -h 127.0.0.1 -c \"SELECT pg_terminate_backend\\(pid\\) FROM pg_stat_activity WHERE datname = ''casbin-admin'' AND pid <> pg_backend_pid\\(\\);\")",
+      "Bash(PGPASSWORD=123456 psql -U postgres -h 127.0.0.1 -c \"DROP DATABASE casbin-admin;\")",
+      "Bash(PGPASSWORD=123456 psql -U postgres -h 127.0.0.1 -c \"CREATE DATABASE casbin_admin;\")",
+      "Bash(pnpm db:generate)",
+      "Bash(pnpm drizzle-kit:*)",
+      "Bash(pnpm db:migrate)",
+      "Bash(node -e \"import\\(''dotenv/config''\\).then\\(\\(\\) => import\\(''path''\\)\\).then\\(p => console.log\\(p.default.resolve\\(process.cwd\\(\\), ''db/migrations''\\)\\)\\)\")",
+      "Bash(node --input-type=module -e \":*)",
+      "Bash(PGPASSWORD=123456 psql -U postgres -h 127.0.0.1 -d casbin_admin -c \"\\\\dt\")",
+      "Bash(pnpm add:*)"
+    ]
+  }
+}
