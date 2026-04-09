@@ -18,7 +18,7 @@
     "start:dev": "nest start --watch",
     "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main.js",
     "lint": "run-s lint:oxlint lint:eslint",
     "lint:fix": "run-s lint:oxlint:fix lint:eslint:fix",
     "lint:oxlint": "oxlint .",

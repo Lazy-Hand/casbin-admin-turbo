@@ -66,7 +66,7 @@ let unauthorizedCallback: () => void = () => {
 }
 
 export const requestConfig = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
   getToken: () => {
     if (typeof window !== 'undefined') {
       return localCache.get('token')

@@ -1,15 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { and, desc, eq, gte, ilike, lte, sql } from 'drizzle-orm';
+import { Injectable, Logger } from "@nestjs/common";
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { and, desc, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import {
   QueryOperationLogDto,
   CreateOperationLogDto,
   QueryLoginLogDto,
-} from './dto/operation-log.dto';
-import { RedisService } from '@/app/library/redis/redis.service';
-import { DrizzleService, LoginLog, OperationLog } from '@/app/library/drizzle';
+} from "./dto/operation-log.dto";
+import { RedisService } from "@/app/library/redis/redis.service";
+import { DrizzleService, LoginLog, OperationLog } from "@/app/library/drizzle";
 
-const OPERATION_LOG_QUEUE_KEY = 'operation-log:queue';
+const OPERATION_LOG_QUEUE_KEY = "operation-log:queue";
 const BATCH_SIZE = 100;
 
 @Injectable()
@@ -81,10 +81,10 @@ export class OperationLogService {
    */
   async pushLogQueue(log: CreateOperationLogDto): Promise<void> {
     try {
-      await this.redis.lpush(OPERATION_LOG_QUEUE_KEY, JSON.stringify(log));
+      await this.redis.lpush(OPERATION_LOG_QUEUE_KEY, log);
     } catch (error) {
       // Redis 失败不影响业务，仅记录错误
-      console.error('Failed to push operation log to queue:', error);
+      console.error("Failed to push operation log to queue:", error);
     }
   }
 
@@ -92,7 +92,7 @@ export class OperationLogService {
    * 批量写入日志到数据库
    * 每 3 秒执行一次
    */
-  @Cron('*/3 * * * * *')
+  @Cron("*/3 * * * * *")
   async flushLogQueue(): Promise<number> {
     try {
       // 从队列右侧取出最多 BATCH_SIZE 条记录
@@ -110,7 +110,7 @@ export class OperationLogService {
       this.logger.debug(`Flushed ${logs.length} operation logs`);
       return logs.length;
     } catch (error) {
-      this.logger.error('Failed to flush operation log queue:', error);
+      this.logger.error("Failed to flush operation log queue:", error);
       return 0;
     }
   }
@@ -133,7 +133,7 @@ export class OperationLogService {
       this.logger.log(`Cleaned ${result.length} old operation logs`);
       return result.length;
     } catch (error) {
-      this.logger.error('Failed to clean old logs:', error);
+      this.logger.error("Failed to clean old logs:", error);
       return 0;
     }
   }
