@@ -1,38 +1,77 @@
-# Casbin Admin Turbo - 部署文档
+# Casbin Admin Turbo - Docker 部署文档
 
 ## 目录
 
+- [概述](#概述)
 - [服务器信息](#服务器信息)
 - [项目结构](#项目结构)
 - [部署架构](#部署架构)
-- [服务管理](#服务管理)
 - [环境变量](#环境变量)
 - [部署命令](#部署命令)
 - [数据库初始化](#数据库初始化)
 - [访问地址](#访问地址)
+- [服务管理](#服务管理)
 - [故障排查](#故障排查)
 - [安全建议](#安全建议)
 
 ---
 
+## 概述
+
+本项目采用 Docker 容器化部署，所有服务通过 Docker Compose 进行管理。
+
+**包含服务：**
+
+- **PostgreSQL 16** - 关系数据库
+- **Redis 7** - 缓存和会话存储
+- **Backend (NestJS)** - API 服务
+- **Frontend (Vue 3 + Nginx)** - 前端应用
+
+---
+
 ## 服务器信息
 
-| 属性             | 值                     |
-| ---------------- | ---------------------- |
-| **服务器 IP**    | `117.72.207.111`       |
-| **SSH 端口**     | `22`                   |
-| **SSH 用户**     | `root`                 |
-| **SSH 登录方式** | 密码登录               |
-| **操作系统**     | Ubuntu 24.04           |
-| **内核版本**     | Linux 6.8.0-53-generic |
-| **项目部署路径** | `/opt/casbin-admin`    |
+| 属性                    | 值                     |
+| ----------------------- | ---------------------- |
+| **服务器 IP**           | `117.72.207.111`       |
+| **SSH 端口**            | `22`                   |
+| **SSH 用户**            | `root`                 |
+| **SSH 登录方式**        | 密码登录               |
+| **操作系统**            | Ubuntu 24.04           |
+| **内核版本**            | Linux 6.8.0-53-generic |
+| **项目部署路径**        | `/opt/casbin-admin`    |
+| **Docker 版本**         | 24.0+                  |
+| **Docker Compose 版本** | 2.0+                   |
+
+### 前置要求
+
+确保服务器已安装 Docker 和 Docker Compose：
+
+```bash
+# 检查 Docker 版本
+docker --version
+
+# 检查 Docker Compose 版本
+docker compose version
+```
+
+### 安装 Docker（如未安装）
+
+```bash
+# 安装 Docker
+curl -fsSL https://get.docker.com | sh
+
+# 安装 Docker Compose
+apt update && apt install -y docker-compose-v2
+
+# 将当前用户加入 docker 组（免 sudo）
+usermod -aG docker $USER
+```
 
 ### SSH 连接示例
 
 ```bash
 ssh root@117.72.207.111
-# 或使用密码登录
-sshpass -p 'YOUR_PASSWORD' ssh root@117.72.207.111
 ```
 
 ---
@@ -42,21 +81,19 @@ sshpass -p 'YOUR_PASSWORD' ssh root@117.72.207.111
 ```
 /opt/casbin-admin/
 ├── apps/
-│   └── frontend/                    # Vue 3 前端应用
-│       ├── dist/                    # 构建产物（生产环境使用）
-│       ├── Dockerfile               # 前端 Docker 配置
-│       └── nginx.conf               # Nginx 配置
+│   └── frontend/
+│       ├── Dockerfile          # 前端镜像构建配置
+│       ├── nginx.conf           # Nginx 配置
+│       └── dist/                # 构建产物（容器内）
 ├── services/
-│   └── backend/                      # NestJS 后端服务
-│       ├── dist/                    # 构建产物
-│       ├── src/                     # 源代码
-│       ├── Dockerfile              # 后端 Docker 配置
-│       ├── app.log                  # 后端运行日志
-│       └── config/                 # 配置文件
-├── packages/                        # 共享包
-├── docker-compose.yml              # Docker Compose 配置
-├── .env                            # 环境变量
-├── .env.production                  # 生产环境变量
+│   └── backend/
+│       ├── Dockerfile           # 后端镜像构建配置
+│       ├── dist/                # 构建产物（容器内）
+│       └── data.sql             # 数据库初始化脚本
+├── packages/                    # 共享包
+├── docker-compose.yml           # 容器编排配置
+├── .env                         # 环境变量
+├── .dockerignore               # Docker 构建排除文件
 ├── pnpm-lock.yaml
 ├── package.json
 ├── turbo.json
@@ -70,140 +107,79 @@ sshpass -p 'YOUR_PASSWORD' ssh root@117.72.207.111
 ### 架构图
 
 ```
-                    ┌─────────────────────────────────────────────────┐
-                    │                   服务器                         │
-                    │                  117.72.207.111                   │
-                    │                                                  │
-                    │  ┌──────────────────────────────────────────┐   │
-                    │  │              Nginx (80)                   │   │
-                    │  │                                          │   │
-                    │  │  ┌──────────────┐    ┌─────────────────┐  │   │
-                    │  │  │   Frontend   │    │   API Proxy     │  │   │
-                    │  │  │  (静态文件)   │    │   /api/*        │  │   │
-                    │  │  │ /opt/casbin- │    │   /api-docs     │  │   │
-                    │  │  │ admin/apps/  │    │   /reference    │  │   │
-                    │  │  │ frontend/dist│    │                 │  │   │
-                    │  │  └──────────────┘    └────────┬────────┘  │   │
-                    │  └─────────────────────────────│───────────┘   │
-                    │                                    │             │
-                    │  ┌─────────────────────────────────▼───────────┐ │
-                    │  │         Node.js Backend (8080)            │ │
-                    │  │                                          │ │ │
-                    │  │  ┌────────────────────────────────────┐  │ │
-                    │  │  │          NestJS Application        │  │ │
-                    │  │  │   - CASL 权限控制                    │  │ │
-                    │  │  │   - JWT 认证                         │  │ │
-                    │  │  │   - Redis 会话缓存                   │  │ │
-                    │  │  └────────────────────────────────────┘  │ │
-                    │  └──────────────────────────────────────────┘ │
-                    │                                                  │
-                    │  ┌─────────────────┐  ┌─────────────────────┐  │
-                    │  │   PostgreSQL    │  │       Redis         │  │
-                    │  │   (Docker:5432)  │  │    (Docker:6379)    │  │
-                    │  │  casbin-postgres │  │   casbin-redis     │  │
-                    │  └─────────────────┘  └─────────────────────┘  │
-                    └─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            服务器 117.72.207.111                         │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                     Docker Network (casbin-network)               │  │
+│  │                                                                   │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │  │
+│  │  │              Frontend (casbin-frontend)                    │  │  │
+│  │  │                   Nginx :80                                 │  │  │
+│  │  │     ┌─────────────────────────────────────────────────┐    │  │  │
+│  │  │     │          Vue 3 静态资源                          │    │  │  │
+│  │  │     │     /          → index.html                      │    │  │  │
+│  │  │     │     /api/*    → 代理到 backend:8080              │    │  │  │
+│  │  │     └─────────────────────────────────────────────────┘    │  │  │
+│  │  └─────────────────────────────────────────────────────────────┘  │  │
+│  │                              ↕                                     │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │  │
+│  │  │              Backend (casbin-backend)                       │  │  │
+│  │  │                   NestJS :8080                              │  │  │
+│  │  │     ┌─────────────────────────────────────────────────┐    │  │  │
+│  │  │     │   CASL 权限控制  │  JWT 认证  │  Redis 会话    │    │  │  │
+│  │  │     └─────────────────────────────────────────────────┘    │  │  │
+│  │  └─────────────────────────────────────────────────────────────┘  │  │
+│  │                              ↕                                     │  │
+│  │  ┌──────────────────┐    ┌──────────────────────────────────┐    │  │
+│  │  │ PostgreSQL :5432  │    │          Redis :6379             │    │  │
+│  │  │ casbin-postgres   │    │         casbin-redis             │    │  │
+│  │  │ (postgres_data)   │    │        (redis_data)              │    │  │
+│  │  └──────────────────┘    └──────────────────────────────────┘    │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 端口映射
 
-| 端口 | 服务       | 说明                | 访问范围    |
-| ---- | ---------- | ------------------- | ----------- |
-| 80   | Nginx      | 前端 + API 反向代理 | 公网        |
-| 8080 | Node.js    | 后端 API            | 本地        |
-| 5432 | PostgreSQL | 数据库              | Docker 内部 |
-| 6379 | Redis      | 缓存                | 本地        |
-
----
-
-## 服务管理
-
-### 服务状态检查
-
-```bash
-# SSH 连接到服务器
-ssh root@117.72.207.111
-
-# 检查所有服务状态
-systemctl status nginx
-docker ps
-
-# 检查后端进程
-ps aux | grep node | grep -v grep
-
-# 检查后端日志
-tail -f /opt/casbin-admin/services/backend/app.log
-
-# 检查 API 是否可访问
-curl http://127.0.0.1:8080/api
-```
-
-### 服务启动/停止
-
-```bash
-# Nginx 服务
-systemctl start nginx
-systemctl stop nginx
-systemctl restart nginx
-
-# PostgreSQL (Docker)
-docker start casbin-postgres
-docker stop casbin-postgres
-
-# Redis (Docker)
-docker start casbin-redis
-docker stop casbin-redis
-
-# 后端服务 (手动管理进程)
-# 启动后端
-cd /opt/casbin-admin
-pnpm --filter @casbin-admin/backend build
-cd services/backend
-NODE_ENV=production nohup node dist/src/main.js > app.log 2>&1 &
-
-# 重启后端
-pkill -f "node dist/src/main.js"
-cd /opt/casbin-admin
-pnpm --filter @casbin-admin/backend build
-cd services/backend
-NODE_ENV=production nohup node dist/src/main.js > app.log 2>&1 &
-```
+| 端口 | 容器端口 | 服务           | 访问范围 | 说明                |
+| ---- | -------- | -------------- | -------- | ------------------- |
+| 80   | 80       | Frontend/Nginx | 公网     | 前端 + API 反向代理 |
+| 5432 | 5432     | PostgreSQL     | 本地     | Docker 内部网络访问 |
+| 6379 | 6379     | Redis          | 本地     | 仅本地 (127.0.0.1)  |
+| 8080 | 8080     | Backend        | 本地     | 仅本地 (127.0.0.1)  |
 
 ---
 
 ## 环境变量
 
-### 生产环境变量 (`.env.production`)
+### 创建环境变量文件
+
+在服务器上创建 `.env` 文件：
+
+```bash
+cd /opt/casbin-admin
+nano .env
+```
+
+### 环境变量配置
 
 ```bash
 # 数据库密码 - 生产环境请务必修改为强密码
 DB_PASSWORD=123456
 
+# Redis 密码 - 生产环境请务必修改为强密码
+REDIS_PASSWORD=123456
+
 # JWT 密钥 - 生产环境请务必修改为至少32位的随机字符串
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 ```
 
-### 本地环境变量 (`.env`)
+### 生成随机密钥示例
 
 ```bash
-# 数据库密码
-DB_PASSWORD=123456
-
-# Redis 密码
-REDIS_PASSWORD=123456
-
-# JWT 密钥
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-```
-
-### 环境变量生效
-
-修改环境变量后需要重启后端服务：
-
-```bash
-cd /opt/casbin-admin/services/backend
-pkill -f "node dist"
-NODE_ENV=production nohup node dist/src/main.js > app.log 2>&1 &
+# 生成随机 JWT 密钥
+openssl rand -base64 32
 ```
 
 ---
@@ -222,63 +198,86 @@ cd /opt/casbin-admin
 # 3. 拉取最新代码（如果使用 Git）
 git pull
 
-# 4. 安装依赖
-pnpm install
+# 4. 创建环境变量文件（如果不存在）
+cp .env.example .env 2>/dev/null || cat > .env << 'EOF'
+DB_PASSWORD=123456
+REDIS_PASSWORD=123456
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+EOF
 
-# 5. 构建后端
-pnpm --filter @casbin-admin/backend build
+# 5. 构建并启动所有服务
+docker compose up -d --build
 
-# 6. 构建前端
-pnpm --filter @casbin-admin/frontend build
+# 6. 查看服务状态
+docker compose ps
 
-# 7. 启动/重启后端服务
-cd /opt/casbin-admin/services/backend
-pkill -f "node dist"
-NODE_ENV=production nohup node dist/src/main.js > app.log 2>&1 &
+# 7. 查看日志
+docker compose logs -f
 
 # 8. 验证部署
-curl http://127.0.0.1:8080/api
+curl http://127.0.0.1/api
 ```
 
 ### 仅更新后端
 
 ```bash
 cd /opt/casbin-admin
-pnpm --filter @casbin-admin/backend build
-cd services/backend
-pkill -f "node dist"
-NODE_ENV=production nohup node dist/src/main.js > app.log 2>&1 &
+docker compose up -d --build backend
+docker compose logs -f backend
 ```
 
 ### 仅更新前端
 
 ```bash
 cd /opt/casbin-admin
-pnpm --filter @casbin-admin/frontend build
+docker compose up -d --build frontend
+docker compose logs -f frontend
 ```
 
-### 数据库初始化
-
-使用项目中的 `data.sql` 文件初始化数据库：
+### 重新创建所有服务
 
 ```bash
-# 1. 确保 PostgreSQL 容器正在运行
-docker ps | grep casbin-postgres
+cd /opt/casbin-admin
+docker compose down
+docker compose up -d --build
+```
 
-# 2. 创建数据库（如不存在）
-docker exec casbin-postgres psql -U postgres -c 'CREATE DATABASE casbin_admin;'
+---
 
-# 3. 上传 data.sql 文件到服务器
-scp /path/to/project/services/backend/data.sql root@117.72.207.111:/tmp/data.sql
+## 数据库初始化
 
-# 4. 导入数据
+### 首次部署
+
+PostgreSQL 容器首次启动时会自动创建 `casbin_admin` 数据库。
+
+### 导入数据
+
+如需导入初始数据：
+
+```bash
+# 1. 将 data.sql 上传到服务器
+scp services/backend/data.sql root@117.72.207.111:/tmp/data.sql
+
+# 2. 导入数据
 docker exec -i casbin-postgres psql -U postgres -d casbin_admin < /tmp/data.sql
 
-# 5. 验证导入
+# 3. 验证导入
 docker exec casbin-postgres psql -U postgres -d casbin_admin -c '\dt'
 ```
 
 **data.sql 文件位置**: `services/backend/data.sql`
+
+### 运行数据库迁移
+
+```bash
+cd /opt/casbin-admin
+
+# 生成迁移（如有 schema 变更）
+docker compose exec backend pnpm --filter @casbin-admin/backend db:generate
+
+# 运行迁移
+docker compose exec backend pnpm --filter @casbin-admin/backend db:migrate
+```
 
 ---
 
@@ -293,93 +292,189 @@ docker exec casbin-postgres psql -U postgres -d casbin_admin -c '\dt'
 
 ---
 
+## 服务管理
+
+### 启动/停止服务
+
+```bash
+# 启动所有服务
+docker compose up -d
+
+# 停止所有服务
+docker compose down
+
+# 重启所有服务
+docker compose restart
+
+# 重启特定服务
+docker compose restart backend
+```
+
+### 查看服务状态
+
+```bash
+# 查看所有容器状态
+docker compose ps
+
+# 查看运行中的容器
+docker ps
+
+# 查看所有容器（包括已停止）
+docker ps -a
+```
+
+### 查看日志
+
+```bash
+# 查看所有服务日志
+docker compose logs -f
+
+# 查看后端日志
+docker compose logs -f backend
+
+# 查看前端的实时日志
+docker compose logs -f frontend
+
+# 查看最近 100 行日志
+docker compose logs --tail 100 backend
+
+# 查看特定容器的日志
+docker logs casbin-backend -f
+```
+
+### 进入容器
+
+```bash
+# 进入后端容器
+docker exec -it casbin-backend sh
+
+# 进入 PostgreSQL 容器
+docker exec -it casbin-postgres psql -U postgres -d casbin_admin
+
+# 进入 Redis 容器
+docker exec -it casbin-redis redis-cli -a 123456
+```
+
+### 清理资源
+
+```bash
+# 删除未使用的镜像
+docker image prune -f
+
+# 删除未使用的卷
+docker volume prune -f
+
+# 完全清理（停止所有容器后）
+docker system prune -af
+```
+
+---
+
 ## 故障排查
 
 ### 常见问题
 
-#### 1. 后端服务无法启动
+#### 1. 容器无法启动
 
 ```bash
+# 查看容器状态
+docker compose ps -a
+
+# 查看启动日志
+docker compose logs backend
+
 # 检查端口是否被占用
-lsof -i :8080
-
-# 检查 Node.js 版本
-node --version  # 需要 >= 18.0.0
-
-# 检查 pnpm 版本
-pnpm --version  # 需要 >= 8.0.0
-
-# 查看错误日志
-cat /opt/casbin-admin/services/backend/app.log
+lsof -i :80
+lsof -i :5432
 ```
 
-#### 2. 数据库连接失败
+#### 2. 后端容器无法连接数据库
+
+```bash
+# 检查 PostgreSQL 是否就绪
+docker compose exec postgres pg_isready -U postgres
+
+# 检查网络连通性
+docker compose exec backend ping postgres
+
+# 查看 PostgreSQL 日志
+docker compose logs postgres
+```
+
+#### 3. 数据库连接失败
 
 ```bash
 # 检查 PostgreSQL 容器状态
-docker ps | grep postgres
+docker compose ps postgres
 
 # 检查 PostgreSQL 日志
-docker logs casbin-postgres --tail 50
+docker compose logs postgres
 
 # 测试数据库连接
-docker exec -it casbin-postgres psql -U postgres -d casbin_admin -c "SELECT 1;"
+docker compose exec postgres psql -U postgres -d casbin_admin -c "SELECT 1;"
 
 # 检查数据库是否存在
-docker exec -it casbin-postgres psql -U postgres -l
+docker compose exec postgres psql -U postgres -l
 ```
 
-#### 3. Redis 连接失败
+#### 4. Redis 连接失败
 
 ```bash
 # 检查 Redis 容器状态
-docker ps | grep redis
+docker compose ps redis
 
 # 检查 Redis 日志
-docker logs casbin-redis --tail 50
+docker compose logs redis
 
 # 测试 Redis 连接
-docker exec -it casbin-redis redis-cli -a 123456 ping
+docker compose exec redis redis-cli -a 123456 ping
 ```
 
-#### 4. 前端无法访问
+#### 5. 前端无法访问
 
 ```bash
-# 检查 Nginx 状态
-systemctl status nginx
+# 检查 Nginx 容器状态
+docker compose ps frontend
 
 # 检查 Nginx 错误日志
-tail -f /var/log/nginx/error.log
+docker compose logs frontend
 
-# 检查静态文件是否存在
-ls -la /opt/casbin-admin/apps/frontend/dist/
-
-# 检查 Nginx 配置
-nginx -t
+# 进入容器检查配置
+docker compose exec frontend nginx -t
 ```
 
-#### 5. API 返回 502/504
+#### 6. API 返回 502/504
 
 ```bash
 # 检查后端是否运行
-ps aux | grep node
+docker compose ps backend
 
-# 检查后端日志
-tail -100 /opt/casbin-admin/services/backend/app.log
-
-# 测试直接访问后端
+# 检查后端健康状态
 curl http://127.0.0.1:8080/api
+
+# 查看后端日志
+docker compose logs backend --tail 100
 ```
 
 ### 日志文件位置
 
-| 日志            | 路径                                         |
-| --------------- | -------------------------------------------- |
-| 后端日志        | `/opt/casbin-admin/services/backend/app.log` |
-| Nginx 错误日志  | `/var/log/nginx/error.log`                   |
-| Nginx 访问日志  | `/var/log/nginx/access.log`                  |
-| PostgreSQL 日志 | `docker logs casbin-postgres`                |
-| Redis 日志      | `docker logs casbin-redis`                   |
+| 服务            | 查看命令                          |
+| --------------- | --------------------------------- |
+| 所有服务日志    | `docker compose logs -f`          |
+| 后端日志        | `docker compose logs -f backend`  |
+| 前端日志        | `docker compose logs -f frontend` |
+| PostgreSQL 日志 | `docker compose logs -f postgres` |
+| Redis 日志      | `docker compose logs -f redis`    |
+
+### Docker 网络检查
+
+```bash
+# 查看网络
+docker network ls
+
+# 查看 casbin-network 详情
+docker network inspect casbin-admin_casbin-network
+```
 
 ---
 
@@ -404,6 +499,7 @@ curl http://127.0.0.1:8080/api
    ```
 
 3. **JWT 密钥**
+
    ```bash
    # 建议使用至少 32 位的随机字符串
    JWT_SECRET=<随机生成的32位字符串>
@@ -415,8 +511,9 @@ curl http://127.0.0.1:8080/api
 1. **修改 SSH 端口** - 将默认的 22 端口改为其他端口
 2. **禁用密码登录** - 使用 SSH 密钥登录
 3. **配置防火墙** - 仅开放必要的端口 (80, 443)
-4. **启用 HTTPS** - 配置 SSL/TLS 证书
-5. **定期更新** - 保持系统和依赖更新
+4. **启用 HTTPS** - 使用 Let's Encrypt 配置 SSL/TLS 证书
+5. **定期更新** - 保持 Docker 镜像和系统更新
+6. **限制外部访问** - 将 5432、6379、8080 端口绑定到 127.0.0.1
 
 ---
 
@@ -426,20 +523,23 @@ curl http://127.0.0.1:8080/api
 # 连接服务器
 ssh root@117.72.207.111
 
-# 检查服务状态
-docker ps && systemctl status nginx && ps aux | grep node
+# 进入项目目录
+cd /opt/casbin-admin
+
+# 部署/更新
+docker compose up -d --build
+
+# 查看服务状态
+docker compose ps
 
 # 查看日志
-tail -f /opt/casbin-admin/services/backend/app.log
+docker compose logs -f
 
 # 重启后端
-cd /opt/casbin-admin/services/backend && pkill -f "node dist" && NODE_ENV=production nohup node dist/src/main.js > app.log 2>&1 &
+docker compose restart backend
 
-# 重启 Nginx
-systemctl restart nginx
-
-# 重启数据库服务
-docker restart casbin-postgres casbin-redis
+# 完全重建
+docker compose down && docker compose up -d --build
 ```
 
 ---
